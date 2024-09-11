@@ -36,7 +36,7 @@
             AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             ClientSize = new System.Drawing.Size(1429, 921);
             Name = "Window";
-            Text = "Invasion* 1.3.1";
+            Text = "Invasion* 1.4.1";
             ResumeLayout(false);
         }
 
