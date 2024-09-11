@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "Invasion": {
+      "commandName": "Project",
+      "workingDirectory": "./"
+    }
+  }
+}
