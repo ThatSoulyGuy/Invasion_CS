@@ -45,7 +45,7 @@ namespace Invasion
 
         public static void Update(object? s, EventArgs a)
         {
-
+            
         }
 
         public static void Resize(object? s, EventArgs a)

@@ -1,4 +1,9 @@
 
+cbuffer MatrixBuffer : register(b0)
+{
+    matrix modelMatrix;
+};
+
 struct VertexData
 {
     float3 position : POSITION;
@@ -19,7 +24,7 @@ PixelData Main(VertexData input)
 {
     PixelData result;
     
-    result.position = float4(input.position, 1.0f);
+    result.position = mul(float4(input.position, 1.0f), modelMatrix);
     result.normal = input.normal;
     result.color = float4(input.color, 1.0f);
     result.uv = input.uv;

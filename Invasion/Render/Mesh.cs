@@ -1,4 +1,6 @@
-﻿using System.Collections.Generic;
+﻿using Invasion.Math;
+using System.Collections.Generic;
+using System.Numerics;
 using System.Runtime.InteropServices;
 using Vortice.Direct3D;
 using Vortice.Direct3D11;
@@ -6,6 +8,12 @@ using Vortice.DXGI;
 
 namespace Invasion.Render
 {
+    [StructLayout(LayoutKind.Sequential)]
+    public struct DefaultMatrixBuffer
+    {
+        public Matrix4x4 Model;
+    }
+
     public class Mesh
     {
         public string Name { get; set; } = string.Empty;
@@ -15,6 +23,8 @@ namespace Invasion.Render
 
         public Shader Shader { get; set; } = null!;
         public Texture Texture { get; set; } = null!;
+
+        public Transform Transform { get; private set; } = null!;
 
         private ID3D11Buffer VertexBuffer { get; set; } = null!;
         private ID3D11Buffer IndexBuffer { get; set; } = null!;
@@ -94,6 +104,11 @@ namespace Invasion.Render
             context.IASetVertexBuffers(0, [VertexBuffer], [stride], [offset]);
 
             context.IASetIndexBuffer(IndexBuffer, Format.R32_UInt, 0);
+            
+            Shader.SetConstantBuffer<DefaultMatrixBuffer>(ShaderStage.Vertex, 0, new()
+            {
+                Model = Matrix4x4.Transpose(Transform.GetModelMatrix())
+            });
 
             Shader.Bind();
             Texture.Bind(0);
@@ -114,6 +129,7 @@ namespace Invasion.Render
                 Name = name,
                 Shader = shader,
                 Texture = texture,
+                Transform = Transform.Create(),
                 Vertices = vertices,
                 Indices = indices
             };

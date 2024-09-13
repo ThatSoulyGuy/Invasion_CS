@@ -95,7 +95,7 @@ namespace Invasion.Render
                         BindFlags = BindFlags.ConstantBuffer,
                         CPUAccessFlags = CpuAccessFlags.Write,
                         MiscFlags = ResourceOptionFlags.None,
-                        ByteWidth = Math.Max(16, (Unsafe.SizeOf<T>() + 15) / 16 * 16),
+                        ByteWidth = (int)MathF.Max(16, (Unsafe.SizeOf<T>() + 15) / 16 * 16),
                         StructureByteStride = 0,
                         Usage = ResourceUsage.Dynamic
                     };
