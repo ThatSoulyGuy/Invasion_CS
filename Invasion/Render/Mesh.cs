@@ -1,4 +1,5 @@
-﻿using Invasion.Math;
+﻿using Invasion.ECS;
+using Invasion.Math;
 using System.Collections.Generic;
 using System.Numerics;
 using System.Runtime.InteropServices;
@@ -14,15 +15,15 @@ namespace Invasion.Render
         public Matrix4x4 Model;
     }
 
-    public class Mesh
+    public class Mesh : Component
     {
         public string Name { get; set; } = string.Empty;
 
         public List<Vertex> Vertices { get; private set; } = [];
         public List<uint> Indices { get; private set; } = [];
 
-        public Shader Shader { get; set; } = null!;
-        public Texture Texture { get; set; } = null!;
+        public Shader Shader => GameObject.GetComponent<Shader>();
+        public Texture Texture => GameObject.GetComponent<Texture>();
 
         private ID3D11Buffer VertexBuffer { get; set; } = null!;
         private ID3D11Buffer IndexBuffer { get; set; } = null!;
@@ -91,7 +92,7 @@ namespace Invasion.Render
             }
         }
 
-        public void Render()
+        public override void Render()
         {
             ID3D11DeviceContext4 context = Renderer.Context;
 
@@ -105,7 +106,7 @@ namespace Invasion.Render
             
             Shader.SetConstantBuffer<DefaultMatrixBuffer>(ShaderStage.Vertex, 0, new()
             {
-                Model = Matrix4x4.Transpose(Transform.GetModelMatrix())
+                Model = Matrix4x4.Transpose(GameObject.Transform.GetModelMatrix())
             });
 
             Shader.Bind();
@@ -114,13 +115,13 @@ namespace Invasion.Render
             context.DrawIndexed(Indices.Count, 0, 0);
         }
 
-        public void CleanUp()
+        public override void CleanUp()
         {
             VertexBuffer?.Dispose();
             IndexBuffer?.Dispose();
         }
 
-        public static Mesh Create(string name, Shader shader, Texture texture, List<Vertex> vertices, List<uint> indices)
+        public static Mesh Create(string name, List<Vertex> vertices, List<uint> indices)
         {
             return new()
             {

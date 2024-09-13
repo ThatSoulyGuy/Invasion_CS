@@ -1,9 +1,10 @@
-﻿using System.Numerics;
+﻿using Invasion.ECS;
+using System.Numerics;
 using Vortice.Mathematics;
 
 namespace Invasion.Math
 {
-    public class Transform
+    public class Transform : Component
     {
         public Vector3 LocalPosition { get; set; } = Vector3.Zero;
         public Vector3 LocalRotation { get; set; } = Vector3.Zero;

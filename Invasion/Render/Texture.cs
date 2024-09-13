@@ -1,4 +1,5 @@
 ﻿using DirectXTexNet;
+using Invasion.ECS;
 using Invasion.Util;
 using SharpGen.Runtime;
 using System;
@@ -10,7 +11,7 @@ using Vortice.DXGI;
 
 namespace Invasion.Render
 {
-    public class Texture
+    public class Texture : Component
     {
         public string Name { get; private set; } = string.Empty;
         public DomainedPath DomainedPath { get; set; } = null!;
@@ -109,7 +110,7 @@ namespace Invasion.Render
             SamplerState = Renderer.Device.CreateSamplerState(SamplerDescription);
         }
 
-        public void CleanUp()
+        public new void CleanUp()
         {
             TextureReference?.Dispose();
             ShaderResourceView?.Dispose();

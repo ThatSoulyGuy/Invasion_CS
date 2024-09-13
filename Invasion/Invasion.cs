@@ -1,4 +1,5 @@
-﻿using Invasion.Page;
+﻿using Invasion.ECS;
+using Invasion.Page;
 using Invasion.Render;
 using System;
 using System.Numerics;
@@ -10,7 +11,7 @@ namespace Invasion
     {
         public static Window? Window { get; private set; }
 
-        public static Mesh Square { get; private set; } = null!;
+        public static GameObject Square { get; private set; } = null!;
 
         public static void Initialize()
         {
@@ -28,7 +29,12 @@ namespace Invasion
                 MaxLOD = float.MaxValue
             }));
 
-            Square = Mesh.Create("Square", ShaderManager.Get("default"), TextureManager.Get("debug"),
+            Square = GameObject.Create("Square");
+
+            Square.AddComponent(ShaderManager.Get("default"));
+            Square.AddComponent(TextureManager.Get("debug"));
+
+            Square.AddComponent(Mesh.Create("Square",
             [
                 new(new(-0.5f, -0.5f, 0.0f), Vector3.One, Vector3.UnitZ, new(0.0f, 0.0f)),
                 new(new(-0.5f,  0.5f, 0.0f), Vector3.One, Vector3.UnitZ, new(0.0f, 1.0f)),
@@ -38,14 +44,14 @@ namespace Invasion
             [
                 0, 1, 2,
                 0, 2, 3
-            ]);
+            ]));
 
-            Square.Generate();
+            Square.GetComponent<Mesh>().Generate();
         }
 
         public static void Update(object? s, EventArgs a)
         {
-            
+            GameObjectManager.Update();
         }
 
         public static void Resize(object? s, EventArgs a)
@@ -58,12 +64,15 @@ namespace Invasion
             Renderer.PreRender();
 
             Square.Render();
+            GameObjectManager.Render();
 
             Renderer.PostRender();
         }
 
         public static void CleanUp(object? s, EventArgs a)
         {
+            GameObjectManager.CleanUp();
+            TextureManager.CleanUp();
             ShaderManager.CleanUp();
             Renderer.CleanUp();
         }

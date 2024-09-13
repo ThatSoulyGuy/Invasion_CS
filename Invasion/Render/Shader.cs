@@ -1,4 +1,5 @@
-﻿using Invasion.Util;
+﻿using Invasion.ECS;
+using Invasion.Util;
 using SharpGen.Runtime;
 using System;
 using System.Collections.Generic;
@@ -22,7 +23,7 @@ namespace Invasion.Render
         Domain
     }
 
-    public class Shader
+    public class Shader : Component
     {
         public string Name { get; private set; } = string.Empty;
         public DomainedPath DomainedPath { get; set; } = null!;
@@ -282,7 +283,7 @@ namespace Invasion.Render
             return shaderByteCode;
         }
 
-        public void CleanUp()
+        public new void CleanUp()
         {
             VertexShader?.Dispose();
             PixelShader?.Dispose();
