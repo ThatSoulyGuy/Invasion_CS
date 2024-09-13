@@ -24,8 +24,6 @@ namespace Invasion.Render
         public Shader Shader { get; set; } = null!;
         public Texture Texture { get; set; } = null!;
 
-        public Transform Transform { get; private set; } = null!;
-
         private ID3D11Buffer VertexBuffer { get; set; } = null!;
         private ID3D11Buffer IndexBuffer { get; set; } = null!;
 
@@ -127,9 +125,6 @@ namespace Invasion.Render
             return new()
             {
                 Name = name,
-                Shader = shader,
-                Texture = texture,
-                Transform = Transform.Create(),
                 Vertices = vertices,
                 Indices = indices
             };
