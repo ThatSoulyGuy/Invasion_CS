@@ -128,11 +128,19 @@ namespace Invasion.Render
             IDXGIAdapter4 bestAdapter = null!;
             for (int i = 0; factory.EnumAdapterByGpuPreference(i, GpuPreference.HighPerformance, out IDXGIAdapter4? adapter).Success; i++)
             {
-                var desc = adapter!.Description3;
-                if (desc.DedicatedVideoMemory > 0)
+                try
                 {
-                    bestAdapter = adapter;
-                    break;
+                    var desc = adapter!.Description3;
+
+                    if (desc.DedicatedVideoMemory > 0)
+                    {
+                        bestAdapter = adapter;
+                        break;
+                    }
+                }
+                catch (ArithmeticException)
+                {
+                    bestAdapter = adapter!;
                 }
             }
 

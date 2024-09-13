@@ -17,7 +17,16 @@ namespace Invasion
             Renderer.Initialize(Window!);
 
             ShaderManager.Register(Shader.Create("default", new("Shader/Default", "Invasion")));
-            TextureManager.Register(Texture.Create("debug", new("Texture/Debug.dds", "Invasion")));
+            TextureManager.Register(Texture.Create("debug", new("Texture/Debug.dds", "Invasion"), new()
+            {
+                Filter = Vortice.Direct3D11.Filter.MinMagMipPoint,
+                AddressU = Vortice.Direct3D11.TextureAddressMode.Wrap,
+                AddressV = Vortice.Direct3D11.TextureAddressMode.Wrap,
+                AddressW = Vortice.Direct3D11.TextureAddressMode.Wrap,
+                ComparisonFunc = Vortice.Direct3D11.ComparisonFunction.Never,
+                MinLOD = 0,
+                MaxLOD = float.MaxValue
+            }));
 
             Square = Mesh.Create("Square", ShaderManager.Get("default"), TextureManager.Get("debug"),
             [

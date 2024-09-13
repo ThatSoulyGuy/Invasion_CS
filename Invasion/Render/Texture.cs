@@ -15,7 +15,10 @@ namespace Invasion.Render
         public string Name { get; private set; } = string.Empty;
         public DomainedPath DomainedPath { get; set; } = null!;
 
+        public SamplerDescription SamplerDescription { get; private set; }
+
         public ID3D11ShaderResourceView? ShaderResourceView { get; private set; } = null;
+        public ID3D11SamplerState? SamplerState { get; private set; } = null;
 
         private ID3D11Texture2D? TextureReference { get; set; } = null!;
 
@@ -25,6 +28,9 @@ namespace Invasion.Render
         {
             if (ShaderResourceView != null)
                 Renderer.Context.PSSetShaderResource(slot, ShaderResourceView);
+
+            if (SamplerState != null)      
+                Renderer.Context.PSSetSampler(slot, SamplerState);
         }
 
         private void Generate()
@@ -42,7 +48,7 @@ namespace Invasion.Render
 
             TexMetadata metadata = image.GetMetadata();
 
-            Texture2DDescription textureDesc = new()
+            Texture2DDescription textureDescription = new()
             {
                 Width = metadata.Width,
                 Height = metadata.Height,
@@ -69,7 +75,7 @@ namespace Invasion.Render
                     throw new Exception($"Failed to retrieve image data for subresource {i}");
                 }
 
-                subresourceData[i] = new SubresourceData
+                subresourceData[i] = new()
                 {
                     DataPointer = imageData.Pixels,
                     RowPitch = (int)imageData.RowPitch,
@@ -77,15 +83,16 @@ namespace Invasion.Render
                 };
             }
            
-            TextureReference = Renderer.Device.CreateTexture2D(textureDesc, subresourceData);
+            TextureReference = Renderer.Device.CreateTexture2D(textureDescription, subresourceData);
 
             ShaderResourceViewDescription shaderResourceViewDescription = new()
             {
-                Format = textureDesc.Format,
+                Format = textureDescription.Format,
                 ViewDimension = ShaderResourceViewDimension.Texture2D,
+
                 Texture2D = new()
                 {
-                    MipLevels = textureDesc.MipLevels,
+                    MipLevels = textureDescription.MipLevels,
                     MostDetailedMip = 0
                 }
             };
@@ -93,20 +100,29 @@ namespace Invasion.Render
             ShaderResourceView = Renderer.Device.CreateShaderResourceView(TextureReference, shaderResourceViewDescription);
 
             image.Dispose();
+
+            CreateSamplerState();
+        }
+
+        private void CreateSamplerState()
+        {
+            SamplerState = Renderer.Device.CreateSamplerState(SamplerDescription);
         }
 
         public void CleanUp()
         {
             TextureReference?.Dispose();
             ShaderResourceView?.Dispose();
+            SamplerState?.Dispose();
         }
 
-        public static Texture Create(string name, DomainedPath domainedPath)
+        public static Texture Create(string name, DomainedPath domainedPath, SamplerDescription samplerDescription)
         {
             Texture result = new()
             {
                 Name = name,
-                DomainedPath = domainedPath
+                DomainedPath = domainedPath,
+                SamplerDescription = samplerDescription
             };
 
             result.Generate();
