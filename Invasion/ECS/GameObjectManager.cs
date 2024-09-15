@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using Invasion.Render;
+using System.Collections.Generic;
 
 namespace Invasion.ECS
 {
@@ -27,10 +28,10 @@ namespace Invasion.ECS
                 gameObject.Update();
         }
 
-        public static void Render()
+        public static void Render(Camera camera)
         {
             foreach (GameObject gameObject in GameObjects.Values)
-                gameObject.Render();
+                gameObject.Render(camera);
         }
 
         public static void CleanUp()

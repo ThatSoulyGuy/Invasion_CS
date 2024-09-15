@@ -64,6 +64,11 @@ namespace Invasion.Math
             LocalRotation += rotation;
         }
 
+        public void Rotate(Vector3 axis, float angle)
+        {
+            LocalRotation += axis * angle;
+        }
+
         public void Scale(Vector3 scale)
         {
             LocalScale += scale;
@@ -75,10 +80,12 @@ namespace Invasion.Math
             Matrix4x4 rotation = Matrix4x4.CreateFromYawPitchRoll(LocalRotation.Y, LocalRotation.X, LocalRotation.Z);
             Matrix4x4 scale = Matrix4x4.CreateScale(LocalScale);
 
+            Matrix4x4 localTransform = scale * rotation * translation;
+
             if (Parent != null)
-                return Parent.GetModelMatrix() * scale * rotation * translation;
+                return localTransform * Parent.GetModelMatrix();
             else
-                return scale * rotation * translation;
+                return localTransform;
         }
 
         public static Transform Create(Vector3 position, Vector3 rotation, Vector3 scale)

@@ -12,6 +12,8 @@ namespace Invasion.Render
     [StructLayout(LayoutKind.Sequential)]
     public struct DefaultMatrixBuffer
     {
+        public Matrix4x4 Projection;
+        public Matrix4x4 View;
         public Matrix4x4 Model;
     }
 
@@ -92,7 +94,7 @@ namespace Invasion.Render
             }
         }
 
-        public override void Render()
+        public override void Render(Camera camera)
         {
             ID3D11DeviceContext4 context = Renderer.Context;
 
@@ -106,6 +108,8 @@ namespace Invasion.Render
             
             Shader.SetConstantBuffer<DefaultMatrixBuffer>(ShaderStage.Vertex, 0, new()
             {
+                Projection = Matrix4x4.Transpose(camera.Projection),
+                View = Matrix4x4.Transpose(camera.View),
                 Model = Matrix4x4.Transpose(GameObject.Transform.GetModelMatrix())
             });
 

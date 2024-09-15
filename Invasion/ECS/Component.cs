@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using Invasion.Render;
 
 namespace Invasion.ECS
 {
@@ -13,7 +9,7 @@ namespace Invasion.ECS
         public virtual void Initialize() { }
 
         public virtual void Update() { }
-        public virtual void Render() { }
+        public virtual void Render(Camera camera) { }
 
         public virtual void CleanUp() { }
     }

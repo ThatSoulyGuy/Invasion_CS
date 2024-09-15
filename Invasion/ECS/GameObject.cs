@@ -1,4 +1,5 @@
 ﻿using Invasion.Math;
+using Invasion.Render;
 using System;
 using System.Collections.Generic;
 
@@ -67,10 +68,10 @@ namespace Invasion.ECS
                 component.Update();
         }
 
-        public void Render()
+        public void Render(Camera camera)
         {
             foreach (Component component in Components.Values)
-                component.Render();
+                component.Render(camera);
         }
 
         public void CleanUp()

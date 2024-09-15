@@ -11,6 +11,7 @@ namespace Invasion
     {
         public static Window? Window { get; private set; }
 
+        public static GameObject Player { get; private set; } = null!;
         public static GameObject Square { get; private set; } = null!;
 
         public static void Initialize()
@@ -28,6 +29,10 @@ namespace Invasion
                 MinLOD = 0,
                 MaxLOD = float.MaxValue
             }));
+
+            Player = GameObject.Create("Player");
+            Player.Transform.LocalPosition = new(0.0f, 0.0f, -5.0f);
+            Player.AddComponent(Camera.Create(45.0f, 0.01f, 1000.0f));
 
             Square = GameObject.Create("Square");
 
@@ -63,8 +68,7 @@ namespace Invasion
         {
             Renderer.PreRender();
 
-            Square.Render();
-            GameObjectManager.Render();
+            GameObjectManager.Render(Player.GetComponent<Camera>());
 
             Renderer.PostRender();
         }

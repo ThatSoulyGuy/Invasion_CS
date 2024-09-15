@@ -1,6 +1,8 @@
 
 cbuffer MatrixBuffer : register(b0)
 {
+    matrix projectionMatrix;
+    matrix viewMatrix;
     matrix modelMatrix;
 };
 
@@ -20,12 +22,23 @@ struct PixelData
     float2 uv : TEXCOORD;
 };
 
+float3 getNormal(float3 normal)
+{
+    return normalize(mul(normal, (float3x3)modelMatrix));
+}
+
 PixelData Main(VertexData input)
 {
     PixelData result;
     
-    result.position = mul(float4(input.position, 1.0f), modelMatrix);
-    result.normal = input.normal;
+    float4 worldPosition = float4(input.position, 1.0f);
+    
+    worldPosition = mul(worldPosition, modelMatrix);
+    worldPosition = mul(worldPosition, viewMatrix);
+    worldPosition = mul(worldPosition, projectionMatrix);
+    
+    result.position = worldPosition;
+    result.normal = getNormal(input.normal);
     result.color = float4(input.color, 1.0f);
     result.uv = input.uv;
     
