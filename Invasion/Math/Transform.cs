@@ -83,7 +83,7 @@ namespace Invasion.Math
             Matrix4x4 localTransform = scale * rotation * translation;
 
             if (Parent != null)
-                return localTransform * Parent.GetModelMatrix();
+                return Parent.GetModelMatrix() * localTransform;
             else
                 return localTransform;
         }

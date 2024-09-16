@@ -42,14 +42,14 @@ namespace Invasion.Page
         {
             InitializeComponent();
 
-            UpdateTimer.Interval = 1000 / 60;
+            UpdateTimer.Interval = 1;
             UpdateTimer.Tick += (sender, e) =>
             {
                 foreach (var updateFunction in UpdateFunctions)
                     updateFunction();
             };
 
-            RenderTimer.Interval = 1000 / 60;
+            RenderTimer.Interval = 1;
             RenderTimer.Tick += (sender, e) =>
             {
                 foreach (var renderFunction in RenderFunctions)

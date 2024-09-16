@@ -1,4 +1,6 @@
-﻿using Invasion.ECS;
+﻿using Invasion.Core;
+using Invasion.ECS;
+using Invasion.Entity.Entities;
 using Invasion.Page;
 using Invasion.Render;
 using System;
@@ -18,6 +20,8 @@ namespace Invasion
         {
             Renderer.Initialize(Window!);
 
+            InputManager.Initialize(Window!);
+
             ShaderManager.Register(Shader.Create("default", new("Shader/Default", "Invasion")));
             TextureManager.Register(Texture.Create("debug", new("Texture/Debug.dds", "Invasion"), new()
             {
@@ -32,7 +36,7 @@ namespace Invasion
 
             Player = GameObject.Create("Player");
             Player.Transform.LocalPosition = new(0.0f, 0.0f, -5.0f);
-            Player.AddComponent(Camera.Create(45.0f, 0.01f, 1000.0f));
+            Player.AddComponent(new EntityPlayer());
 
             Square = GameObject.Create("Square");
 
@@ -56,6 +60,7 @@ namespace Invasion
 
         public static void Update(object? s, EventArgs a)
         {
+            InputManager.Update();
             GameObjectManager.Update();
         }
 
@@ -68,7 +73,7 @@ namespace Invasion
         {
             Renderer.PreRender();
 
-            GameObjectManager.Render(Player.GetComponent<Camera>());
+            GameObjectManager.Render(Player.GetComponent<EntityPlayer>().RenderCamera.GetComponent<Camera>());
 
             Renderer.PostRender();
         }
