@@ -41,8 +41,6 @@ namespace Invasion.Entity.Entities
             mouseMovement *= MouseSensitivity;
             mouseMovement *= InputManager.DeltaTime;
             
-            Console.WriteLine(mouseMovement);
-
             GameObject.Transform.Rotate(new(mouseMovement.Y, mouseMovement.X, 0.0f));
 
             GameObject.Transform.LocalRotation = new(
