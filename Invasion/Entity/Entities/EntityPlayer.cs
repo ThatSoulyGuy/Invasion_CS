@@ -8,7 +8,7 @@ using Vortice.Mathematics;
 
 namespace Invasion.Entity.Entities
 {
-    public class EntityPlayer() : IEntity(100.0f, 0.8f, 1.0f)
+    public class EntityPlayer() : IEntity(100.0f, 1.6f, 2.0f)
     {
         public override string RegistryName => "entity_player";
         public float MouseSensitivity { get; set; } = 2.0f;

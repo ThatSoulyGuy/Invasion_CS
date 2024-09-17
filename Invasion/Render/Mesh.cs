@@ -21,8 +21,8 @@ namespace Invasion.Render
     {
         public string Name { get; set; } = string.Empty;
 
-        public List<Vertex> Vertices { get; private set; } = [];
-        public List<uint> Indices { get; private set; } = [];
+        public List<Vertex> Vertices { get; set; } = [];
+        public List<uint> Indices { get; set; } = [];
 
         public Shader Shader => GameObject.GetComponent<Shader>();
         public Texture Texture => GameObject.GetComponent<Texture>();

@@ -4,7 +4,7 @@ using Invasion.Entity.Entities;
 using Invasion.Page;
 using Invasion.Render;
 using System;
-using System.Numerics;
+using System.Runtime.InteropServices;
 using System.Windows.Forms;
 
 namespace Invasion
@@ -14,7 +14,7 @@ namespace Invasion
         public static Window? Window { get; private set; }
 
         public static GameObject Player { get; private set; } = null!;
-        public static GameObject Square { get; private set; } = null!;
+        public static GameObject Chunk { get; private set; } = null!;
 
         public static void Initialize()
         {
@@ -38,24 +38,16 @@ namespace Invasion
             Player.Transform.LocalPosition = new(0.0f, 0.0f, -5.0f);
             Player.AddComponent(new EntityPlayer());
 
-            Square = GameObject.Create("Square");
+            Chunk = GameObject.Create("Chunk");
 
-            Square.AddComponent(ShaderManager.Get("default"));
-            Square.AddComponent(TextureManager.Get("debug"));
+            Chunk.AddComponent(ShaderManager.Get("default"));
+            Chunk.AddComponent(TextureManager.Get("debug"));
 
-            Square.AddComponent(Mesh.Create("Square",
-            [
-                new(new(-0.5f, -0.5f, 0.0f), Vector3.One, Vector3.UnitZ, new(0.0f, 0.0f)),
-                new(new(-0.5f,  0.5f, 0.0f), Vector3.One, Vector3.UnitZ, new(0.0f, 1.0f)),
-                new(new( 0.5f,  0.5f, 0.0f), Vector3.One, Vector3.UnitZ, new(1.0f, 1.0f)),
-                new(new( 0.5f, -0.5f, 0.0f), Vector3.One, Vector3.UnitZ, new(1.0f, 0.0f)),
-            ],
-            [
-                0, 1, 2,
-                0, 2, 3
-            ]));
+            Chunk.AddComponent(Mesh.Create("Chunk_0_0_0_", [], []));
 
-            Square.GetComponent<Mesh>().Generate();
+            Chunk.AddComponent(World.Chunk.Create());
+
+            Chunk.GetComponent<World.Chunk>().Generate();
         }
 
         public static void Update(object? s, EventArgs a)
@@ -86,8 +78,18 @@ namespace Invasion
             Renderer.CleanUp();
         }
 
+        [DllImport("user32.dll")]
+        private static extern bool SetProcessDpiAwarenessContext(int dpiFlag);
+
+        private const int DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2 = -4;
+        private const int DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE = -3;
+        private const int DPI_AWARENESS_CONTEXT_SYSTEM_AWARE = -2;
+        private const int DPI_AWARENESS_CONTEXT_UNAWARE = -1;
+
         public static void Main()
         {
+            SetProcessDpiAwarenessContext(DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2);
+
             Window = new Window();
 
             Window.Update += Update;
