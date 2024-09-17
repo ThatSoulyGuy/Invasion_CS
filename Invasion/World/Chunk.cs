@@ -12,8 +12,8 @@ namespace Invasion.World
 
         public short[,,] Blocks { get; private set; } = new short[CHUNK_SIZE, CHUNK_SIZE, CHUNK_SIZE];
 
-        private List<Vertex> Vertices { get; } = [];
-        private List<uint> Indices { get; } = [];
+        private List<Vertex> Vertices { get; set; } = [];
+        private List<uint> Indices { get; set; } = [];
 
         private static Vector3[] FaceNormals { get; } =
         [
