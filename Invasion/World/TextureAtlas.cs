@@ -1,23 +1,16 @@
 ﻿using DirectXTexNet;
 using Invasion.ECS;
-using Invasion.Render;
 using Invasion.Util;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Numerics;
-using System.Runtime.InteropServices;
-using Vortice.Direct3D11;
-using Vortice.DXGI;
 
 namespace Invasion.World
 {
     public class TextureAtlas : Component
     {
         public string Name { get; private set; } = string.Empty;
-
-        public Texture Atlas { get; private set; } = null!;
-
         public DomainedPath InputDirectory { get; private set; } = null!;
         public DomainedPath OutputDirectory { get; private set; } = null!;
 
@@ -57,12 +50,6 @@ namespace Invasion.World
                     atlasTexture = CreateTextureAtlas(textures, atlasSize, atlasSize, out SubTextureCoordinates);
                     break;
                 }
-                catch (Exception)
-                {
-                    atlasSize *= 2;
-                }
-            } 
-            while (true);
 
             string upperCaseName = char.ToUpper(Name[0]) + Name.Substring(1);
             string outputFile = Path.Combine(OutputDirectory.FullPath, $"{upperCaseName}Atlas.dds");
@@ -232,8 +219,6 @@ namespace Invasion.World
                 InputDirectory = inputDirectory,
                 OutputDirectory = outputDirectory
             };
-
-            result.Generate();
 
             return result;
         }
