@@ -70,7 +70,7 @@ namespace Invasion.World
                             Vector3 facePosition = new(x, y, z);
 
                             if (IsFaceExposed(facePosition, normal))
-                                AddFace(facePosition, normal, atlas.GetSubTextureCoordinates("bedrock"), i);
+                                AddFace(facePosition, normal, atlas.GetTextureCoordinates("bedrock"), i);
                         }
                     }
                 }
