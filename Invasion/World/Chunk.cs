@@ -51,6 +51,8 @@ namespace Invasion.World
 
         public void Generate()
         {
+            TextureAtlas atlas = GameObject.GetComponent<TextureAtlas>();
+
             for (int x = 0; x < CHUNK_SIZE; x++)
             {
                 for (int y = 0; y < CHUNK_SIZE; y++)
@@ -68,7 +70,7 @@ namespace Invasion.World
                             Vector3 facePosition = new(x, y, z);
 
                             if (IsFaceExposed(facePosition, normal))
-                                AddFace(facePosition, normal, FaceUVs, i);
+                                AddFace(facePosition, normal, atlas.GetSubTextureCoordinates("bedrock"), i);
                         }
                     }
                 }

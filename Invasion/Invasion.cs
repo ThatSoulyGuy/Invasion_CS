@@ -3,6 +3,7 @@ using Invasion.ECS;
 using Invasion.Entity.Entities;
 using Invasion.Page;
 using Invasion.Render;
+using Invasion.World;
 using System;
 using System.Runtime.InteropServices;
 using System.Windows.Forms;
@@ -34,6 +35,8 @@ namespace Invasion
                 MaxLOD = float.MaxValue
             }));
 
+            TextureAtlasManager.Register(TextureAtlas.Create("blocks", new("Texture/Block", "Invasion"), new("Texture/Atlas", "Invasion")));
+
             Player = GameObject.Create("Player");
             Player.Transform.LocalPosition = new(0.0f, 0.0f, -5.0f);
             Player.AddComponent(new EntityPlayer());
@@ -41,7 +44,8 @@ namespace Invasion
             Chunk = GameObject.Create("Chunk");
 
             Chunk.AddComponent(ShaderManager.Get("default"));
-            Chunk.AddComponent(TextureManager.Get("debug"));
+            Chunk.AddComponent(TextureAtlasManager.Get("blocks").Atlas);
+            Chunk.AddComponent(TextureAtlasManager.Get("blocks"));
 
             Chunk.AddComponent(Mesh.Create("Chunk_0_0_0_", [], []));
 
@@ -75,6 +79,7 @@ namespace Invasion
             GameObjectManager.CleanUp();
             TextureManager.CleanUp();
             ShaderManager.CleanUp();
+            TextureAtlasManager.Cleanup();
             Renderer.CleanUp();
         }
 

@@ -6,11 +6,24 @@ using System.Threading.Tasks;
 
 namespace Invasion.Util
 {
-    public class DomainedPath(string localPath, string domain)
+    public class DomainedPath
     {
-        public string LocalPath { get; private set; } = localPath;
-        public string Domain { get; private set; } = domain;
+        public string LocalPath { get; private set; }
+        public string Domain { get; private set; }
 
-        public string FullPath => $"Assets/{Domain}/{LocalPath}";
+        public string FullPath { get; }
+
+        public DomainedPath(string localPath, string domain)
+        {
+            LocalPath = localPath;
+            Domain = domain;
+            FullPath = $"Assets/{Domain}/{LocalPath}";
+        }
+        public DomainedPath(string fullPath)
+        {
+            LocalPath = fullPath.Split('/')[2];
+            Domain = fullPath.Split('/')[1];
+            FullPath = fullPath;
+        }
     }
 }

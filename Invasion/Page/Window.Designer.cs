@@ -37,7 +37,7 @@
             ClientSize = new System.Drawing.Size(1318, 864);
             Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
             Name = "Window";
-            Text = "Invasion* 1.7.2u2";
+            Text = "Invasion* 1.9.2r4";
             ResumeLayout(false);
         }
 

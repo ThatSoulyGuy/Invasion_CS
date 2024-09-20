@@ -23,4 +23,8 @@
     <PackageReference Include="Vortice.Mathematics" Version="1.9.2" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Assets\Invasion\Texture\Atlas\" />
+  </ItemGroup>
+
 </Project>
