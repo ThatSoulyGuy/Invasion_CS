@@ -1,4 +1,5 @@
-﻿using Invasion.ECS;
+﻿using Invasion.Block;
+using Invasion.ECS;
 using Invasion.Render;
 using System;
 using System.Collections.Generic;
@@ -35,7 +36,13 @@ namespace Invasion.World
                 {
                     for (int z = 0; z < CHUNK_SIZE; z++)
                     {
-                        Blocks[x, y, z] = 1;
+                        if (y > 11)
+                            Blocks[x, y, z] = BlockList.DIRT;
+                        else
+                            Blocks[x, y, z] = BlockList.STONE;
+
+                        Blocks[x, 15, z] = BlockList.GRASS;
+                        Blocks[x, 0, z] = BlockList.BEDROCK;
                     }
                 }
             }
@@ -53,7 +60,7 @@ namespace Invasion.World
                     {
                         short block = Blocks[x, y, z];
 
-                        if (block == 0)
+                        if (block == BlockList.AIR)
                             continue;
 
                         for (int i = 0; i < FaceNormals.Length; i++)
@@ -62,7 +69,14 @@ namespace Invasion.World
                             Vector3 facePosition = new(x, y, z);
 
                             if (IsFaceExposed(facePosition, normal))
-                                AddFace(facePosition, normal, atlas.GetTextureCoordinates("bedrock"), i);
+                            {
+                                if (normal == new Vector3(0, 1, 0))
+                                    AddFace(facePosition, normal, atlas.GetTextureCoordinates(BlockList.GetBlockData(block).Textures["top"]), i);
+                                else if (normal == new Vector3(0, -1, 0))
+                                    AddFace(facePosition, normal, atlas.GetTextureCoordinates(BlockList.GetBlockData(block).Textures["bottom"]), i);
+                                else
+                                    AddFace(facePosition, normal, atlas.GetTextureCoordinates(BlockList.GetBlockData(block).Textures["side"]), i);
+                            }  
                         }
                     }
                 }

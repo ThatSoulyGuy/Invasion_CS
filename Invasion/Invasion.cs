@@ -68,7 +68,7 @@ namespace Invasion
 
             GameObjectManager.Render(Player.GetComponent<EntityPlayer>().RenderCamera.GetComponent<Camera>());
 
-            Renderer.PostRender();
+            Renderer.PostRender(); 
         }
 
         public static void CleanUp(object? s, EventArgs a)

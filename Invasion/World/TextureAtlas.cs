@@ -94,10 +94,10 @@ namespace Invasion.World
 
                 SubTextureCoordinates[name] =
                 [
-                    new Vector2(uMin, vMin),
-                    new Vector2(uMax, vMin),
                     new Vector2(uMax, vMax),
-                    new Vector2(uMin, vMax)
+                    new Vector2(uMin, vMax),
+                    new Vector2(uMin, vMin),
+                    new Vector2(uMax, vMin)
                 ];
 
                 currentX += textureWidth;
