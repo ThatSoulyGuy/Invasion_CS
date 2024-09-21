@@ -25,14 +25,6 @@ namespace Invasion.World
             new Vector3( 0, -1,  0),
         ];
 
-        private static Vector2[] FaceUVs { get; } =
-        [
-            new Vector2(0, 0),
-            new Vector2(1, 0),
-            new Vector2(1, 1),
-            new Vector2(0, 1)
-        ];
-
         private Chunk() { }
 
         private new void Initialize()

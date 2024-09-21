@@ -1,8 +1,6 @@
 ﻿using Invasion.Core;
 using Invasion.ECS;
 using Invasion.Render;
-using System;
-using System.Diagnostics;
 using System.Numerics;
 using Vortice.Mathematics;
 
