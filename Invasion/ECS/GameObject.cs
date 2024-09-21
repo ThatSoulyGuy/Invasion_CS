@@ -18,11 +18,13 @@ namespace Invasion.ECS
 
         private GameObject() { }
 
-        public void AddComponent<T>(T component) where T : Component
+        public T AddComponent<T>(T component) where T : Component
         {
             component.GameObject = this;
             component.Initialize();
             Components.Add(typeof(T), component);
+
+            return component;
         }
 
         public T GetComponent<T>() where T : Component

@@ -14,8 +14,9 @@ namespace Invasion
     {
         public static Window? Window { get; private set; }
 
+        public static GameObject Overworld { get; private set; } = null!;
+
         public static GameObject Player { get; private set; } = null!;
-        public static GameObject Chunk { get; private set; } = null!;
 
         public static void Initialize()
         {
@@ -37,15 +38,23 @@ namespace Invasion
 
             TextureAtlasManager.Register(TextureAtlas.Create("blocks", new("Texture/Block", "Invasion"), new("Texture/Atlas", "Invasion")));
 
+            Overworld = GameObject.Create("Overworld");
+            Overworld.AddComponent(IWorld.Create("overworld"));
+
             Player = GameObject.Create("Player");
-            Player.Transform.LocalPosition = new(0.0f, 0.0f, -5.0f);
+            Player.Transform.LocalPosition = new(0.0f, 20.0f, 0.0f);
             Player.AddComponent(new EntityPlayer());
         }
 
         public static void Update(object? s, EventArgs a)
         {
+            Overworld.GetComponent<IWorld>().LoaderPositions = [Player.Transform.WorldPosition];
+
             InputManager.Update();
             GameObjectManager.Update();
+            
+            Overworld.GetComponent<IWorld>().LoadReadyChunks();
+            Overworld.GetComponent<IWorld>().UnloadReadyChunks();
         }
 
         public static void Resize(object? s, EventArgs a)

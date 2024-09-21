@@ -14,11 +14,15 @@ namespace Invasion.ECS
 
         public static GameObject Get(string name)
         {
-            return GameObjects[name];
+            if (GameObjects.TryGetValue(name, out GameObject? value))
+                return value;
+            else
+                return null!;
         }
 
         public static void Unregister(string name)
         {
+            GameObjects[name].CleanUp();
             GameObjects.Remove(name);
         }
 
