@@ -40,18 +40,6 @@ namespace Invasion
             Player = GameObject.Create("Player");
             Player.Transform.LocalPosition = new(0.0f, 0.0f, -5.0f);
             Player.AddComponent(new EntityPlayer());
-
-            Chunk = GameObject.Create("Chunk");
-
-            Chunk.AddComponent(ShaderManager.Get("default"));
-            Chunk.AddComponent(TextureAtlasManager.Get("blocks").Atlas);
-            Chunk.AddComponent(TextureAtlasManager.Get("blocks"));
-
-            Chunk.AddComponent(Mesh.Create("Chunk_0_0_0_", [], []));
-
-            Chunk.AddComponent(World.Chunk.Create());
-
-            Chunk.GetComponent<World.Chunk>().Generate();
         }
 
         public static void Update(object? s, EventArgs a)
