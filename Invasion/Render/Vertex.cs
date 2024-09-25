@@ -1,5 +1,4 @@
-﻿using System;
-using System.Numerics;
+﻿using Invasion.Math;
 using System.Runtime.InteropServices;
 using Vortice.Direct3D11;
 using Vortice.DXGI;
@@ -7,12 +6,12 @@ using Vortice.DXGI;
 namespace Invasion.Render
 {
     [StructLayout(LayoutKind.Sequential)]
-    public struct Vertex(Vector3 position, Vector3 color, Vector3 normal, Vector2 uvs)
+    public struct Vertex(Vector3f position, Vector3f color, Vector3f normal, Vector2f uvs)
     {
-        public Vector3 Position = position;
-        public Vector3 Color = color;
-        public Vector3 Normal = normal;
-        public Vector2 UVs = uvs;
+        public Vector3f Position = position;
+        public Vector3f Color = color;
+        public Vector3f Normal = normal;
+        public Vector2f UVs = uvs;
 
         public static InputElementDescription[] InputElements { get; } =
         [

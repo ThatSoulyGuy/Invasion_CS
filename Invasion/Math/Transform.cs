@@ -6,11 +6,11 @@ namespace Invasion.Math
 {
     public class Transform : Component
     {
-        public Vector3 LocalPosition { get; set; } = Vector3.Zero;
-        public Vector3 LocalRotation { get; set; } = Vector3.Zero;
-        public Vector3 LocalScale { get; set; } = Vector3.One;
+        public Vector3f LocalPosition { get; set; } = Vector3f.Zero;
+        public Vector3f LocalRotation { get; set; } = Vector3f.Zero;
+        public Vector3f LocalScale { get; set; } = Vector3f.One;
 
-        public Vector3 WorldPosition
+        public Vector3f WorldPosition
         {
             get
             {
@@ -19,57 +19,57 @@ namespace Invasion.Math
             }
         }
 
-        public Vector3 WorldRotation
+        public Vector3f WorldRotation
         {
             get
             {
                 Matrix4x4 matrix = GetModelMatrix();
 
                 Quaternion rotation = Quaternion.CreateFromRotationMatrix(matrix);
-                Vector3 eulerRotation = rotation.ToEuler();
+                Vector3f eulerRotation = rotation.ToEuler();
 
                 return eulerRotation;
             }
         }
 
-        public Vector3 WorldScale
+        public Vector3f WorldScale
         {
             get
             {
                 Matrix4x4 matrix = GetModelMatrix();
 
-                Vector3 scaleX = new(matrix.M11, matrix.M12, matrix.M13);
-                Vector3 scaleY = new(matrix.M21, matrix.M22, matrix.M23);
-                Vector3 scaleZ = new(matrix.M31, matrix.M32, matrix.M33);
+                Vector3f scaleX = new(matrix.M11, matrix.M12, matrix.M13);
+                Vector3f scaleY = new(matrix.M21, matrix.M22, matrix.M23);
+                Vector3f scaleZ = new(matrix.M31, matrix.M32, matrix.M33);
 
-                return new Vector3(scaleX.Length(), scaleY.Length(), scaleZ.Length());
+                return new(scaleX.Length(), scaleY.Length(), scaleZ.Length());
             }
         }
 
-        public Vector3 Forward => Vector3.Normalize(Vector3.TransformNormal(Vector3.UnitZ, GetModelMatrix()));
-        public Vector3 Right => Vector3.Normalize(Vector3.TransformNormal(Vector3.UnitX, GetModelMatrix()));
-        public Vector3 Up => Vector3.Normalize(Vector3.TransformNormal(Vector3.UnitY, GetModelMatrix()));
+        public Vector3f Forward => Vector3f.Normalize(Vector3f.TransformNormal(Vector3f.UnitZ, GetModelMatrix()));
+        public Vector3f Right => Vector3f.Normalize(Vector3f.TransformNormal(Vector3f.UnitX, GetModelMatrix()));
+        public Vector3f Up => Vector3f.Normalize(Vector3f.TransformNormal(Vector3f.UnitY, GetModelMatrix()));
 
         public Transform? Parent { get; internal set; } = null;
 
         private Transform() { }
 
-        public void Translate(Vector3 translation)
+        public void Translate(Vector3f translation)
         {
             LocalPosition += translation;
         }
 
-        public void Rotate(Vector3 rotation)
+        public void Rotate(Vector3f rotation)
         {
             LocalRotation += rotation;
         }
 
-        public void Rotate(Vector3 axis, float angle)
+        public void Rotate(Vector3f axis, float angle)
         {
             LocalRotation += axis * angle;
         }
 
-        public void Scale(Vector3 scale)
+        public void Scale(Vector3f scale)
         {
             LocalScale += scale;
         }
@@ -88,7 +88,7 @@ namespace Invasion.Math
                 return localTransform;
         }
 
-        public static Transform Create(Vector3 position, Vector3 rotation, Vector3 scale)
+        public static Transform Create(Vector3f position, Vector3f rotation, Vector3f scale)
         {
             return new()
             {

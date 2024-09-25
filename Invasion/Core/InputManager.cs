@@ -1,7 +1,8 @@
-﻿using System.Collections.Generic;
+﻿using Invasion.Math;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
-using System.Numerics;
+
 using System.Windows.Forms;
 
 namespace Invasion.Core
@@ -178,19 +179,19 @@ namespace Invasion.Core
 
     public static class InputManager
     {
-        public static Vector2 MousePosition { get; private set; }
+        public static Vector2f MousePosition { get; private set; } = Vector2f.Zero;
         public static bool MouseLeftPressed { get; private set; }
         public static bool MouseRightPressed { get; private set; }
         public static bool MouseLeftClick { get; private set; }
         public static bool MouseRightClick { get; private set; }
         public static int MouseWheelDelta { get; private set; }
-        public static Vector2 MouseDelta { get; private set; }
+        public static Vector2f MouseDelta { get; private set; } = Vector2f.Zero;
         public static float DeltaTime { get; private set; }
 
         private static readonly float smoothingFactor = 0.1f;
-        private static Vector2 smoothedMouseDelta = Vector2.Zero;
+        private static Vector2f smoothedMouseDelta = Vector2f.Zero;
 
-        private static Vector2 lastMousePosition;
+        private static Vector2f lastMousePosition = Vector2f.Zero;
         private static bool lastMouseLeftState;
         private static bool lastMouseRightState;
 
@@ -224,18 +225,18 @@ namespace Invasion.Core
 
             form.MouseMove += (sender, arguments) =>
             {
-                Vector2 newMousePosition = new(arguments.X, arguments.Y);
-                Vector2 delta = newMousePosition - lastMousePosition;
+                Vector2i newMousePosition = new(arguments.X, arguments.Y);
+                Vector2f delta = (Vector2f)newMousePosition - lastMousePosition;
 
                 if (!CursorMode)
                 {
                     MouseDelta = delta;
-                    smoothedMouseDelta = Vector2.Lerp(smoothedMouseDelta, delta, smoothingFactor);
-                    lastMousePosition = newMousePosition;
+                    smoothedMouseDelta = Vector2f.Lerp(smoothedMouseDelta, delta, smoothingFactor);
+                    lastMousePosition = (Vector2f)newMousePosition;
 
                     Cursor.Position = Form.PointToScreen(new Point(Form.ClientSize.Width / 2, Form.ClientSize.Height / 2));
-                    lastMousePosition = new Vector2(Form.ClientSize.Width / 2, Form.ClientSize.Height / 2);
-                    MouseDelta = Vector2.Zero;
+                    lastMousePosition = new(Form.ClientSize.Width / 2, Form.ClientSize.Height / 2);
+                    MouseDelta = Vector2f.Zero;
                 }
             };
 
@@ -276,7 +277,7 @@ namespace Invasion.Core
                 Cursor.Hide();
                 cursorIsHidden = true;
                 Cursor.Position = Form.PointToScreen(new Point(Form.ClientSize.Width / 2, Form.ClientSize.Height / 2));
-                lastMousePosition = new Vector2(Form.ClientSize.Width / 2, Form.ClientSize.Height / 2);
+                lastMousePosition = new(Form.ClientSize.Width / 2, Form.ClientSize.Height / 2);
             }
             else if (!hidden && cursorIsHidden)
             {
@@ -300,7 +301,7 @@ namespace Invasion.Core
                 return NewlyReleasedKeys.Contains(key);
         }
 
-        public static bool IsCursorWithinBounds(Vector3 min, Vector3 max)
+        public static bool IsCursorWithinBounds(Vector3f min, Vector3f max)
         {
             Point cursorPosition = Cursor.Position;
 
@@ -308,15 +309,15 @@ namespace Invasion.Core
                     cursorPosition.Y >= min.Y && cursorPosition.Y <= max.Y);
         }
 
-        public static Vector2 GetMouseMovementOffsets()
+        public static Vector2f GetMouseMovementOffsets()
         {
             return smoothedMouseDelta;
         }
 
         public static void ResetMouseDelta()
         {
-            MouseDelta = Vector2.Zero;
-            smoothedMouseDelta = Vector2.Zero;
+            MouseDelta = Vector2f.Zero;
+            smoothedMouseDelta = Vector2f.Zero;
         }
 
         public static void Update()

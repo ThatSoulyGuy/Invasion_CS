@@ -1,7 +1,8 @@
 ﻿using Invasion.Core;
 using Invasion.ECS;
+using Invasion.Math;
 using Invasion.Render;
-using System.Numerics;
+
 using Vortice.Mathematics;
 
 namespace Invasion.Entity.Entities
@@ -34,7 +35,7 @@ namespace Invasion.Entity.Entities
 
         private void UpdateMouselook()
         {
-            Vector2 mouseMovement = InputManager.GetMouseMovementOffsets();
+            Vector2f mouseMovement = InputManager.GetMouseMovementOffsets();
 
             mouseMovement *= MouseSensitivity;
             mouseMovement *= InputManager.DeltaTime;
@@ -58,7 +59,7 @@ namespace Invasion.Entity.Entities
 
         private void UpdateMovement()
         {
-            var movement = Vector3.Zero;
+            var movement = Vector3f.Zero;
 
             if (InputManager.GetKeyHeld(KeyCode.W))
                 movement += GameObject.Transform.Forward;
@@ -72,9 +73,9 @@ namespace Invasion.Entity.Entities
             if (InputManager.GetKeyHeld(KeyCode.D))
                 movement += GameObject.Transform.Right;
 
-            if (movement != Vector3.Zero)
+            if (movement != Vector3f.Zero)
             {
-                movement = Vector3.Normalize(movement);
+                movement = Vector3f.Normalize(movement);
                 movement *= InputManager.GetKeyHeld(KeyCode.LeftShift) ? RunningSpeed : WalkingSpeed;
             }
 

@@ -1,9 +1,10 @@
 ﻿using Invasion.ECS;
+using Invasion.Math;
 using Invasion.Render;
 using Invasion.Util;
 using System.Collections.Generic;
 using System.Linq;
-using System.Numerics;
+
 
 namespace Invasion.World
 {
@@ -13,11 +14,11 @@ namespace Invasion.World
 
         public const byte LOADER_DISTANCE = 3;
 
-        public Vector3[] LoaderPositions { get; set; } = [];
+        public Vector3f[] LoaderPositions { get; set; } = [];
 
-        private Dictionary<Vector3, Chunk> LoadedChunks { get; } = [] ;
-        private List<Vector3> ChunksToBeLoaded { get; set; } = [];
-        private List<Vector3> ChunksToBeUnloaded { get; set; } = [];
+        private Dictionary<Vector3i, Chunk> LoadedChunks { get; } = [] ;
+        private List<Vector3i> ChunksToBeLoaded { get; set; } = [];
+        private List<Vector3i> ChunksToBeUnloaded { get; set; } = [];
 
         private IWorld() { }
         
@@ -25,18 +26,18 @@ namespace Invasion.World
         {
             ChunksToBeLoaded.Clear();
             ChunksToBeUnloaded.Clear();
-            HashSet<Vector3> requiredChunks = [];
+            HashSet<Vector3i> requiredChunks = [];
 
             foreach (var loaderPosition in LoaderPositions)
             {
-                Vector3 loaderChunkCoord = CoordinateHelper.WorldToChunkCoordinates(loaderPosition);
+                Vector3i loaderChunkCoord = CoordinateHelper.WorldToChunkCoordinates(loaderPosition);
                 loaderChunkCoord.Y = 0;
 
                 for (int x = -LOADER_DISTANCE; x <= LOADER_DISTANCE; x++)
                 {
                     for (int z = -LOADER_DISTANCE; z <= LOADER_DISTANCE; z++)
                     {
-                        Vector3 chunkPos = loaderChunkCoord + new Vector3(x, 0, z);
+                        Vector3i chunkPos = loaderChunkCoord + new Vector3i(x, 0, z);
 
                         requiredChunks.Add(chunkPos);
 
@@ -61,7 +62,7 @@ namespace Invasion.World
                 UnloadChunk(CoordinateHelper.ChunkToWorldCoordinates(chunkPos));
         }
 
-        public Chunk GenerateChunk(Vector3 position)
+        public Chunk GenerateChunk(Vector3i position)
         {
             if (GameObjectManager.Get($"Chunk_Object_{position.X}_{position.Y}_{position.Z}_") != null)
                 return LoadedChunks[CoordinateHelper.WorldToChunkCoordinates(position)];
@@ -85,7 +86,7 @@ namespace Invasion.World
             return result;
         }
 
-        public void UnloadChunk(Vector3 position)
+        public void UnloadChunk(Vector3i position)
         {
             if (LoadedChunks.ContainsKey(CoordinateHelper.WorldToChunkCoordinates(position)))
             {

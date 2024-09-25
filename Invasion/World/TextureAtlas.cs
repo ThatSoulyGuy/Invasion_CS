@@ -1,5 +1,6 @@
 ﻿using DirectXTexNet;
 using Invasion.ECS;
+using Invasion.Math;
 using Invasion.Render;
 using Invasion.Util;
 using SharpGen.Runtime;
@@ -7,7 +8,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Numerics;
+
 
 namespace Invasion.World
 {
@@ -20,14 +21,14 @@ namespace Invasion.World
         public DomainedPath InputDirectory { get; private set; } = null!;
         public DomainedPath OutputDirectory { get; private set; } = null!;
 
-        private Dictionary<string, Vector2[]> SubTextureCoordinates { get; } = [];
+        private Dictionary<string, Vector2f[]> SubTextureCoordinates { get; } = [];
         private ScratchImage? AtlasScratchImage { get; set; } = null;
 
         private const float UV_OFFSET = 0.003f;
 
         private TextureAtlas() { }
 
-        public Vector2[] GetTextureCoordinates(string textureName)
+        public Vector2f[] GetTextureCoordinates(string textureName)
         {
             if (SubTextureCoordinates.TryGetValue(textureName, out var coords))
                 return coords;
@@ -94,10 +95,10 @@ namespace Invasion.World
 
                 SubTextureCoordinates[name] =
                 [
-                    new Vector2(uMax, vMax),
-                    new Vector2(uMin, vMax),
-                    new Vector2(uMin, vMin),
-                    new Vector2(uMax, vMin)
+                    new Vector2f(uMax, vMax),
+                    new Vector2f(uMin, vMax),
+                    new Vector2f(uMin, vMin),
+                    new Vector2f(uMax, vMin)
                 ];
 
                 currentX += textureWidth;

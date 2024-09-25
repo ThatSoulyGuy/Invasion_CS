@@ -1,19 +1,19 @@
-﻿using Invasion.World;
+﻿using Invasion.Math;
+using Invasion.World;
 using System;
-using System.Numerics;
 
 namespace Invasion.Util
 {
     public static class CoordinateHelper
     {
-        public static Vector3 WorldToChunkCoordinates(Vector3 worldPosition)
+        public static Vector3i WorldToChunkCoordinates(Vector3f worldPosition)
         {
-            return new Vector3((int)MathF.Floor(worldPosition.X / Chunk.CHUNK_SIZE), (int)MathF.Floor(worldPosition.Y / Chunk.CHUNK_SIZE), (int)MathF.Floor(worldPosition.Z / Chunk.CHUNK_SIZE));
+            return new((int)MathF.Floor(worldPosition.X / Chunk.CHUNK_SIZE), (int)MathF.Floor(worldPosition.Y / Chunk.CHUNK_SIZE), (int)MathF.Floor(worldPosition.Z / Chunk.CHUNK_SIZE));
         }
 
-        public static Vector3 ChunkToWorldCoordinates(Vector3 chunkPosition)
+        public static Vector3f ChunkToWorldCoordinates(Vector3i chunkPosition)
         {
-            return new Vector3(chunkPosition.X * Chunk.CHUNK_SIZE, chunkPosition.Y * Chunk.CHUNK_SIZE, chunkPosition.Z * Chunk.CHUNK_SIZE);
+            return new(chunkPosition.X * Chunk.CHUNK_SIZE, chunkPosition.Y * Chunk.CHUNK_SIZE, chunkPosition.Z * Chunk.CHUNK_SIZE);
         }
     }
 }

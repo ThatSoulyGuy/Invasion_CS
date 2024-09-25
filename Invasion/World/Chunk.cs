@@ -1,9 +1,9 @@
 ﻿using Invasion.Block;
 using Invasion.ECS;
+using Invasion.Math;
 using Invasion.Render;
 using System;
 using System.Collections.Generic;
-using System.Numerics;
 
 namespace Invasion.World
 {
@@ -16,14 +16,14 @@ namespace Invasion.World
         private List<Vertex> Vertices { get; set; } = [];
         private List<uint> Indices { get; set; } = [];
 
-        private static Vector3[] FaceNormals { get; } =
+        private static Vector3f[] FaceNormals { get; } =
         [
-            new Vector3( 0,  0,  1),
-            new Vector3( 0,  0, -1),
-            new Vector3( 1,  0,  0),
-            new Vector3(-1,  0,  0),
-            new Vector3( 0,  1,  0),
-            new Vector3( 0, -1,  0),
+            new( 0,  0,  1),
+            new( 0,  0, -1),
+            new( 1,  0,  0),
+            new(-1,  0,  0),
+            new( 0,  1,  0),
+            new( 0, -1,  0),
         ];
 
         private Chunk() { }
@@ -65,14 +65,14 @@ namespace Invasion.World
 
                         for (int i = 0; i < FaceNormals.Length; i++)
                         {
-                            Vector3 normal = FaceNormals[i];
-                            Vector3 facePosition = new(x, y, z);
+                            Vector3f normal = FaceNormals[i];
+                            Vector3i facePosition = new(x, y, z);
 
                             if (IsFaceExposed(facePosition, normal))
                             {
-                                if (normal == new Vector3(0, 1, 0))
+                                if (normal == new Vector3f(0, 1, 0))
                                     AddFace(facePosition, normal, atlas.GetTextureCoordinates(BlockList.GetBlockData(block).Textures["top"]), i);
-                                else if (normal == new Vector3(0, -1, 0))
+                                else if (normal == new Vector3f(0, -1, 0))
                                     AddFace(facePosition, normal, atlas.GetTextureCoordinates(BlockList.GetBlockData(block).Textures["bottom"]), i);
                                 else
                                     AddFace(facePosition, normal, atlas.GetTextureCoordinates(BlockList.GetBlockData(block).Textures["side"]), i);
@@ -90,9 +90,9 @@ namespace Invasion.World
             mesh.Generate();
         }
 
-        private bool IsFaceExposed(Vector3 position, Vector3 normal)
+        private bool IsFaceExposed(Vector3i position, Vector3f normal)
         {
-            Vector3 adjacentPosition = position + normal;
+            Vector3f adjacentPosition = (Vector3f)position + normal;
 
             int adjacentX = (int)adjacentPosition.X;
             int adjacentY = (int)adjacentPosition.Y;
@@ -104,16 +104,16 @@ namespace Invasion.World
             return Blocks[adjacentX, adjacentY, adjacentZ] == 0;
         }
 
-        public void AddFace(Vector3 position, Vector3 normal, Vector2[] uv, int faceIndex)
+        public void AddFace(Vector3f position, Vector3f normal, Vector2f[] uv, int faceIndex)
         {
             uint startIndex = (uint)Vertices.Count;
 
-            Vector3[] faceVertices = GetFaceVertices(position, faceIndex);
+            Vector3f[] faceVertices = GetFaceVertices(position, faceIndex);
 
-            Vertices.Add(new Vertex(faceVertices[0], Vector3.One, normal, uv[0]));
-            Vertices.Add(new Vertex(faceVertices[1], Vector3.One, normal, uv[1]));
-            Vertices.Add(new Vertex(faceVertices[2], Vector3.One, normal, uv[2]));
-            Vertices.Add(new Vertex(faceVertices[3], Vector3.One, normal, uv[3]));
+            Vertices.Add(new Vertex(faceVertices[0], Vector3f.One, normal, uv[0]));
+            Vertices.Add(new Vertex(faceVertices[1], Vector3f.One, normal, uv[1]));
+            Vertices.Add(new Vertex(faceVertices[2], Vector3f.One, normal, uv[2]));
+            Vertices.Add(new Vertex(faceVertices[3], Vector3f.One, normal, uv[3]));
 
             Indices.Add(startIndex + 0);
             Indices.Add(startIndex + 1);
@@ -123,56 +123,56 @@ namespace Invasion.World
             Indices.Add(startIndex + 3);
         }
 
-        private Vector3[] GetFaceVertices(Vector3 blockPosition, int faceIndex)
+        private Vector3f[] GetFaceVertices(Vector3f blockPosition, int faceIndex)
         {
             return faceIndex switch
             {
                 0 => 
                 [
-                    blockPosition + new Vector3(0, 0, 1),
-                    blockPosition + new Vector3(1, 0, 1),
-                    blockPosition + new Vector3(1, 1, 1),
-                    blockPosition + new Vector3(0, 1, 1),
+                    blockPosition + new Vector3f(0, 0, 1),
+                    blockPosition + new Vector3f(1, 0, 1),
+                    blockPosition + new Vector3f(1, 1, 1),
+                    blockPosition + new Vector3f(0, 1, 1),
                 ],
 
                 1 => 
                 [
-                    blockPosition + new Vector3(1, 0, 0),
-                    blockPosition + new Vector3(0, 0, 0),
-                    blockPosition + new Vector3(0, 1, 0),
-                    blockPosition + new Vector3(1, 1, 0),
+                    blockPosition + new Vector3f(1, 0, 0),
+                    blockPosition + new Vector3f(0, 0, 0),
+                    blockPosition + new Vector3f(0, 1, 0),
+                    blockPosition + new Vector3f(1, 1, 0),
                 ],
                 
                 2 => 
                 [
-                    blockPosition + new Vector3(1, 0, 1),
-                    blockPosition + new Vector3(1, 0, 0),
-                    blockPosition + new Vector3(1, 1, 0),
-                    blockPosition + new Vector3(1, 1, 1),
+                    blockPosition + new Vector3f(1, 0, 1),
+                    blockPosition + new Vector3f(1, 0, 0),
+                    blockPosition + new Vector3f(1, 1, 0),
+                    blockPosition + new Vector3f(1, 1, 1),
                 ],
                 
                 3 => 
                 [
-                    blockPosition + new Vector3(0, 0, 0),
-                    blockPosition + new Vector3(0, 0, 1),
-                    blockPosition + new Vector3(0, 1, 1),
-                    blockPosition + new Vector3(0, 1, 0),
+                    blockPosition + new Vector3f(0, 0, 0),
+                    blockPosition + new Vector3f(0, 0, 1),
+                    blockPosition + new Vector3f(0, 1, 1),
+                    blockPosition + new Vector3f(0, 1, 0),
                 ],
                 
                 4 => 
                 [
-                    blockPosition + new Vector3(0, 1, 1),
-                    blockPosition + new Vector3(1, 1, 1),
-                    blockPosition + new Vector3(1, 1, 0),
-                    blockPosition + new Vector3(0, 1, 0),
+                    blockPosition + new Vector3f(0, 1, 1),
+                    blockPosition + new Vector3f(1, 1, 1),
+                    blockPosition + new Vector3f(1, 1, 0),
+                    blockPosition + new Vector3f(0, 1, 0),
                 ],
                 
                 5 => 
                 [
-                    blockPosition + new Vector3(0, 0, 0),
-                    blockPosition + new Vector3(1, 0, 0),
-                    blockPosition + new Vector3(1, 0, 1),
-                    blockPosition + new Vector3(0, 0, 1),
+                    blockPosition + new Vector3f(0, 0, 0),
+                    blockPosition + new Vector3f(1, 0, 0),
+                    blockPosition + new Vector3f(1, 0, 1),
+                    blockPosition + new Vector3f(0, 0, 1),
                 ],
 
                 _ => throw new ArgumentOutOfRangeException(),
