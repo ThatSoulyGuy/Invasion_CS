@@ -1,8 +1,10 @@
-﻿using Invasion.Core;
+﻿using Invasion.Block;
+using Invasion.Core;
 using Invasion.ECS;
 using Invasion.Math;
 using Invasion.Render;
-
+using Invasion.World;
+using System;
 using Vortice.Mathematics;
 
 namespace Invasion.Entity.Entities
@@ -29,8 +31,42 @@ namespace Invasion.Entity.Entities
         {
             base.Update();
 
+            UpdateControls();
             UpdateMouselook();
             UpdateMovement();
+        }
+
+        private void UpdateControls()
+        {
+            if (InputManager.MouseLeftPressed)
+            {
+                var (hit, information) = Raycast.Cast(RenderCamera.Transform.WorldPosition, Vector3f.Normalize(RenderCamera.Transform.Forward), 10.0f);
+
+                if (hit)
+                {
+                    Vector3f position = information.HitPoint - information.Normal;
+
+                    if (information.Normal.X > 0.0f)
+                        position.X += 1.0f;
+
+                    if (information.Normal.X < 0.0f)
+                        position.X -= 1.0f;
+
+                    if (information.Normal.Y > 0.0f)
+                        position.Y += 1.0f;
+
+                    if (information.Normal.Y < 0.0f)
+                        position.Y -= 1.0f;
+
+                    if (information.Normal.Z > 0.0f)
+                        position.Z += 1.0f;
+
+                    if (information.Normal.Z < 0.0f)
+                        position.Z -= 1.0f;
+
+                    InvasionMain.Overworld.GetComponent<IWorld>().SetBlock(information.HitPoint, BlockList.AIR);
+                }
+            }
         }
 
         private void UpdateMouselook()

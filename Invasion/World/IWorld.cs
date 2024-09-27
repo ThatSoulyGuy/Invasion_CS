@@ -50,6 +50,15 @@ namespace Invasion.World
             ChunksToBeUnloaded = LoadedChunks.Keys.Where(chunkPos => !requiredChunks.Contains(chunkPos)).ToList();
         }
 
+        public void SetBlock(Vector3f worldPosition, short block)
+        {
+            Vector3i chunkPos = CoordinateHelper.WorldToChunkCoordinates(worldPosition);
+            Vector3i blockPos = CoordinateHelper.WorldToBlockCoordinates(worldPosition);
+
+            if (LoadedChunks.TryGetValue(chunkPos, out Chunk? value))
+                value.SetBlock(blockPos, block);
+        }
+
         public void LoadReadyChunks()
         {
             foreach (var chunkPos in ChunksToBeLoaded)

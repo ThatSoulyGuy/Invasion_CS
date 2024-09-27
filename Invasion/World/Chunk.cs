@@ -2,6 +2,7 @@
 using Invasion.ECS;
 using Invasion.Math;
 using Invasion.Render;
+using Invasion.Util;
 using System;
 using System.Collections.Generic;
 
@@ -15,6 +16,8 @@ namespace Invasion.World
 
         private List<Vertex> Vertices { get; set; } = [];
         private List<uint> Indices { get; set; } = [];
+
+        private Dictionary<Vector3i, BoundingBox> Colliders { get; } = [];
 
         private static Vector3f[] FaceNormals { get; } =
         [
@@ -50,6 +53,14 @@ namespace Invasion.World
 
         public void Generate()
         {
+            Vertices.Clear();
+            Indices.Clear();
+
+            foreach (var collider in Colliders.Values)
+                collider.CleanUp();
+
+            Colliders.Clear();
+
             TextureAtlas atlas = GameObject.GetComponent<TextureAtlas>();
 
             for (int x = 0; x < CHUNK_SIZE; x++)
@@ -63,6 +74,8 @@ namespace Invasion.World
                         if (block == BlockList.AIR)
                             continue;
 
+                        Vector3i position = new(x, y, z);
+
                         for (int i = 0; i < FaceNormals.Length; i++)
                         {
                             Vector3f normal = FaceNormals[i];
@@ -70,6 +83,14 @@ namespace Invasion.World
 
                             if (IsFaceExposed(facePosition, normal))
                             {
+                                if (!Colliders.ContainsKey(position))
+                                {
+                                    Vector3f worldPosition = CoordinateHelper.BlockToWorldCoordinates(position, CoordinateHelper.WorldToChunkCoordinates(GameObject.Transform.WorldPosition));
+                                    //worldPosition += new Vector3f(0.5f, 0.5f, 0.5f);
+
+                                    Colliders.Add(position, BoundingBox.Create(worldPosition, Vector3f.One));
+                                }
+
                                 if (normal == new Vector3f(0, 1, 0))
                                     AddFace(facePosition, normal, atlas.GetTextureCoordinates(BlockList.GetBlockData(block).Textures["top"]), i);
                                 else if (normal == new Vector3f(0, -1, 0))
@@ -90,6 +111,19 @@ namespace Invasion.World
             mesh.Generate();
         }
 
+        public void SetBlock(Vector3i position, short block)
+        {
+            if (position.X < 0 || position.X >= CHUNK_SIZE || position.Y < 0 || position.Y >= CHUNK_SIZE || position.Z < 0 || position.Z >= CHUNK_SIZE)
+                return;
+
+            if (Blocks[position.X, position.Y, position.Z] == block)
+                return;
+
+            Blocks[position.X, position.Y, position.Z] = block;
+
+            Generate();
+        }
+
         private bool IsFaceExposed(Vector3i position, Vector3f normal)
         {
             Vector3f adjacentPosition = (Vector3f)position + normal;
@@ -104,7 +138,7 @@ namespace Invasion.World
             return Blocks[adjacentX, adjacentY, adjacentZ] == 0;
         }
 
-        public void AddFace(Vector3f position, Vector3f normal, Vector2f[] uv, int faceIndex)
+        private void AddFace(Vector3f position, Vector3f normal, Vector2f[] uv, int faceIndex)
         {
             uint startIndex = (uint)Vertices.Count;
 
@@ -177,6 +211,17 @@ namespace Invasion.World
 
                 _ => throw new ArgumentOutOfRangeException(),
             };
+        }
+
+        public override void CleanUp()
+        {
+            Vertices.Clear();
+            Indices.Clear();
+
+            foreach (var collider in Colliders.Values)
+                collider.CleanUp();
+
+            Colliders.Clear();
         }
 
         public static Chunk Create()

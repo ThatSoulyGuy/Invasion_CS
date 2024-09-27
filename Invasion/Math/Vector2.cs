@@ -157,6 +157,11 @@ namespace Invasion.Math
         {
             return HashCode.Combine(X, Y);
         }
+
+        public override string ToString()
+        {
+            return $"({X}, {Y})";
+        }
     }
 
     [Serializable]
@@ -333,6 +338,11 @@ namespace Invasion.Math
         {
             return HashCode.Combine(X, Y);
         }
+
+        public override string ToString()
+        {
+            return $"({X}, {Y})";
+        }
     }
 
     [Serializable]
@@ -488,6 +498,11 @@ namespace Invasion.Math
         public override int GetHashCode()
         {
             return HashCode.Combine(X, Y);
+        }
+
+        public override string ToString()
+        {
+            return $"({X}, {Y})";
         }
     }
 }

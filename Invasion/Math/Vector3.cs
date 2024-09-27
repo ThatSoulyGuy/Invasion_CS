@@ -171,6 +171,11 @@ namespace Invasion.Math
         {
             return HashCode.Combine(X, Y);
         }
+
+        public override string ToString()
+        {
+            return $"({X}, {Y}, {Z})";
+        }
     }
 
     [Serializable]
@@ -270,6 +275,11 @@ namespace Invasion.Math
             return new Vector3f(a / b.X, a / b.Y, a / b.Z);
         }
 
+        public static Vector3f operator -(Vector3f a)
+        {
+            return new Vector3f(-a.X, -a.Y, -a.Z);
+        }
+
         public static implicit operator Vector3i(Vector3f v)
         {
             return new Vector3i((int)v.X, (int)v.Y, (int)v.Z);
@@ -345,6 +355,11 @@ namespace Invasion.Math
         public override int GetHashCode()
         {
             return HashCode.Combine(X, Y);
+        }
+
+        public override string ToString()
+        {
+            return $"{X}, {Y}, {Z}";
         }
     }
 
@@ -514,6 +529,11 @@ namespace Invasion.Math
         public override int GetHashCode()
         {
             return HashCode.Combine(X, Y);
+        }
+
+        public override string ToString()
+        {
+            return $"{X}, {Y}, {Z}";
         }
     }
 }
