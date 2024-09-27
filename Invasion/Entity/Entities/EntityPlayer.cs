@@ -42,8 +42,6 @@ namespace Invasion.Entity.Entities
             {
                 var (hit, information) = Raycast.Cast(RenderCamera.Transform.WorldPosition, Vector3f.Normalize(RenderCamera.Transform.Forward), 10.0f);
 
-                if (hit)
-                {
                     Vector3f position = information.HitPoint - information.Normal;
 
                     if (information.Normal.X > 0.0f)

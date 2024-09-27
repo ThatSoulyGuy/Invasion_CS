@@ -42,9 +42,6 @@ namespace Invasion.Math
             {
                 if (Intersect(origin, normalizedDirection, box, out float tmin, out float tmax, out Vector3f normal))
                 {
-                    Console.WriteLine($"Intersecting Ray Origin: {origin}, Direction: {normalizedDirection}");
-                    Console.WriteLine($"BoundingBox Min: {box.Min}, Max: {box.Max}");
-
                     if (tmin < 0) 
                         tmin = tmax;
 
