@@ -22,7 +22,7 @@ namespace Invasion.Math
         /// <param name="normalizedDirection">The normalized direction vector of the ray.</param>
         /// <param name="distance">The maximum distance to check for intersections.</param>
         /// <returns>A tuple containing a boolean indicating if a hit occurred and the hit information.</returns>
-        public static (bool, RayHitInformation) Cast(Vector3f origin, Vector3f normalizedDirection, float distance)
+        public static (bool, RayHitInformation) Cast(Vector3d origin, Vector3d normalizedDirection, double distance)
         {
             bool wasHit = false;
 
@@ -30,26 +30,26 @@ namespace Invasion.Math
             {
                 Origin = origin,
                 Direction = normalizedDirection,
-                Distance = distance
+                Distance = (float)distance
             };
 
             var boundingBoxes = BoundingBoxManager.GetAll();
 
-            float closestDistance = float.MaxValue;
+            double closestDistance = double.MaxValue;
             RayHitInformation closestHitInfo = new();
 
             foreach (var box in boundingBoxes)
             {
-                if (Intersect(origin, normalizedDirection, box, out float tmin, out float tmax, out Vector3f normal))
+                if (Intersect(origin, normalizedDirection, box, out double tmin, out double tmax, out Vector3d normal))
                 {
-                    if (tmin < 0) 
+                    if (tmin < 0)
                         tmin = tmax;
 
                     if (tmin >= 0 && tmin <= distance && tmin < closestDistance)
                     {
                         closestDistance = tmin;
 
-                        Vector3f hitPoint = origin + normalizedDirection * tmin;
+                        Vector3d hitPoint = origin + normalizedDirection * tmin;
 
                         closestHitInfo = new RayHitInformation
                         {
@@ -57,7 +57,7 @@ namespace Invasion.Math
                             Direction = normalizedDirection,
                             HitPoint = hitPoint,
                             Normal = normal,
-                            Distance = tmin,
+                            Distance = (float)tmin,
                             Collider = box
                         };
 
@@ -82,23 +82,23 @@ namespace Invasion.Math
         /// <param name="tmax">The maximum distance along the ray where the intersection occurs.</param>
         /// <param name="normal">The normal vector at the point of intersection.</param>
         /// <returns>True if the ray intersects the bounding box; otherwise, false.</returns>
-        private static bool Intersect(Vector3f rayOrigin, Vector3f rayDirection, BoundingBox box, out float tmin, out float tmax, out Vector3f normal)
+        private static bool Intersect(Vector3d rayOrigin, Vector3d rayDirection, BoundingBox box, out double tmin, out double tmax, out Vector3d normal)
         {
             tmin = 0;
-            tmax = float.MaxValue;
-            normal = Vector3f.Zero;
+            tmax = double.MaxValue;
+            normal = Vector3d.Zero;
 
-            float tminTemp = tmin;
-            float tmaxTemp = tmax;
-            Vector3f normalTemp = normal;
+            double tminTemp = tmin;
+            double tmaxTemp = tmax;
+            Vector3d normalTemp = normal;
 
-            if (!RaySlabIntersect(rayOrigin.X, rayDirection.X, box.Min.X, box.Max.X, ref tminTemp, ref tmaxTemp, ref normalTemp, new Vector3f(1, 0, 0)))
+            if (!RaySlabIntersect(rayOrigin.X, rayDirection.X, box.Min.X, box.Max.X, ref tminTemp, ref tmaxTemp, ref normalTemp, new Vector3d(1, 0, 0)))
                 return false;
 
-            if (!RaySlabIntersect(rayOrigin.Y, rayDirection.Y, box.Min.Y, box.Max.Y, ref tminTemp, ref tmaxTemp, ref normalTemp, new Vector3f(0, 1, 0)))
+            if (!RaySlabIntersect(rayOrigin.Y, rayDirection.Y, box.Min.Y, box.Max.Y, ref tminTemp, ref tmaxTemp, ref normalTemp, new Vector3d(0, 1, 0)))
                 return false;
 
-            if (!RaySlabIntersect(rayOrigin.Z, rayDirection.Z, box.Min.Z, box.Max.Z, ref tminTemp, ref tmaxTemp, ref normalTemp, new Vector3f(0, 0, 1)))
+            if (!RaySlabIntersect(rayOrigin.Z, rayDirection.Z, box.Min.Z, box.Max.Z, ref tminTemp, ref tmaxTemp, ref normalTemp, new Vector3d(0, 0, 1)))
                 return false;
 
             tmin = tminTemp;
@@ -110,25 +110,28 @@ namespace Invasion.Math
         /// <summary>
         /// Helper method to perform ray-slab intersection for a single axis.
         /// </summary>
-        private static bool RaySlabIntersect(float rayOrigin, float rayDirection, float slabMin, float slabMax, ref float tmin, ref float tmax, ref Vector3f normal, Vector3f axisNormal)
+        private static bool RaySlabIntersect(double rayOrigin, double rayDirection, double slabMin, double slabMax, ref double tmin, ref double tmax, ref Vector3d normal, Vector3d axisNormal)
         {
-            if (MathF.Abs(rayDirection) < 1e-8)
+            const double epsilon = 1e-14;
+
+            if (System.Math.Abs(rayDirection) < epsilon)
             {
+                // Ray is parallel to the slab. No hit if origin not within slab.
                 if (rayOrigin < slabMin || rayOrigin > slabMax)
                     return false;
             }
             else
             {
-                float invD = 1.0f / rayDirection;
-                float t0 = (slabMin - rayOrigin) * invD;
-                float t1 = (slabMax - rayOrigin) * invD;
+                double invD = 1.0 / rayDirection;
+                double t0 = (slabMin - rayOrigin) * invD;
+                double t1 = (slabMax - rayOrigin) * invD;
 
-                Vector3f n = axisNormal;
+                Vector3d n = axisNormal;
 
-                if (invD < 0.0f)
+                if (invD < 0.0)
                 {
-                    (t1, t0) = (t0, t1);
-
+                    // Swap t0 and t1
+                    (t0, t1) = (t1, t0);
                     n = -axisNormal;
                 }
 
@@ -139,7 +142,7 @@ namespace Invasion.Math
                 }
                 if (t1 < tmax)
                     tmax = t1;
-                
+
                 if (tmax <= tmin)
                     return false;
             }

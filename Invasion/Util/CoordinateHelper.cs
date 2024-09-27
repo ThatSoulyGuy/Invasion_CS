@@ -44,7 +44,10 @@ namespace Invasion.Util
         private static int Mod(int a, int n)
         {
             int result = a % n;
-            if (result < 0) result += n;
+
+            if (result < 0) 
+                result += n;
+
             return result;
         }
 

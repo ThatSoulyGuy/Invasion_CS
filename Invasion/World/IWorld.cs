@@ -47,16 +47,22 @@ namespace Invasion.World
                 }
             }
 
-            ChunksToBeUnloaded = LoadedChunks.Keys.Where(chunkPos => !requiredChunks.Contains(chunkPos)).ToList();
+            ChunksToBeUnloaded = LoadedChunks.Keys.Where(chunkPos => !requiredChunks.Contains(chunkPos) && chunkPos.Y == 0).ToList();
         }
 
-        public void SetBlock(Vector3f worldPosition, short block)
+        public void SetBlock(Vector3f worldPosition, short block, bool createChunkIfNotPresent = false)
         {
             Vector3i chunkPos = CoordinateHelper.WorldToChunkCoordinates(worldPosition);
             Vector3i blockPos = CoordinateHelper.WorldToBlockCoordinates(worldPosition);
 
             if (LoadedChunks.TryGetValue(chunkPos, out Chunk? value))
                 value.SetBlock(blockPos, block);
+            else if (createChunkIfNotPresent)
+            {
+                GenerateChunk(CoordinateHelper.ChunkToWorldCoordinates(chunkPos), true);
+
+                LoadedChunks[chunkPos].SetBlock(blockPos, block);
+            }
         }
 
         public void LoadReadyChunks()
@@ -71,7 +77,7 @@ namespace Invasion.World
                 UnloadChunk(CoordinateHelper.ChunkToWorldCoordinates(chunkPos));
         }
 
-        public Chunk GenerateChunk(Vector3i position)
+        public Chunk GenerateChunk(Vector3i position, bool generateNothing = false)
         {
             if (GameObjectManager.Get($"Chunk_Object_{position.X}_{position.Y}_{position.Z}_") != null)
                 return LoadedChunks[CoordinateHelper.WorldToChunkCoordinates(position)];
@@ -86,7 +92,7 @@ namespace Invasion.World
 
             chunkObject.AddComponent(Mesh.Create($"Chunk_Mesh_{position.X}_{position.Y}_{position.Z}_", [], []));
 
-            Chunk result = chunkObject.AddComponent(Chunk.Create());
+            Chunk result = chunkObject.AddComponent(Chunk.Create(generateNothing));
 
             result.Generate();
 

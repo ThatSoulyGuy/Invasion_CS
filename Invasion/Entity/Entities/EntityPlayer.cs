@@ -42,27 +42,38 @@ namespace Invasion.Entity.Entities
             {
                 var (hit, information) = Raycast.Cast(RenderCamera.Transform.WorldPosition, Vector3f.Normalize(RenderCamera.Transform.Forward), 10.0f);
 
-                    Vector3f position = information.HitPoint - information.Normal;
+                Vector3f position = information.HitPoint + information.Normal;
 
-                    if (information.Normal.X > 0.0f)
-                        position.X += 1.0f;
+                if (hit)
+                    InvasionMain.Overworld.GetComponent<IWorld>().SetBlock(position, BlockList.AIR);
+            }
 
-                    if (information.Normal.X < 0.0f)
-                        position.X -= 1.0f;
+            if (InputManager.MouseRightPressed)
+            {
+                var (hit, information) = Raycast.Cast(RenderCamera.Transform.WorldPosition, Vector3f.Normalize(RenderCamera.Transform.Forward), 10.0f);
 
-                    if (information.Normal.Y > 0.0f)
-                        position.Y += 1.0f;
+                if (hit)
+                {
+                    Vector3f blockPosition = information.HitPoint - information.Normal;
 
-                    if (information.Normal.Y < 0.0f)
-                        position.Y -= 1.0f;
+                    Vector3f playerForward = Vector3f.Normalize(RenderCamera.Transform.Forward);
 
-                    if (information.Normal.Z > 0.0f)
-                        position.Z += 1.0f;
+                    if (playerForward.X > 0.5f)
+                        blockPosition.X += 1.0f;
+                    else if (playerForward.X < -0.5f)
+                        blockPosition.X -= 1.0f;
 
-                    if (information.Normal.Z < 0.0f)
-                        position.Z -= 1.0f;
+                    if (playerForward.Y > 0.5f)
+                        blockPosition.Y += 1.0f;
+                    else if (playerForward.Y < -0.5f)
+                        blockPosition.Y -= 1.0f;
 
-                    InvasionMain.Overworld.GetComponent<IWorld>().SetBlock(information.HitPoint, BlockList.AIR);
+                    if (playerForward.Z > 0.5f)
+                        blockPosition.Z += 1.0f;
+                    else if (playerForward.Z < -0.5f)
+                        blockPosition.Z -= 1.0f;
+
+                    InvasionMain.Overworld.GetComponent<IWorld>().SetBlock(blockPosition, BlockList.BEDROCK, true);
                 }
             }
         }
@@ -73,7 +84,7 @@ namespace Invasion.Entity.Entities
 
             mouseMovement *= MouseSensitivity;
             mouseMovement *= InputManager.DeltaTime;
-            
+
             GameObject.Transform.Rotate(new(mouseMovement.Y, mouseMovement.X, 0.0f));
 
             GameObject.Transform.LocalRotation = new(

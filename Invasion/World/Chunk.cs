@@ -31,21 +31,24 @@ namespace Invasion.World
 
         private Chunk() { }
 
-        private new void Initialize()
+        private void Initialize(bool generateNothing)
         {
-            for (int x = 0; x < CHUNK_SIZE; x++)
+            if (!generateNothing)
             {
-                for (int y = 0; y < CHUNK_SIZE; y++)
+                for (int x = 0; x < CHUNK_SIZE; x++)
                 {
-                    for (int z = 0; z < CHUNK_SIZE; z++)
+                    for (int y = 0; y < CHUNK_SIZE; y++)
                     {
-                        if (y > 11)
-                            Blocks[x, y, z] = BlockList.DIRT;
-                        else
-                            Blocks[x, y, z] = BlockList.STONE;
+                        for (int z = 0; z < CHUNK_SIZE; z++)
+                        {
+                            if (y > 11)
+                                Blocks[x, y, z] = BlockList.DIRT;
+                            else
+                                Blocks[x, y, z] = BlockList.STONE;
 
-                        Blocks[x, 15, z] = BlockList.GRASS;
-                        Blocks[x, 0, z] = BlockList.BEDROCK;
+                            Blocks[x, 15, z] = BlockList.GRASS;
+                            Blocks[x, 0, z] = BlockList.BEDROCK;
+                        }
                     }
                 }
             }
@@ -86,17 +89,17 @@ namespace Invasion.World
                                 if (!Colliders.ContainsKey(position))
                                 {
                                     Vector3f worldPosition = CoordinateHelper.BlockToWorldCoordinates(position, CoordinateHelper.WorldToChunkCoordinates(GameObject.Transform.WorldPosition));
-                                    //worldPosition += new Vector3f(0.5f, 0.5f, 0.5f);
+                                    worldPosition += new Vector3f(0.5f, 0.5f, 0.5f);
 
                                     Colliders.Add(position, BoundingBox.Create(worldPosition, Vector3f.One));
                                 }
 
                                 if (normal == new Vector3f(0, 1, 0))
-                                    AddFace(facePosition, normal, atlas.GetTextureCoordinates(BlockList.GetBlockData(block).Textures["top"]), i);
+                                    AddFace(facePosition, normal, BlockList.GetBlockData(block).TopColor, atlas.GetTextureCoordinates(BlockList.GetBlockData(block).Textures["top"]), i);
                                 else if (normal == new Vector3f(0, -1, 0))
-                                    AddFace(facePosition, normal, atlas.GetTextureCoordinates(BlockList.GetBlockData(block).Textures["bottom"]), i);
+                                    AddFace(facePosition, normal, Vector3f.One, atlas.GetTextureCoordinates(BlockList.GetBlockData(block).Textures["bottom"]), i);
                                 else
-                                    AddFace(facePosition, normal, atlas.GetTextureCoordinates(BlockList.GetBlockData(block).Textures["side"]), i);
+                                    AddFace(facePosition, normal, Vector3f.One, atlas.GetTextureCoordinates(BlockList.GetBlockData(block).Textures["side"]), i);
                             }  
                         }
                     }
@@ -108,7 +111,8 @@ namespace Invasion.World
             mesh.Vertices = Vertices;
             mesh.Indices = Indices;
 
-            mesh.Generate();
+            if (Vertices.Count != 0 && Indices.Count != 0)
+                mesh.Generate();
         }
 
         public void SetBlock(Vector3i position, short block)
@@ -138,16 +142,16 @@ namespace Invasion.World
             return Blocks[adjacentX, adjacentY, adjacentZ] == 0;
         }
 
-        private void AddFace(Vector3f position, Vector3f normal, Vector2f[] uv, int faceIndex)
+        private void AddFace(Vector3f position, Vector3f normal, Vector3f color, Vector2f[] uv, int faceIndex)
         {
             uint startIndex = (uint)Vertices.Count;
 
             Vector3f[] faceVertices = GetFaceVertices(position, faceIndex);
 
-            Vertices.Add(new Vertex(faceVertices[0], Vector3f.One, normal, uv[0]));
-            Vertices.Add(new Vertex(faceVertices[1], Vector3f.One, normal, uv[1]));
-            Vertices.Add(new Vertex(faceVertices[2], Vector3f.One, normal, uv[2]));
-            Vertices.Add(new Vertex(faceVertices[3], Vector3f.One, normal, uv[3]));
+            Vertices.Add(new Vertex(faceVertices[0], color, normal, uv[0]));
+            Vertices.Add(new Vertex(faceVertices[1], color, normal, uv[1]));
+            Vertices.Add(new Vertex(faceVertices[2], color, normal, uv[2]));
+            Vertices.Add(new Vertex(faceVertices[3], color, normal, uv[3]));
 
             Indices.Add(startIndex + 0);
             Indices.Add(startIndex + 1);
@@ -224,11 +228,11 @@ namespace Invasion.World
             Colliders.Clear();
         }
 
-        public static Chunk Create()
+        public static Chunk Create(bool generateNothing = false)
         {
             Chunk result = new();
 
-            result.Initialize();
+            result.Initialize(generateNothing);
 
             return result;
         }

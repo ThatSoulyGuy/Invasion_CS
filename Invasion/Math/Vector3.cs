@@ -371,6 +371,13 @@ namespace Invasion.Math
         public double Y { get; set; } = 0;
         public double Z { get; set; } = 0;
 
+        public static Vector3d Zero => new(0.0);
+        public static Vector3d One => new(1.0);
+
+        public static Vector3d UnitX => new(1.0, 0.0, 0.0);
+        public static Vector3d UnitY => new(0.0, 1.0, 0.0);
+        public static Vector3d UnitZ => new(0.0, 0.0, 1.0);
+
         public Vector3d() { }
 
         public Vector3d(double s)
@@ -452,6 +459,11 @@ namespace Invasion.Math
         public static Vector3d operator /(double a, Vector3d b)
         {
             return new Vector3d(a / b.X, a / b.Y, a / b.Z);
+        }
+
+        public static Vector3d operator -(Vector3d a)
+        {
+            return new Vector3d(-a.X, -a.Y, -a.Z);
         }
 
         public static implicit operator Vector3i(Vector3d v)

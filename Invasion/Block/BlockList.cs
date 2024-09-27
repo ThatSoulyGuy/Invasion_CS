@@ -1,13 +1,15 @@
-﻿using System.Collections.Generic;
+﻿using Invasion.Math;
+using System.Collections.Generic;
 
 namespace Invasion.Block
 {
-    public struct BlockData(string registryName, string displayName, short id, bool isSolid, Dictionary<string, string> textures)
+    public struct BlockData(string registryName, string displayName, short id, bool isSolid, Vector3f color, Dictionary<string, string> textures)
     {
         public string RegistryName { get; set; } = registryName;
         public string DisplayName { get; set; } = displayName;
         public short ID { get; set; } = id;
         public bool IsSolid { get; set; } = isSolid;
+        public Vector3f TopColor { get; set; } = color;
 
         public Dictionary<string, string> Textures { get; set; } = textures;
     }
@@ -51,69 +53,69 @@ namespace Invasion.Block
 
         public static BlockData GetBlockData(short block) => block switch
         {
-            AIR => new BlockData("block_air", "Air", AIR, false, []),
-            GRASS => new BlockData("block_grass", "Grass", GRASS, true, new Dictionary<string, string>
+            AIR => new BlockData("block_air", "Air", AIR, false, Vector3f.One, []),
+            GRASS => new BlockData("block_grass", "Grass", GRASS, true, new(0.0f, 0.75f, 0.55f), new Dictionary<string, string>
             {
                 { "top", "grass_top" },
                 { "side", "grass_side" },
                 { "bottom", "dirt" }
             }),
-            DIRT => new BlockData("block_dirt", "Dirt", DIRT, true, new Dictionary<string, string>
+            DIRT => new BlockData("block_dirt", "Dirt", DIRT, true, Vector3f.One, new Dictionary<string, string>
             {
                 { "top", "dirt" },
                 { "side", "dirt" },
                 { "bottom", "dirt" }
             }),
-            STONE => new BlockData("block_stone", "Stone", STONE, true, new Dictionary<string, string>
+            STONE => new BlockData("block_stone", "Stone", STONE, true, Vector3f.One, new Dictionary<string, string>
             {
                 { "top", "stone" },
                 { "side", "stone" },
                 { "bottom", "stone" }
             }),
-            SAND => new BlockData("block_sand", "Sand", SAND, true, new Dictionary<string, string>
+            SAND => new BlockData("block_sand", "Sand", SAND, true, Vector3f.One, new Dictionary<string, string>
             {
                 { "top", "sand" },
                 { "side", "sand" },
                 { "bottom", "sand" }
             }),
-            WATER => new BlockData("block_water", "Water", WATER, false, []),
-            WOOD => new BlockData("block_wood", "Wood", WOOD, true, new Dictionary<string, string>
+            WATER => new BlockData("block_water", "Water", WATER, false, Vector3f.One, []),
+            WOOD => new BlockData("block_wood", "Wood", WOOD, true, Vector3f.One, new Dictionary<string, string>
             {
                 { "top", "wood_top" },
                 { "side", "wood_side" },
                 { "bottom", "wood_top" }
             }),
-            LEAVES => new BlockData("block_leaves", "Leaves", LEAVES, false, new Dictionary<string, string>
+            LEAVES => new BlockData("block_leaves", "Leaves", LEAVES, false, Vector3f.One, new Dictionary<string, string>
             {
                 { "top", "leaves_oak" },
                 { "side", "leaves_oak" },
                 { "bottom", "leaves_oak" }
             }),
-            GLASS => new BlockData("block_glass", "Glass", GLASS, false, new Dictionary<string, string>
+            GLASS => new BlockData("block_glass", "Glass", GLASS, false, Vector3f.One, new Dictionary<string, string>
             {
                 { "top", "glass" },
                 { "side", "glass" },
                 { "bottom", "glass" }
             }),
-            COBBLESTONE => new BlockData("block_cobblestone", "Cobblestone", COBBLESTONE, true, new Dictionary<string, string>
+            COBBLESTONE => new BlockData("block_cobblestone", "Cobblestone", COBBLESTONE, true, Vector3f.One, new Dictionary<string, string>
             {
                 { "top", "cobblestone" },
                 { "side", "cobblestone" },
                 { "bottom", "cobblestone" }
             }),
-            BRICKS => new BlockData("block_bricks", "Bricks", BRICKS, true, new Dictionary<string, string>
+            BRICKS => new BlockData("block_bricks", "Bricks", BRICKS, true, Vector3f.One, new Dictionary<string, string>
             {
                 { "top", "bricks" },
                 { "side", "bricks" },
                 { "bottom", "bricks" }
             }),
-            PLANKS => new BlockData("block_planks", "Planks", PLANKS, true, new Dictionary<string, string>
+            PLANKS => new BlockData("block_planks", "Planks", PLANKS, true, Vector3f.One, new Dictionary<string, string>
             {
                 { "top", "planks_oak" },
                 { "side", "planks_oak" },
                 { "bottom", "planks_oak" }
             }),
-            BEDROCK => new BlockData("block_bedrock", "Bedrock", BEDROCK, true, new Dictionary<string, string>
+            BEDROCK => new BlockData("block_bedrock", "Bedrock", BEDROCK, true, Vector3f.One, new Dictionary<string, string>
             {
                 { "top", "bedrock" },
                 { "side", "bedrock" },
