@@ -1,0 +1,118 @@
+﻿using Invasion.Core;
+using Invasion.ECS;
+using System;
+using System.Linq;
+
+namespace Invasion.Math
+{
+    public class Rigidbody : Component
+    {
+        public const float Gravity = -9.81f;
+
+        public float Mass { get; set; } = 1.0f;
+        public float Drag { get; set; } = 0.01f;
+
+        public Vector3f Velocity = Vector3f.Zero;
+
+        public bool IsGrounded { get; private set; } = false;
+
+        private Rigidbody() { }
+
+        private const float Epsilon = 0.0001f;
+        private const float MaxVelocity = 50.0f;
+
+        public override void Update()
+        {
+            BoundingBox collider = GameObject.GetComponent<BoundingBox>();
+
+            if (collider == null)
+            {
+                Console.WriteLine("No BoundingBox component found on the GameObject.");
+                return;
+            }
+
+            float deltaTime = InputManager.DeltaTime;
+
+            Velocity.Y += Gravity * deltaTime;
+
+            Velocity *= (1 - Drag);
+
+            ClampVelocity(MaxVelocity);
+
+            Vector3f displacement = Velocity * deltaTime;
+
+            GameObject.Transform.Translate(displacement);
+
+            bool wasGrounded = IsGrounded;
+            IsGrounded = false;
+
+            var colliders = BoundingBoxManager.GetAll().Where(x => x != collider).ToList();
+
+            foreach (var otherCollider in colliders)
+            {
+                if (collider.IntersectsOffsetted(otherCollider))
+                {
+                    Vector3f penetrationVector = ComputePenetrationDepth(collider, otherCollider);
+
+                    GameObject.Transform.Translate(penetrationVector);
+
+                    if (MathF.Abs(penetrationVector.Y) > Epsilon)
+                    {
+                        if (penetrationVector.Y > 0 && Velocity.Y < 0)
+                        {
+                            Velocity.Y = 0;
+                            IsGrounded = true;
+                        }
+                        else if (penetrationVector.Y < 0 && Velocity.Y > 0)
+                        {
+                            Velocity.Y = 0;
+                        }
+                    }
+
+                    if (MathF.Abs(penetrationVector.X) > Epsilon)
+                        Velocity.X = 0;
+
+                    if (MathF.Abs(penetrationVector.Z) > Epsilon)
+                        Velocity.Z = 0;
+                }
+            }
+        }
+
+        private void ClampVelocity(float maxSpeed)
+        {
+            if (Velocity.Length() > maxSpeed)
+                Velocity = Vector3f.Normalize(Velocity) * maxSpeed;
+        }
+
+        private Vector3f ComputePenetrationDepth(BoundingBox a, BoundingBox b)
+        {
+            Vector3f aHalfSize = (a.MaxOffsetted - a.MinOffsetted) * 0.5f;
+            Vector3f bHalfSize = (b.MaxOffsetted - b.MinOffsetted) * 0.5f;
+
+            Vector3f aCenter = a.MinOffsetted + aHalfSize;
+            Vector3f bCenter = b.MinOffsetted + bHalfSize;
+
+            Vector3f delta = bCenter - aCenter;
+            Vector3f overlap = new Vector3f(
+                aHalfSize.X + bHalfSize.X - MathF.Abs(delta.X),
+                aHalfSize.Y + bHalfSize.Y - MathF.Abs(delta.Y),
+                aHalfSize.Z + bHalfSize.Z - MathF.Abs(delta.Z));
+
+            if (overlap.X < -Epsilon || overlap.Y < -Epsilon || overlap.Z < -Epsilon)
+                return Vector3f.Zero;
+
+            if (overlap.X < overlap.Y && overlap.X < overlap.Z)
+                return new Vector3f(delta.X > 0 ? -overlap.X : overlap.X, 0, 0);
+            else if (overlap.Y < overlap.X && overlap.Y < overlap.Z)
+                return new Vector3f(0, delta.Y > 0 ? -overlap.Y : overlap.Y, 0);
+            else
+                return new Vector3f(0, 0, delta.Z > 0 ? -overlap.Z : overlap.Z);
+        }
+
+        public static Rigidbody Create()
+        {
+            return new();
+        }
+    }
+}
+ 

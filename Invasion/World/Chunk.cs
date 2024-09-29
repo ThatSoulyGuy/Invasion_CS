@@ -77,18 +77,19 @@ namespace Invasion.World
                         if (block == BlockList.AIR)
                             continue;
 
-                        Vector3i position = new(x, y, z);
+                        Vector3i position = new Vector3i(x, y, z);
 
                         for (int i = 0; i < FaceNormals.Length; i++)
                         {
                             Vector3f normal = FaceNormals[i];
-                            Vector3i facePosition = new(x, y, z);
+                            Vector3i facePosition = position;
 
                             if (IsFaceExposed(facePosition, normal))
                             {
                                 if (!Colliders.ContainsKey(position))
                                 {
                                     Vector3f worldPosition = CoordinateHelper.BlockToWorldCoordinates(position, CoordinateHelper.WorldToChunkCoordinates(GameObject.Transform.WorldPosition));
+                                    
                                     worldPosition += new Vector3f(0.5f, 0.5f, 0.5f);
 
                                     Colliders.Add(position, BoundingBox.Create(worldPosition, Vector3f.One));
@@ -100,7 +101,7 @@ namespace Invasion.World
                                     AddFace(facePosition, normal, Vector3f.One, atlas.GetTextureCoordinates(BlockList.GetBlockData(block).Textures["bottom"]), i);
                                 else
                                     AddFace(facePosition, normal, Vector3f.One, atlas.GetTextureCoordinates(BlockList.GetBlockData(block).Textures["side"]), i);
-                            }  
+                            }
                         }
                     }
                 }
@@ -127,19 +128,19 @@ namespace Invasion.World
 
             Generate();
         }
-
+        
         private bool IsFaceExposed(Vector3i position, Vector3f normal)
         {
-            Vector3f adjacentPosition = (Vector3f)position + normal;
+            Vector3i adjacentPosition = position + new Vector3i((int)MathF.Round(normal.X), (int)MathF.Round(normal.Y), (int)MathF.Round(normal.Z));
 
-            int adjacentX = (int)adjacentPosition.X;
-            int adjacentY = (int)adjacentPosition.Y;
-            int adjacentZ = (int)adjacentPosition.Z;
+            int adjacentX = adjacentPosition.X;
+            int adjacentY = adjacentPosition.Y;
+            int adjacentZ = adjacentPosition.Z;
 
             if (adjacentX < 0 || adjacentX >= CHUNK_SIZE || adjacentY < 0 || adjacentY >= CHUNK_SIZE || adjacentZ < 0 || adjacentZ >= CHUNK_SIZE)
                 return true;
-            
-            return Blocks[adjacentX, adjacentY, adjacentZ] == 0;
+
+            return Blocks[adjacentX, adjacentY, adjacentZ] == BlockList.AIR;
         }
 
         private void AddFace(Vector3f position, Vector3f normal, Vector3f color, Vector2f[] uv, int faceIndex)

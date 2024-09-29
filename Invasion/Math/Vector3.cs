@@ -182,9 +182,9 @@ namespace Invasion.Math
     [StructLayout(LayoutKind.Sequential)]
     public struct Vector3f
     {
-        public float X { get; set; } = 0;
-        public float Y { get; set; } = 0;
-        public float Z { get; set; } = 0;
+        public float X = 0;
+        public float Y = 0;
+        public float Z = 0;
 
         public static Vector3f Zero => new(0.0f);
         public static Vector3f One => new(1.0f);

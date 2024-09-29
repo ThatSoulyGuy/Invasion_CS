@@ -1,6 +1,7 @@
 ﻿using Invasion.Core;
 using Invasion.ECS;
 using Invasion.Entity.Entities;
+using Invasion.Math;
 using Invasion.Page;
 using Invasion.Render;
 using Invasion.World;
@@ -43,6 +44,9 @@ namespace Invasion
 
             Player = GameObject.Create("Player");
             Player.Transform.LocalPosition = new(0.0f, 20.0f, 0.0f);
+
+            Player.AddComponent(BoundingBox.Create(new(0.6f, 1.89f, 0.6f)));
+            Player.AddComponent(Rigidbody.Create());
             Player.AddComponent(new EntityPlayer());
         }
 

@@ -24,7 +24,7 @@ namespace Invasion.Entity.Entities
             GameObject.AddChild(GameObject.Create("Camera"));
 
             RenderCamera.AddComponent(Camera.Create(45.0f, 0.01f, 1000.0f));
-            RenderCamera.Transform.LocalPosition = new(0.0f, 0.0f, 3.0f);
+            RenderCamera.Transform.LocalPosition = new(0.0f, 0.9f, 3.0f);
         }
 
         public override void Update()
@@ -42,7 +42,9 @@ namespace Invasion.Entity.Entities
             {
                 var (hit, information) = Raycast.Cast(RenderCamera.Transform.WorldPosition, Vector3f.Normalize(RenderCamera.Transform.Forward), 10.0f);
 
-                Vector3f position = information.HitPoint + information.Normal;
+                Vector3f position = information.HitPoint;
+
+                position += information.Normal * 0.5f;
 
                 if (hit)
                     InvasionMain.Overworld.GetComponent<IWorld>().SetBlock(position, BlockList.AIR);
@@ -52,29 +54,12 @@ namespace Invasion.Entity.Entities
             {
                 var (hit, information) = Raycast.Cast(RenderCamera.Transform.WorldPosition, Vector3f.Normalize(RenderCamera.Transform.Forward), 10.0f);
 
+                Vector3f position = information.HitPoint;
+
+                position -= information.Normal * 0.5f;
+
                 if (hit)
-                {
-                    Vector3f blockPosition = information.HitPoint - information.Normal;
-
-                    Vector3f playerForward = Vector3f.Normalize(RenderCamera.Transform.Forward);
-
-                    if (playerForward.X > 0.5f)
-                        blockPosition.X += 1.0f;
-                    else if (playerForward.X < -0.5f)
-                        blockPosition.X -= 1.0f;
-
-                    if (playerForward.Y > 0.5f)
-                        blockPosition.Y += 1.0f;
-                    else if (playerForward.Y < -0.5f)
-                        blockPosition.Y -= 1.0f;
-
-                    if (playerForward.Z > 0.5f)
-                        blockPosition.Z += 1.0f;
-                    else if (playerForward.Z < -0.5f)
-                        blockPosition.Z -= 1.0f;
-
-                    InvasionMain.Overworld.GetComponent<IWorld>().SetBlock(blockPosition, BlockList.BEDROCK, true);
-                }
+                    InvasionMain.Overworld.GetComponent<IWorld>().SetBlock(position, BlockList.BEDROCK, true);
             }
         }
 

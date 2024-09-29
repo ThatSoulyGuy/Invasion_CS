@@ -32,12 +32,12 @@
             // 
             // Window
             // 
-            AutoScaleDimensions = new System.Drawing.SizeF(12F, 30F);
+            AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
             AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            ClientSize = new System.Drawing.Size(1318, 864);
-            Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
+            ClientSize = new System.Drawing.Size(769, 432);
+            Margin = new System.Windows.Forms.Padding(2, 1, 2, 1);
             Name = "Window";
-            Text = "Invasion* 1.16.6r5";
+            Text = "Invasion* 1.18.6r5";
             ResumeLayout(false);
         }
 
