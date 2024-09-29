@@ -70,18 +70,18 @@ namespace Invasion.Entity.Entities
             mouseMovement *= MouseSensitivity;
             mouseMovement *= InputManager.DeltaTime;
 
-            GameObject.Transform.Rotate(new(mouseMovement.Y, mouseMovement.X, 0.0f));
+            RenderCamera.Transform.Rotate(new(mouseMovement.Y, mouseMovement.X, 0.0f));
 
-            GameObject.Transform.LocalRotation = new(
-                MathHelper.Clamp(GameObject.Transform.LocalRotation.X, -89.0f, 89.0f),
-                GameObject.Transform.LocalRotation.Y,
-                GameObject.Transform.LocalRotation.Z
+            RenderCamera.Transform.LocalRotation = new(
+                MathHelper.Clamp(RenderCamera.Transform.LocalRotation.X, -89.0f, 89.0f),
+                RenderCamera.Transform.LocalRotation.Y,
+                RenderCamera.Transform.LocalRotation.Z
             );
 
-            GameObject.Transform.LocalRotation = new(
-                GameObject.Transform.LocalRotation.X,
-                GameObject.Transform.LocalRotation.Y % 360.0f,
-                GameObject.Transform.LocalRotation.Z
+            RenderCamera.Transform.LocalRotation = new(
+                RenderCamera.Transform.LocalRotation.X,
+                RenderCamera.Transform.LocalRotation.Y % 360.0f,
+                RenderCamera.Transform.LocalRotation.Z
             );
 
             InputManager.ResetMouseDelta();
@@ -91,17 +91,27 @@ namespace Invasion.Entity.Entities
         {
             var movement = Vector3f.Zero;
 
+            Rigidbody rigidbody = GameObject.GetComponent<Rigidbody>();
+
+            Vector3f forward = RenderCamera.Transform.Forward;
+            Vector3f right = RenderCamera.Transform.Right;
+            forward.Y = 0.0f;
+            right.Y = 0.0f;
+
             if (InputManager.GetKeyHeld(KeyCode.W))
-                movement += GameObject.Transform.Forward;
+                movement += forward;
 
             if (InputManager.GetKeyHeld(KeyCode.S))
-                movement -= GameObject.Transform.Forward;
+                movement -= forward;
 
             if (InputManager.GetKeyHeld(KeyCode.A))
-                movement -= GameObject.Transform.Right;
+                movement -= right;
 
             if (InputManager.GetKeyHeld(KeyCode.D))
-                movement += GameObject.Transform.Right;
+                movement += right;
+
+            if (InputManager.GetKeyHeld(KeyCode.Space) && rigidbody.IsGrounded)
+                rigidbody.AddForce(new(0.0f, 3.0f, 0.0f));
 
             if (movement != Vector3f.Zero)
             {

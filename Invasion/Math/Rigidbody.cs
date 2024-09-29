@@ -78,6 +78,11 @@ namespace Invasion.Math
             }
         }
 
+        public void AddForce(Vector3f force)
+        {
+            Velocity += force / Mass;
+        }
+
         private void ClampVelocity(float maxSpeed)
         {
             if (Velocity.Length() > maxSpeed)
