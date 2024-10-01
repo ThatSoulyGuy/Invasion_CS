@@ -5,7 +5,6 @@ using Invasion.Util;
 using System.Collections.Generic;
 using System.Linq;
 
-
 namespace Invasion.World
 {
     public class IWorld : Component

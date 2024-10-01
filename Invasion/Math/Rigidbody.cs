@@ -34,7 +34,6 @@ namespace Invasion.Math
             float deltaTime = InputManager.DeltaTime;
 
             Velocity.Y += Gravity * deltaTime;
-
             Velocity *= (1 - Drag);
 
             ClampVelocity(MaxVelocity);
@@ -43,7 +42,6 @@ namespace Invasion.Math
 
             GameObject.Transform.Translate(displacement);
 
-            bool wasGrounded = IsGrounded;
             IsGrounded = false;
 
             var colliders = BoundingBoxManager.GetAll().Where(x => x != collider).ToList();
@@ -63,17 +61,7 @@ namespace Invasion.Math
                             Velocity.Y = 0;
                             IsGrounded = true;
                         }
-                        else if (penetrationVector.Y < 0 && Velocity.Y > 0)
-                        {
-                            Velocity.Y = 0;
                         }
-                    }
-
-                    if (MathF.Abs(penetrationVector.X) > Epsilon)
-                        Velocity.X = 0;
-
-                    if (MathF.Abs(penetrationVector.Z) > Epsilon)
-                        Velocity.Z = 0;
                 }
             }
         }

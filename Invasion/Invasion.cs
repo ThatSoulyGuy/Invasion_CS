@@ -56,9 +56,6 @@ namespace Invasion
 
             InputManager.Update();
             GameObjectManager.Update();
-            
-            Overworld.GetComponent<IWorld>().LoadReadyChunks();
-            Overworld.GetComponent<IWorld>().UnloadReadyChunks();
         }
 
         public static void Resize(object? s, EventArgs a)

@@ -116,8 +116,6 @@ namespace Invasion.Entity.Entities
             if (movement != Vector3f.Zero)
             {
                 movement = Vector3f.Normalize(movement);
-                movement *= InputManager.GetKeyHeld(KeyCode.LeftShift) ? RunningSpeed : WalkingSpeed;
-            }
 
             GameObject.Transform.LocalPosition += movement * InputManager.DeltaTime;
         }
