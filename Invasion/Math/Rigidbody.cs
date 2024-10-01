@@ -32,36 +32,50 @@ namespace Invasion.Math
             }
 
             float deltaTime = InputManager.DeltaTime;
+            float maxTimeStep = 0.02f;
+            int steps = (int)MathF.Ceiling(deltaTime / maxTimeStep);
+            float stepTime = deltaTime / steps;
 
-            Velocity.Y += Gravity * deltaTime;
-            Velocity *= (1 - Drag);
-
-            ClampVelocity(MaxVelocity);
-
-            Vector3f displacement = Velocity * deltaTime;
-
-            GameObject.Transform.Translate(displacement);
-
-            IsGrounded = false;
-
-            var colliders = BoundingBoxManager.GetAll().Where(x => x != collider).ToList();
-
-            foreach (var otherCollider in colliders)
+            for (int i = 0; i < steps; i++)
             {
-                if (collider.IntersectsOffsetted(otherCollider))
+                Velocity.Y += Gravity * stepTime;
+                Velocity *= (1 - Drag);
+
+                ClampVelocity(MaxVelocity);
+
+                Vector3f displacement = Velocity * stepTime;
+
+                GameObject.Transform.Translate(displacement);
+
+                IsGrounded = false;
+
+                var colliders = BoundingBoxManager.GetAll().Where(x => x != collider).ToList();
+
+                foreach (var otherCollider in colliders)
                 {
-                    Vector3f penetrationVector = ComputePenetrationDepth(collider, otherCollider);
-
-                    GameObject.Transform.Translate(penetrationVector);
-
-                    if (MathF.Abs(penetrationVector.Y) > Epsilon)
+                    if (collider.IntersectsOffsetted(otherCollider))
                     {
-                        if (penetrationVector.Y > 0 && Velocity.Y < 0)
+                        Vector3f penetrationVector = ComputePenetrationDepth(collider, otherCollider);
+
+                        GameObject.Transform.Translate(penetrationVector);
+
+                        if (MathF.Abs(penetrationVector.Y) > Epsilon)
                         {
-                            Velocity.Y = 0;
-                            IsGrounded = true;
+                            if (penetrationVector.Y > 0 && Velocity.Y < 0)
+                            {
+                                Velocity.Y = 0;
+                                IsGrounded = true;
+                            }
+                            else if (penetrationVector.Y < 0 && Velocity.Y > 0)
+                                Velocity.Y = 0;
                         }
-                        }
+
+                        if (MathF.Abs(penetrationVector.X) > Epsilon)
+                            Velocity.X = 0;
+
+                        if (MathF.Abs(penetrationVector.Z) > Epsilon)
+                            Velocity.Z = 0;
+                    }
                 }
             }
         }
@@ -69,6 +83,19 @@ namespace Invasion.Math
         public void AddForce(Vector3f force)
         {
             Velocity += force / Mass;
+        }
+
+        public void Move(Vector3f inputDirection, float speed)
+        {
+            Vector3f direction = inputDirection.Length() > 0 ? Vector3f.Normalize(inputDirection) : Vector3f.Zero;
+
+            Vector3f desiredVelocity = direction * speed;
+
+            Velocity.X = desiredVelocity.X;
+            Velocity.Z = desiredVelocity.Z;
+
+            if (IsGrounded && Velocity.Y < 0)
+                Velocity.Y = 0;
         }
 
         private void ClampVelocity(float maxSpeed)

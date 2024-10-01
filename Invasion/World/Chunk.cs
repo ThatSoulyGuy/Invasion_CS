@@ -77,30 +77,28 @@ namespace Invasion.World
                         if (block == BlockList.AIR)
                             continue;
 
-                        Vector3i position = new Vector3i(x, y, z);
+                        Vector3i position = new(x, y, z);
 
                         for (int i = 0; i < FaceNormals.Length; i++)
                         {
                             Vector3f normal = FaceNormals[i];
-                            Vector3i facePosition = position;
-
-                            if (IsFaceExposed(facePosition, normal))
+                           
+                            if (IsFaceExposed(position, normal))
                             {
                                 if (!Colliders.ContainsKey(position))
                                 {
                                     Vector3f worldPosition = CoordinateHelper.BlockToWorldCoordinates(position, CoordinateHelper.WorldToChunkCoordinates(GameObject.Transform.WorldPosition));
-                                    
                                     worldPosition += new Vector3f(0.5f, 0.5f, 0.5f);
 
                                     Colliders.Add(position, BoundingBox.Create(worldPosition, Vector3f.One));
                                 }
 
                                 if (normal == new Vector3f(0, 1, 0))
-                                    AddFace(facePosition, normal, BlockList.GetBlockData(block).TopColor, atlas.GetTextureCoordinates(BlockList.GetBlockData(block).Textures["top"]), i);
+                                    AddFace(position, normal, BlockList.GetBlockData(block).TopColor, atlas.GetTextureCoordinates(BlockList.GetBlockData(block).Textures["top"]), i);
                                 else if (normal == new Vector3f(0, -1, 0))
-                                    AddFace(facePosition, normal, Vector3f.One, atlas.GetTextureCoordinates(BlockList.GetBlockData(block).Textures["bottom"]), i);
+                                    AddFace(position, normal, Vector3f.One, atlas.GetTextureCoordinates(BlockList.GetBlockData(block).Textures["bottom"]), i);
                                 else
-                                    AddFace(facePosition, normal, Vector3f.One, atlas.GetTextureCoordinates(BlockList.GetBlockData(block).Textures["side"]), i);
+                                    AddFace(position, normal, Vector3f.One, atlas.GetTextureCoordinates(BlockList.GetBlockData(block).Textures["side"]), i);
                             }
                         }
                     }
@@ -128,19 +126,35 @@ namespace Invasion.World
 
             Generate();
         }
-        
+
         private bool IsFaceExposed(Vector3i position, Vector3f normal)
         {
-            Vector3i adjacentPosition = position + new Vector3i((int)MathF.Round(normal.X), (int)MathF.Round(normal.Y), (int)MathF.Round(normal.Z));
+            IWorld world = InvasionMain.Overworld.GetComponent<IWorld>();
 
-            int adjacentX = adjacentPosition.X;
-            int adjacentY = adjacentPosition.Y;
-            int adjacentZ = adjacentPosition.Z;
+            Vector3i adjacentPosition = position + new Vector3i(
+                (int)MathF.Round(normal.X),
+                (int)MathF.Round(normal.Y),
+                (int)MathF.Round(normal.Z));
 
-            if (adjacentX < 0 || adjacentX >= CHUNK_SIZE || adjacentY < 0 || adjacentY >= CHUNK_SIZE || adjacentZ < 0 || adjacentZ >= CHUNK_SIZE)
+            Vector3i worldPosition = (CoordinateHelper.WorldToChunkCoordinates(GameObject.Transform.WorldPosition) * Chunk.CHUNK_SIZE) + adjacentPosition;
+
+            Vector3i adjacentChunkCoord = CoordinateHelper.WorldToChunkCoordinates(worldPosition);
+            Vector3i adjacentBlockCoord = CoordinateHelper.WorldToBlockCoordinates(worldPosition);
+
+            if (world.GetLoadedChunks().TryGetValue(adjacentChunkCoord, out Chunk adjacentChunk))
+            {
+                if (adjacentBlockCoord.X >= 0 && adjacentBlockCoord.X < Chunk.CHUNK_SIZE &&
+                    adjacentBlockCoord.Y >= 0 && adjacentBlockCoord.Y < Chunk.CHUNK_SIZE &&
+                    adjacentBlockCoord.Z >= 0 && adjacentBlockCoord.Z < Chunk.CHUNK_SIZE)
+                {
+                    short blockId = adjacentChunk.Blocks[adjacentBlockCoord.X, adjacentBlockCoord.Y, adjacentBlockCoord.Z];
+                    return blockId == BlockList.AIR;
+                }
+                else
+                    return true;
+            }
+            else
                 return true;
-
-            return Blocks[adjacentX, adjacentY, adjacentZ] == BlockList.AIR;
         }
 
         private void AddFace(Vector3f position, Vector3f normal, Vector3f color, Vector2f[] uv, int faceIndex)

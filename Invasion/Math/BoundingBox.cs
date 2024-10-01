@@ -90,6 +90,17 @@ namespace Invasion.Math
                    MinOffsetted.Z <= other.MaxOffsetted.Z + Epsilon && MaxOffsetted.Z >= other.MinOffsetted.Z - Epsilon;
         }
 
+        public BoundingBox GetSweptBroadphaseBox(Vector3f displacement)
+        {
+            BoundingBox broadphaseBox = new()
+            {
+                Position = displacement.X > 0 ? Min : Min + displacement,
+                Size = displacement.Abs()
+            };
+
+            return broadphaseBox;
+        }
+
         public override void CleanUp()
         {
             IsCleanedUp = true;

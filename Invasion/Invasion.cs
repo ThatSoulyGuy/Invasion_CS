@@ -43,7 +43,7 @@ namespace Invasion
             Overworld.AddComponent(IWorld.Create("overworld"));
 
             Player = GameObject.Create("Player");
-            Player.Transform.LocalPosition = new(0.0f, 20.0f, 0.0f);
+            Player.Transform.LocalPosition = new(0.0f, 60.0f, 0.0f);
 
             Player.AddComponent(BoundingBox.Create(new(0.6f, 1.89f, 0.6f)));
             Player.AddComponent(Rigidbody.Create());

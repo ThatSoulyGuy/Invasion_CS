@@ -320,6 +320,11 @@ namespace Invasion.Math
             return X * v.X + Y * v.Y + Z * v.Z;
         }
 
+        public Vector3f Abs()
+        {
+            return new Vector3f(System.Math.Abs(X), System.Math.Abs(Y), System.Math.Abs(Z));
+        }
+
         public Vector3f Cross(Vector3f v)
         {
             return new Vector3f(Y * v.Z - Z * v.Y, Z * v.X - X * v.Z, X * v.Y - Y * v.X);
@@ -342,6 +347,16 @@ namespace Invasion.Math
                 vector.X * matrix.M12 + vector.Y * matrix.M22 + vector.Z * matrix.M32,
                 vector.X * matrix.M13 + vector.Y * matrix.M23 + vector.Z * matrix.M33
             );
+        }
+
+        public static Vector3f Reflect(Vector3f vector, Vector3f normal)
+        {
+            return vector - 2 * normal * vector.Dot(normal);
+        }
+
+        public static float Dot(Vector3f a, Vector3f b)
+        {
+            return a.X * b.X + a.Y * b.Y + a.Z * b.Z;
         }
 
         public override bool Equals(object? obj)

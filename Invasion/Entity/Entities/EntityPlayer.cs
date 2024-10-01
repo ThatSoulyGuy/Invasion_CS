@@ -111,13 +111,15 @@ namespace Invasion.Entity.Entities
                 movement += right;
 
             if (InputManager.GetKeyHeld(KeyCode.Space) && rigidbody.IsGrounded)
-                rigidbody.AddForce(new(0.0f, 3.0f, 0.0f));
+                rigidbody.AddForce(new(0.0f, 6.0f, 0.0f));
 
             if (movement != Vector3f.Zero)
-            {
                 movement = Vector3f.Normalize(movement);
 
-            GameObject.Transform.LocalPosition += movement * InputManager.DeltaTime;
+            if (!rigidbody.IsGrounded)
+                movement *= 0.15f;
+
+            rigidbody.Move(movement * InputManager.DeltaTime, InputManager.GetKeyHeld(KeyCode.LeftShift) ? RunningSpeed : WalkingSpeed);
         }
     }
 }

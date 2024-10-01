@@ -19,6 +19,8 @@ namespace Invasion.World
         private List<Vector3i> ChunksToBeLoaded { get; set; } = [];
         private List<Vector3i> ChunksToBeUnloaded { get; set; } = [];
 
+        private bool chunksNeedGeneration = false;
+
         private IWorld() { }
         
         public override void Update()
@@ -41,12 +43,24 @@ namespace Invasion.World
                         requiredChunks.Add(chunkPos);
 
                         if (!LoadedChunks.ContainsKey(chunkPos) && !ChunksToBeLoaded.Contains(chunkPos))
+                        {
                             ChunksToBeLoaded.Add(chunkPos);
+                            chunksNeedGeneration = true;
+                        }
                     }
                 }
             }
 
             ChunksToBeUnloaded = LoadedChunks.Keys.Where(chunkPos => !requiredChunks.Contains(chunkPos) && chunkPos.Y == 0).ToList();
+
+            LoadReadyChunks();
+            UnloadReadyChunks();
+
+            if (chunksNeedGeneration)
+            {
+                GenerateChunks();
+                chunksNeedGeneration = false;
+            }
         }
 
         public void SetBlock(Vector3f worldPosition, short block, bool createChunkIfNotPresent = false)
@@ -58,16 +72,31 @@ namespace Invasion.World
                 value.SetBlock(blockPos, block);
             else if (createChunkIfNotPresent)
             {
-                GenerateChunk(CoordinateHelper.ChunkToWorldCoordinates(chunkPos), true);
+                GenerateChunk(CoordinateHelper.ChunkToWorldCoordinates(chunkPos), true, true);
 
                 LoadedChunks[chunkPos].SetBlock(blockPos, block);
+            }
+        }
+
+        public Dictionary<Vector3i, Chunk> GetLoadedChunks()
+        {
+            return LoadedChunks;
+        }
+
+        public void GenerateChunks()
+        {
+            foreach (var chunk in LoadedChunks.Values)
+            {
+                var chunkPos = CoordinateHelper.WorldToChunkCoordinates(chunk.GameObject.Transform.WorldPosition);
+
+                chunk.Generate();
             }
         }
 
         public void LoadReadyChunks()
         {
             foreach (var chunkPos in ChunksToBeLoaded)
-                GenerateChunk(CoordinateHelper.ChunkToWorldCoordinates(chunkPos));
+                GenerateChunk(CoordinateHelper.ChunkToWorldCoordinates(chunkPos), false);
         }
 
         public void UnloadReadyChunks()
@@ -76,7 +105,7 @@ namespace Invasion.World
                 UnloadChunk(CoordinateHelper.ChunkToWorldCoordinates(chunkPos));
         }
 
-        public Chunk GenerateChunk(Vector3i position, bool generateNothing = false)
+        public Chunk GenerateChunk(Vector3i position, bool automaticallyGenerate = true, bool generateNothing = false)
         {
             if (GameObjectManager.Get($"Chunk_Object_{position.X}_{position.Y}_{position.Z}_") != null)
                 return LoadedChunks[CoordinateHelper.WorldToChunkCoordinates(position)];
@@ -93,7 +122,8 @@ namespace Invasion.World
 
             Chunk result = chunkObject.AddComponent(Chunk.Create(generateNothing));
 
-            result.Generate();
+            if (automaticallyGenerate)
+                result.Generate();
 
             LoadedChunks.Add(CoordinateHelper.WorldToChunkCoordinates(position), result);
 
