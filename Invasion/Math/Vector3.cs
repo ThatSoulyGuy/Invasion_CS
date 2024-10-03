@@ -349,6 +349,15 @@ namespace Invasion.Math
             );
         }
 
+        public static Vector3f Transform(Vector3f vector, Matrix4x4 matrix)
+        {
+            return new Vector3f(
+                vector.X * matrix.M11 + vector.Y * matrix.M21 + vector.Z * matrix.M31 + matrix.M41,
+                vector.X * matrix.M12 + vector.Y * matrix.M22 + vector.Z * matrix.M32 + matrix.M42,
+                vector.X * matrix.M13 + vector.Y * matrix.M23 + vector.Z * matrix.M33 + matrix.M43
+            );
+        }
+
         public static Vector3f Reflect(Vector3f vector, Vector3f normal)
         {
             return vector - 2 * normal * vector.Dot(normal);

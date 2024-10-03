@@ -2,8 +2,10 @@
 using Invasion.Math;
 using Invasion.Render;
 using Invasion.Util;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace Invasion.World
 {
@@ -15,7 +17,7 @@ namespace Invasion.World
 
         public Vector3f[] LoaderPositions { get; set; } = [];
 
-        private Dictionary<Vector3i, Chunk> LoadedChunks { get; } = [] ;
+        private ConcurrentDictionary<Vector3i, Chunk> LoadedChunks { get; } = [] ;
         private List<Vector3i> ChunksToBeLoaded { get; set; } = [];
         private List<Vector3i> ChunksToBeUnloaded { get; set; } = [];
 
@@ -58,7 +60,7 @@ namespace Invasion.World
 
             if (chunksNeedGeneration)
             {
-                GenerateChunks();
+                Task.Run(GenerateChunks);
                 chunksNeedGeneration = false;
             }
         }
@@ -78,7 +80,7 @@ namespace Invasion.World
             }
         }
 
-        public Dictionary<Vector3i, Chunk> GetLoadedChunks()
+        public ConcurrentDictionary<Vector3i, Chunk> GetLoadedChunks()
         {
             return LoadedChunks;
         }
@@ -125,18 +127,20 @@ namespace Invasion.World
             if (automaticallyGenerate)
                 result.Generate();
 
-            LoadedChunks.Add(CoordinateHelper.WorldToChunkCoordinates(position), result);
+            LoadedChunks.TryAdd(CoordinateHelper.WorldToChunkCoordinates(position), result);
 
             return result;
         }
 
         public void UnloadChunk(Vector3i position)
         {
-            if (LoadedChunks.ContainsKey(CoordinateHelper.WorldToChunkCoordinates(position)))
-            {
-                GameObjectManager.Unregister(LoadedChunks[CoordinateHelper.WorldToChunkCoordinates(position)].GameObject.Name);
+            Vector3i chunkPosition = CoordinateHelper.WorldToChunkCoordinates(position);
 
-                LoadedChunks.Remove(CoordinateHelper.WorldToChunkCoordinates(position));
+            if (LoadedChunks.TryGetValue(chunkPosition, out Chunk? value))
+            {
+                GameObjectManager.Unregister(value.GameObject.Name);
+
+                LoadedChunks.TryRemove(chunkPosition, out _);
             }
         }
 

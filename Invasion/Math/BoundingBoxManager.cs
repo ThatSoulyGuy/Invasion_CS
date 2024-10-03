@@ -1,17 +1,18 @@
-﻿using System.Collections.Generic;
+﻿using System.Collections.Concurrent;
+using System.Collections.Generic;
 
 namespace Invasion.Math
 {
     public static class BoundingBoxManager
     {
-        private static Dictionary<Vector3f, BoundingBox> Colliders { get; } = [];
+        private static ConcurrentDictionary<Vector3f, BoundingBox> Colliders { get; } = [];
 
         public static void Register(BoundingBox collider)
         {
             if (Colliders.ContainsKey(collider.Position))
                 return;
 
-            Colliders.Add(collider.Position, collider);
+            Colliders.TryAdd(collider.Position, collider);
         }
 
         public static BoundingBox Get(Vector3f position)
@@ -26,7 +27,7 @@ namespace Invasion.Math
 
         public static void Unregister(BoundingBox collider)
         {
-            Colliders.Remove(collider.Position);
+            Colliders.TryRemove(collider.Position, out _);
         }
     }
 }

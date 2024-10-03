@@ -10,6 +10,8 @@ namespace Invasion.Math
         public Vector3f LocalRotation { get; set; } = Vector3f.Zero;
         public Vector3f LocalScale { get; set; } = Vector3f.One;
 
+        public Vector3f PivotPoint { get; set; } = Vector3f.Zero;
+
         public Vector3f WorldPosition
         {
             get
@@ -64,9 +66,15 @@ namespace Invasion.Math
             LocalRotation += rotation;
         }
 
-        public void Rotate(Vector3f axis, float angle)
+        public void RotateAround(Vector3f pivot, Vector3f axis, float angle)
         {
-            LocalRotation += axis * angle;
+            Vector3f direction = LocalPosition - pivot;
+            Matrix4x4 rotationMatrix = Matrix4x4.CreateFromAxisAngle(axis, angle);
+
+            direction = Vector3f.Transform(direction, rotationMatrix);
+            LocalPosition = pivot + direction;
+
+            Rotate(axis * angle);
         }
 
         public void Scale(Vector3f scale)
@@ -76,11 +84,14 @@ namespace Invasion.Math
 
         public Matrix4x4 GetModelMatrix()
         {
+            Matrix4x4 translationToPivot = Matrix4x4.CreateTranslation(-PivotPoint);
+            Matrix4x4 translationFromPivot = Matrix4x4.CreateTranslation(PivotPoint);
+
             Matrix4x4 translation = Matrix4x4.CreateTranslation(LocalPosition);
             Matrix4x4 rotation = Matrix4x4.CreateFromYawPitchRoll(LocalRotation.Y, LocalRotation.X, LocalRotation.Z);
             Matrix4x4 scale = Matrix4x4.CreateScale(LocalScale);
 
-            Matrix4x4 localTransform = scale * rotation * translation;
+            Matrix4x4 localTransform = translationToPivot * (scale * rotation) * translationFromPivot * translation;
 
             if (Parent != null)
                 return localTransform * Parent.GetModelMatrix();
@@ -88,13 +99,14 @@ namespace Invasion.Math
                 return localTransform;
         }
 
-        public static Transform Create(Vector3f position, Vector3f rotation, Vector3f scale)
+        public static Transform Create(Vector3f position, Vector3f rotation, Vector3f scale, Vector3f pivotPoint)
         {
             return new()
             {
                 LocalPosition = position,
                 LocalRotation = rotation,
-                LocalScale = scale
+                LocalScale = scale,
+                PivotPoint = pivotPoint
             };
         }
 

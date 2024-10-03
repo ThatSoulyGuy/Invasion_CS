@@ -1,6 +1,7 @@
 ﻿using Invasion.Core;
 using Invasion.ECS;
 using Invasion.Entity.Entities;
+using Invasion.Entity.Models;
 using Invasion.Math;
 using Invasion.Page;
 using Invasion.Render;
@@ -18,6 +19,7 @@ namespace Invasion
         public static GameObject Overworld { get; private set; } = null!;
 
         public static GameObject Player { get; private set; } = null!;
+        public static GameObject Pig { get; private set; } = null!;
 
         public static void Initialize()
         {
@@ -38,6 +40,7 @@ namespace Invasion
             }));
 
             TextureAtlasManager.Register(TextureAtlas.Create("blocks", new("Texture/Block", "Invasion"), new("Texture/Atlas", "Invasion")));
+            TextureAtlasManager.Register(TextureAtlas.Create("entities", new("Texture/Entity", "Invasion"), new("Texture/Atlas", "Invasion")));
 
             Overworld = GameObject.Create("Overworld");
             Overworld.AddComponent(IWorld.Create("overworld"));
@@ -48,6 +51,14 @@ namespace Invasion
             Player.AddComponent(BoundingBox.Create(new(0.6f, 1.89f, 0.6f)));
             Player.AddComponent(Rigidbody.Create());
             Player.AddComponent(new EntityPlayer());
+
+            Pig = GameObject.Create("Pig");
+            Pig.Transform.LocalPosition = new(0.0f, 50.0f, 0.0f);
+
+            Pig.AddComponent(BoundingBox.Create(new(0.95f, 0.95f, 0.95f)));
+            Pig.AddComponent(Rigidbody.Create());
+            Pig.AddComponent(new ModelPig());
+            Pig.AddComponent(new EntityPig());
         }
 
         public static void Update(object? s, EventArgs a)

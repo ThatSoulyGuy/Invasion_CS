@@ -2,6 +2,7 @@
 using Invasion.ECS;
 using System;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace Invasion.Math
 {
@@ -23,61 +24,64 @@ namespace Invasion.Math
 
         public override void Update()
         {
-            BoundingBox collider = GameObject.GetComponent<BoundingBox>();
-
-            if (collider == null)
+            Task.Run(() =>
             {
-                Console.WriteLine("No BoundingBox component found on the GameObject.");
-                return;
-            }
+                BoundingBox collider = GameObject.GetComponent<BoundingBox>();
 
-            float deltaTime = InputManager.DeltaTime;
-            float maxTimeStep = 0.02f;
-            int steps = (int)MathF.Ceiling(deltaTime / maxTimeStep);
-            float stepTime = deltaTime / steps;
-
-            for (int i = 0; i < steps; i++)
-            {
-                Velocity.Y += Gravity * stepTime;
-                Velocity *= (1 - Drag);
-
-                ClampVelocity(MaxVelocity);
-
-                Vector3f displacement = Velocity * stepTime;
-
-                GameObject.Transform.Translate(displacement);
-
-                IsGrounded = false;
-
-                var colliders = BoundingBoxManager.GetAll().Where(x => x != collider).ToList();
-
-                foreach (var otherCollider in colliders)
+                if (collider == null)
                 {
-                    if (collider.IntersectsOffsetted(otherCollider))
+                    Console.WriteLine("No BoundingBox component found on the GameObject.");
+                    return;
+                }
+
+                float deltaTime = InputManager.DeltaTime;
+                float maxTimeStep = 0.02f;
+                int steps = (int)MathF.Ceiling(deltaTime / maxTimeStep);
+                float stepTime = deltaTime / steps;
+
+                for (int i = 0; i < steps; i++)
+                {
+                    Velocity.Y += Gravity * stepTime;
+                    Velocity *= (1 - Drag);
+
+                    ClampVelocity(MaxVelocity);
+
+                    Vector3f displacement = Velocity * stepTime;
+
+                    GameObject.Transform.Translate(displacement);
+
+                    IsGrounded = false;
+
+                    var colliders = BoundingBoxManager.GetAll().Where(x => x != collider).ToList();
+
+                    foreach (var otherCollider in colliders)
                     {
-                        Vector3f penetrationVector = ComputePenetrationDepth(collider, otherCollider);
-
-                        GameObject.Transform.Translate(penetrationVector);
-
-                        if (MathF.Abs(penetrationVector.Y) > Epsilon)
+                        if (collider.IntersectsOffsetted(otherCollider))
                         {
-                            if (penetrationVector.Y > 0 && Velocity.Y < 0)
+                            Vector3f penetrationVector = ComputePenetrationDepth(collider, otherCollider);
+
+                            GameObject.Transform.Translate(penetrationVector);
+
+                            if (MathF.Abs(penetrationVector.Y) > Epsilon)
                             {
-                                Velocity.Y = 0;
-                                IsGrounded = true;
+                                if (penetrationVector.Y > 0 && Velocity.Y < 0)
+                                {
+                                    Velocity.Y = 0;
+                                    IsGrounded = true;
+                                }
+                                else if (penetrationVector.Y < 0 && Velocity.Y > 0)
+                                    Velocity.Y = 0;
                             }
-                            else if (penetrationVector.Y < 0 && Velocity.Y > 0)
-                                Velocity.Y = 0;
+
+                            if (MathF.Abs(penetrationVector.X) > Epsilon)
+                                Velocity.X = 0;
+
+                            if (MathF.Abs(penetrationVector.Z) > Epsilon)
+                                Velocity.Z = 0;
                         }
-
-                        if (MathF.Abs(penetrationVector.X) > Epsilon)
-                            Velocity.X = 0;
-
-                        if (MathF.Abs(penetrationVector.Z) > Epsilon)
-                            Velocity.Z = 0;
                     }
                 }
-            }
+            });
         }
 
         public void AddForce(Vector3f force)

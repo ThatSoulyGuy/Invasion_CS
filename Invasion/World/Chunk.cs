@@ -4,6 +4,7 @@ using Invasion.Math;
 using Invasion.Render;
 using Invasion.Util;
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 
 namespace Invasion.World
@@ -17,7 +18,7 @@ namespace Invasion.World
         private List<Vertex> Vertices { get; set; } = [];
         private List<uint> Indices { get; set; } = [];
 
-        private Dictionary<Vector3i, BoundingBox> Colliders { get; } = [];
+        private ConcurrentDictionary<Vector3i, BoundingBox> Colliders { get; } = [];
 
         private static Vector3f[] FaceNormals { get; } =
         [
@@ -90,7 +91,7 @@ namespace Invasion.World
                                     Vector3f worldPosition = CoordinateHelper.BlockToWorldCoordinates(position, CoordinateHelper.WorldToChunkCoordinates(GameObject.Transform.WorldPosition));
                                     worldPosition += new Vector3f(0.5f, 0.5f, 0.5f);
 
-                                    Colliders.Add(position, BoundingBox.Create(worldPosition, Vector3f.One));
+                                    Colliders.TryAdd(position, BoundingBox.Create(worldPosition, Vector3f.One));
                                 }
 
                                 if (normal == new Vector3f(0, 1, 0))
@@ -141,7 +142,7 @@ namespace Invasion.World
             Vector3i adjacentChunkCoord = CoordinateHelper.WorldToChunkCoordinates(worldPosition);
             Vector3i adjacentBlockCoord = CoordinateHelper.WorldToBlockCoordinates(worldPosition);
 
-            if (world.GetLoadedChunks().TryGetValue(adjacentChunkCoord, out Chunk adjacentChunk))
+            if (world.GetLoadedChunks().TryGetValue(adjacentChunkCoord, out Chunk? adjacentChunk))
             {
                 if (adjacentBlockCoord.X >= 0 && adjacentBlockCoord.X < Chunk.CHUNK_SIZE &&
                     adjacentBlockCoord.Y >= 0 && adjacentBlockCoord.Y < Chunk.CHUNK_SIZE &&
