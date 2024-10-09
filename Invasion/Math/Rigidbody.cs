@@ -114,7 +114,7 @@ namespace Invasion.Math
             Vector3f bHalfSize = (b.MaxOffsetted - b.MinOffsetted) * 0.5f;
 
             Vector3f aCenter = a.MinOffsetted + aHalfSize;
-            Vector3f bCenter = b.MinOffsetted + bHalfSize; c
+            Vector3f bCenter = b.MinOffsetted + bHalfSize;
 
             Vector3f delta = bCenter - aCenter;
             Vector3f overlap = new Vector3f(
