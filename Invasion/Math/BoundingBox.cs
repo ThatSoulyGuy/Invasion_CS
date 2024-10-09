@@ -64,8 +64,6 @@ namespace Invasion.Math
         public Vector3f Size { get; set; } = Vector3f.One;
 
         private const float Epsilon = 1e-6f;
-
-        private bool IsComponent => GameObject != null;
         private bool IsCleanedUp { get; set; } = false;
 
         private BoundingBox() { }
