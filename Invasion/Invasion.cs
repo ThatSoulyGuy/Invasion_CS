@@ -65,6 +65,8 @@ namespace Invasion
         {
             Overworld.GetComponent<IWorld>().LoaderPositions = [Player.Transform.WorldPosition];
 
+            Pig.GetComponent<EntityPig>().PlayerPosition = Player.Transform.WorldPosition;
+
             InputManager.Update();
             GameObjectManager.Update();
         }

@@ -30,67 +30,78 @@ namespace Invasion.Render
         private ID3D11Buffer VertexBuffer { get; set; } = null!;
         private ID3D11Buffer IndexBuffer { get; set; } = null!;
 
+        private object Lock { get; set; } = new();
+
         private Mesh() { }
 
         public void Generate()
         {
-            ID3D11Device5 device = Renderer.Device;
-
-            BufferDescription vertexBufferDescription = new()
+            lock (Lock)
             {
-                BindFlags = BindFlags.VertexBuffer,
-                CPUAccessFlags = CpuAccessFlags.None,
-                MiscFlags = ResourceOptionFlags.None,
-                ByteWidth = Marshal.SizeOf<Vertex>() * Vertices.Count,
-                StructureByteStride = 0,
-                Usage = ResourceUsage.Default
-            };
+                if (Vertices.Count == 0 || Indices.Count == 0)
+                    return;
 
-            GCHandle vertexHandle = GCHandle.Alloc(Vertices.ToArray(), GCHandleType.Pinned);
+                VertexBuffer?.Dispose();
+                IndexBuffer?.Dispose();
 
-            try
-            {
-                SubresourceData vertexBufferSubresourceData = new()
+                ID3D11Device5 device = Renderer.Device;
+
+                BufferDescription vertexBufferDescription = new()
                 {
-                    DataPointer = vertexHandle.AddrOfPinnedObject(),
-                    RowPitch = 0,
-                    SlicePitch = 0
+                    BindFlags = BindFlags.VertexBuffer,
+                    CPUAccessFlags = CpuAccessFlags.None,
+                    MiscFlags = ResourceOptionFlags.None,
+                    ByteWidth = Marshal.SizeOf<Vertex>() * Vertices.Count,
+                    StructureByteStride = 0,
+                    Usage = ResourceUsage.Default
                 };
 
-                VertexBuffer = device.CreateBuffer(vertexBufferDescription, vertexBufferSubresourceData);
-            }
-            finally
-            {
-                vertexHandle.Free();
-            }
+                GCHandle vertexHandle = GCHandle.Alloc(Vertices.ToArray(), GCHandleType.Pinned);
 
-
-            BufferDescription indexBufferDescription = new()
-            {
-                BindFlags = BindFlags.IndexBuffer,
-                CPUAccessFlags = CpuAccessFlags.None,
-                MiscFlags = ResourceOptionFlags.None,
-                ByteWidth = sizeof(uint) * Indices.Count,
-                StructureByteStride = 0,
-                Usage = ResourceUsage.Default
-            };
-
-            GCHandle indexHandle = GCHandle.Alloc(Indices.ToArray(), GCHandleType.Pinned);
-
-            try
-            {
-                SubresourceData indexBufferSubresourceData = new()
+                try
                 {
-                    DataPointer = indexHandle.AddrOfPinnedObject(),
-                    RowPitch = 0,
-                    SlicePitch = 0
+                    SubresourceData vertexBufferSubresourceData = new()
+                    {
+                        DataPointer = vertexHandle.AddrOfPinnedObject(),
+                        RowPitch = 0,
+                        SlicePitch = 0
+                    };
+
+                    VertexBuffer = device.CreateBuffer(vertexBufferDescription, vertexBufferSubresourceData);
+                }
+                finally
+                {
+                    vertexHandle.Free();
+                }
+
+
+                BufferDescription indexBufferDescription = new()
+                {
+                    BindFlags = BindFlags.IndexBuffer,
+                    CPUAccessFlags = CpuAccessFlags.None,
+                    MiscFlags = ResourceOptionFlags.None,
+                    ByteWidth = sizeof(uint) * Indices.Count,
+                    StructureByteStride = 0,
+                    Usage = ResourceUsage.Default
                 };
 
-                IndexBuffer = device.CreateBuffer(indexBufferDescription, indexBufferSubresourceData);
-            }
-            finally
-            {
-                indexHandle.Free();
+                GCHandle indexHandle = GCHandle.Alloc(Indices.ToArray(), GCHandleType.Pinned);
+
+                try
+                {
+                    SubresourceData indexBufferSubresourceData = new()
+                    {
+                        DataPointer = indexHandle.AddrOfPinnedObject(),
+                        RowPitch = 0,
+                        SlicePitch = 0
+                    };
+
+                    IndexBuffer = device.CreateBuffer(indexBufferDescription, indexBufferSubresourceData);
+                }
+                finally
+                {
+                    indexHandle.Free();
+                }
             }
         }
 

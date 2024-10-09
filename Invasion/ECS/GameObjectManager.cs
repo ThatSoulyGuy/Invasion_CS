@@ -1,11 +1,12 @@
 ﻿using Invasion.Render;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 
 namespace Invasion.ECS
 {
     public static class GameObjectManager
     {
-        private static Dictionary<string, GameObject> GameObjects { get; } = [];
+        private static ConcurrentDictionary<string, GameObject> GameObjects { get; } = [];
 
         private static List<GameObject> PendingRegistrations { get; } = [];
         private static List<string> PendingUnregistrations { get; } = [];
@@ -17,7 +18,7 @@ namespace Invasion.ECS
             if (isEnumerating)
                 PendingRegistrations.Add(gameObject);
             else
-                GameObjects.Add(gameObject.Name, gameObject);
+                GameObjects.TryAdd(gameObject.Name, gameObject);
         }
 
         public static GameObject Get(string name)
@@ -34,8 +35,11 @@ namespace Invasion.ECS
                 PendingUnregistrations.Add(name);
             else
             {
-                GameObjects[name].CleanUp();
-                GameObjects.Remove(name);
+                if (GameObjects.TryGetValue(name, out GameObject? value))
+                {
+                    value.CleanUp();
+                    GameObjects.TryRemove(name, out _);
+                }
             }
         }
 
@@ -83,7 +87,7 @@ namespace Invasion.ECS
                 if (GameObjects.TryGetValue(name, out GameObject? value))
                 {
                     value.CleanUp();
-                    GameObjects.Remove(name);
+                    GameObjects.TryRemove(name, out _);
                 }
             }
 

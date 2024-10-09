@@ -40,6 +40,8 @@ namespace Invasion.ECS
 
         public void AddChild(GameObject child)
         {
+            GameObjectManager.Unregister(child.Name);
+
             child.Parent = this;
             child.GetComponent<Transform>().Parent = GetComponent<Transform>();
 
@@ -68,18 +70,27 @@ namespace Invasion.ECS
         {
             foreach (Component component in Components.Values)
                 component.Update();
+
+            foreach (GameObject child in Children.Values)
+                child.Update();
         }
 
         public void Render(Camera camera)
         {
             foreach (Component component in Components.Values)
                 component.Render(camera);
+
+            foreach (GameObject child in Children.Values)
+                child.Render(camera);
         }
 
         public void CleanUp()
         {
             foreach (Component component in Components.Values)
                 component.CleanUp();
+
+            foreach (GameObject child in Children.Values)
+                child.CleanUp();
         }
 
         public static GameObject Create(string name)

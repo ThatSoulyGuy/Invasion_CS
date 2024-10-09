@@ -88,10 +88,16 @@ namespace Invasion.Math
             Matrix4x4 translationFromPivot = Matrix4x4.CreateTranslation(PivotPoint);
 
             Matrix4x4 translation = Matrix4x4.CreateTranslation(LocalPosition);
-            Matrix4x4 rotation = Matrix4x4.CreateFromYawPitchRoll(LocalRotation.Y, LocalRotation.X, LocalRotation.Z);
+            Matrix4x4 rotation = Matrix4x4.CreateFromYawPitchRoll(
+                MathHelper.ToRadians(LocalRotation.Y),
+                MathHelper.ToRadians(LocalRotation.X),
+                MathHelper.ToRadians(LocalRotation.Z)
+            );
             Matrix4x4 scale = Matrix4x4.CreateScale(LocalScale);
 
-            Matrix4x4 localTransform = translationToPivot * (scale * rotation) * translationFromPivot * translation;
+            Matrix4x4 transformAroundPivot = translationToPivot * scale * rotation * translationFromPivot;
+
+            Matrix4x4 localTransform = scale * rotation * translation;
 
             if (Parent != null)
                 return localTransform * Parent.GetModelMatrix();

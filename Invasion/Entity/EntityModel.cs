@@ -8,20 +8,27 @@ namespace Invasion.Entity.Model
 {
     public abstract class EntityModel : Component
     {
+        public GameObject ModelObject => GameObject.GetChild("Model");
+
         private Dictionary<string, GameObject> Parts { get; } = [];
 
         protected EntityModel() { }
+
+        public override void Initialize()
+        {
+            GameObject.AddChild(GameObject.Create("Model"));
+        }
 
         public ModelPart Register(ModelPart part)
         {
             if (Parts.ContainsKey(part.Name))
                 return null!;
 
-            string name = part.Name + new Random().Next();
+            string name = part.Name;
 
-            GameObject.AddChild(GameObject.Create(name));
+            ModelObject.AddChild(GameObject.Create(name));
 
-            GameObject partObject = GameObject.GetChild(name);
+            GameObject partObject = ModelObject.GetChild(name);
 
             partObject.AddComponent(ShaderManager.Get("default"));
             partObject.AddComponent(TextureAtlasManager.Get("entities").Atlas);

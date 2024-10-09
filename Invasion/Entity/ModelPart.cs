@@ -27,7 +27,7 @@ namespace Invasion.Entity.Model
         public string Name { get; init; } = string.Empty;
         public string TextureName { get; init; } = string.Empty;
 
-        public List<Cube> Cubes { get; init; } = new();
+        public List<Cube> Cubes { get; init; } = [];
 
         public Mesh Mesh => GameObject.GetComponent<Mesh>();
 

@@ -12,7 +12,7 @@ namespace Invasion.Entity.Entities
     public class EntityPlayer() : IEntity(100.0f, 6.0f, 12.0f)
     {
         public override string RegistryName => "entity_player";
-        public float MouseSensitivity { get; set; } = 2.0f;
+        public float MouseSensitivity { get; set; } = 80.0f;
         public GameObject RenderCamera => GameObject.GetChild("Camera");
 
         public override void Initialize()

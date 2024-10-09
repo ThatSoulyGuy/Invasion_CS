@@ -20,6 +20,8 @@ namespace Invasion.World
 
         private ConcurrentDictionary<Vector3i, BoundingBox> Colliders { get; } = [];
 
+        private object Lock { get; } = new();
+
         private static Vector3f[] FaceNormals { get; } =
         [
             new( 0,  0,  1),
@@ -57,9 +59,12 @@ namespace Invasion.World
 
         public void Generate()
         {
-            Vertices.Clear();
-            Indices.Clear();
-
+            lock(Lock)
+            {
+                Vertices.Clear();
+                Indices.Clear();
+            }
+            
             foreach (var collider in Colliders.Values)
                 collider.CleanUp();
 
@@ -94,25 +99,31 @@ namespace Invasion.World
                                     Colliders.TryAdd(position, BoundingBox.Create(worldPosition, Vector3f.One));
                                 }
 
-                                if (normal == new Vector3f(0, 1, 0))
-                                    AddFace(position, normal, BlockList.GetBlockData(block).TopColor, atlas.GetTextureCoordinates(BlockList.GetBlockData(block).Textures["top"]), i);
-                                else if (normal == new Vector3f(0, -1, 0))
-                                    AddFace(position, normal, Vector3f.One, atlas.GetTextureCoordinates(BlockList.GetBlockData(block).Textures["bottom"]), i);
-                                else
-                                    AddFace(position, normal, Vector3f.One, atlas.GetTextureCoordinates(BlockList.GetBlockData(block).Textures["side"]), i);
+                                lock (Lock)
+                                {
+                                    if (normal == new Vector3f(0, 1, 0))
+                                        AddFace(position, normal, BlockList.GetBlockData(block).TopColor, atlas.GetTextureCoordinates(BlockList.GetBlockData(block).Textures["top"]), i);
+                                    else if (normal == new Vector3f(0, -1, 0))
+                                        AddFace(position, normal, Vector3f.One, atlas.GetTextureCoordinates(BlockList.GetBlockData(block).Textures["bottom"]), i);
+                                    else
+                                        AddFace(position, normal, Vector3f.One, atlas.GetTextureCoordinates(BlockList.GetBlockData(block).Textures["side"]), i);
+                                }
                             }
                         }
                     }
                 }
             }
 
-            Mesh mesh = GameObject.GetComponent<Mesh>();
+            lock (Lock)
+            {
+                Mesh mesh = GameObject.GetComponent<Mesh>();
 
-            mesh.Vertices = Vertices;
-            mesh.Indices = Indices;
+                mesh.Vertices = Vertices;
+                mesh.Indices = Indices;
 
-            if (Vertices.Count != 0 && Indices.Count != 0)
-                mesh.Generate();
+                if (Vertices.Count != 0 && Indices.Count != 0)
+                    mesh.Generate();
+            }
         }
 
         public void SetBlock(Vector3i position, short block)
