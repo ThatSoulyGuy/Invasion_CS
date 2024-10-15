@@ -4,28 +4,6 @@ namespace Invasion.Math
 {
     public class BoundingBox : Component
     {
-        public Vector3f MinOffsetted
-        {
-            get
-            {
-                if (IsComponent)
-                    return GameObject.Transform.WorldPosition + new Vector3f(0.0f, 0.0f, 3.0f) - (Size / 2);
-                else
-                    return PositionNoComponent - (Size / 2);
-            }
-        }
-
-        public Vector3f MaxOffsetted
-        {
-            get
-            {
-                if (IsComponent)
-                    return GameObject.Transform.WorldPosition + new Vector3f(0.0f, 0.0f, 3.0f) + (Size / 2);
-                else
-                    return PositionNoComponent + (Size / 2);
-            }
-        }
-
         public Vector3f Min
         {
             get
@@ -70,24 +48,11 @@ namespace Invasion.Math
 
         private BoundingBox() { }
 
-        ~BoundingBox()
-        {
-            if (!IsCleanedUp)
-                CleanUp();
-        }
-
         public bool Intersects(BoundingBox other)
         {
             return Min.X <= other.Max.X + Epsilon && Max.X >= other.Min.X - Epsilon &&
                    Min.Y <= other.Max.Y + Epsilon && Max.Y >= other.Min.Y - Epsilon &&
                    Min.Z <= other.Max.Z + Epsilon && Max.Z >= other.Min.Z - Epsilon;
-        }
-
-        public bool IntersectsOffsetted(BoundingBox other)
-        {
-            return MinOffsetted.X <= other.MaxOffsetted.X + Epsilon && MaxOffsetted.X >= other.MinOffsetted.X - Epsilon &&
-                   MinOffsetted.Y <= other.MaxOffsetted.Y + Epsilon && MaxOffsetted.Y >= other.MinOffsetted.Y - Epsilon &&
-                   MinOffsetted.Z <= other.MaxOffsetted.Z + Epsilon && MaxOffsetted.Z >= other.MinOffsetted.Z - Epsilon;
         }
 
         public BoundingBox GetSweptBroadphaseBox(Vector3f displacement)

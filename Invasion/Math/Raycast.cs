@@ -116,7 +116,6 @@ namespace Invasion.Math
 
             if (System.Math.Abs(rayDirection) < epsilon)
             {
-                // Ray is parallel to the slab. No hit if origin not within slab.
                 if (rayOrigin < slabMin || rayOrigin > slabMax)
                     return false;
             }
@@ -130,7 +129,6 @@ namespace Invasion.Math
 
                 if (invD < 0.0)
                 {
-                    // Swap t0 and t1
                     (t0, t1) = (t1, t0);
                     n = -axisNormal;
                 }
