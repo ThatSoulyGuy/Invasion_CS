@@ -41,7 +41,7 @@ namespace Invasion.Util
             return new Vector3i(x, y, z);
         }
 
-        private static int Mod(int a, int n)
+        public static int Mod(int a, int n)
         {
             int result = a % n;
 

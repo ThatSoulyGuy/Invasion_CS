@@ -7,7 +7,9 @@ using Invasion.Page;
 using Invasion.Render;
 using Invasion.World;
 using System;
+using System.IO;
 using System.Runtime.InteropServices;
+using System.Threading;
 using System.Windows.Forms;
 
 namespace Invasion
@@ -104,6 +106,49 @@ namespace Invasion
 
         public static void Main()
         {
+#if RELEASE
+            if (!File.Exists(Application.CommonAppDataPath + "/" + "Invasion.nomodify"))
+            {
+                Console.WriteLine("Invasion***");
+                Console.WriteLine("Initializing critical systems...");
+                Thread.Sleep(1500);
+                Console.WriteLine("ERROR! Failed to verify secure protocol...");
+                Thread.Sleep(800);
+                Console.WriteLine("Retrying secure handshake...");
+                Thread.Sleep(1200);
+                Console.WriteLine("DEPLOYMENT_STATUS: {ERROR} [Code: 0x89B2]");
+                Thread.Sleep(1000);
+                Console.WriteLine("!!! ALERT: Unauthorized access detected !!!");
+                Thread.Sleep(500);
+                Console.WriteLine("0xAB34D, 0x76A9C, 0xEF5C2, 0x9834H9");
+                Thread.Sleep(300);
+                Console.WriteLine("Attempting countermeasure deployment...");
+                Thread.Sleep(700);
+                Console.WriteLine("VIRUS_STATUS: {RUNNING}");
+                Thread.Sleep(500);
+                Console.WriteLine("Injecting payload 0x67234...");
+                Thread.Sleep(1500);
+                Console.WriteLine("System integrity compromised. Retrying...");
+                Thread.Sleep(1000);
+                Console.WriteLine("Retried V_DBG_ANNOY_H3 protocol {7} times! FAILURE.");
+                Thread.Sleep(2500);
+                Console.WriteLine("Shutting down non-essential services...");
+                Thread.Sleep(1000);
+                Console.WriteLine("ERROR: Shutdown command ignored. Unauthorized access escalating...");
+                Thread.Sleep(2000);
+                Console.WriteLine("FATAL ERROR: System breach imminent.");
+                Thread.Sleep(1500);
+                Console.WriteLine("0x483F7, 0x12CD9, 0xBF983, 0x03A17D");
+                Thread.Sleep(800);
+                Console.WriteLine("Critical failure. Entering lockdown mode...");
+                Thread.Sleep(1500);
+                Console.WriteLine("THREAD_INTERRUPT {0x4857F}, User interrupted thread, proceeding with initialization\"\"\"");
+                Thread.Sleep(3000);
+
+                File.WriteAllText(Application.CommonAppDataPath + "/" + "Invasion.nomodify", "Completed");
+            }
+#endif
+
             SetProcessDpiAwarenessContext(DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2);
 
             Window = new Window();

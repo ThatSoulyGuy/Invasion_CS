@@ -56,7 +56,7 @@ namespace Invasion.Math
 
                     foreach (var otherCollider in colliders)
                     {
-                        if (collider.IntersectsOffsetted(otherCollider))
+                        if (collider.Intersects(otherCollider))
                         {
                             Vector3f penetrationVector = ComputePenetrationDepth(collider, otherCollider);
 
@@ -110,11 +110,11 @@ namespace Invasion.Math
 
         private Vector3f ComputePenetrationDepth(BoundingBox a, BoundingBox b)
         {
-            Vector3f aHalfSize = (a.MaxOffsetted - a.MinOffsetted) * 0.5f;
-            Vector3f bHalfSize = (b.MaxOffsetted - b.MinOffsetted) * 0.5f;
+            Vector3f aHalfSize = (a.Max - a.Min) * 0.5f;
+            Vector3f bHalfSize = (b.Max - b.Min) * 0.5f;
 
-            Vector3f aCenter = a.MinOffsetted + aHalfSize;
-            Vector3f bCenter = b.MinOffsetted + bHalfSize;
+            Vector3f aCenter = a.Min + aHalfSize;
+            Vector3f bCenter = b.Min + bHalfSize;
 
             Vector3f delta = bCenter - aCenter;
             Vector3f overlap = new Vector3f(

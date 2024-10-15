@@ -35,7 +35,7 @@ namespace Invasion.Math
 
             var boundingBoxes = BoundingBoxManager.GetAll();
 
-            double closestDistance = double.MaxValue;
+            double closestDistance = double.MaxValue; 
             RayHitInformation closestHitInfo = new();
 
             foreach (var box in boundingBoxes)

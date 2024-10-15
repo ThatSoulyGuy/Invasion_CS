@@ -24,7 +24,7 @@ namespace Invasion.Entity.Entities
             GameObject.AddChild(GameObject.Create("Camera"));
 
             RenderCamera.AddComponent(Camera.Create(45.0f, 0.01f, 1000.0f));
-            RenderCamera.Transform.LocalPosition = new(0.0f, 0.9f, 3.0f);
+            RenderCamera.Transform.LocalPosition = new(0.0f, 0.9f, 0.0f);
         }
 
         public override void Update()
