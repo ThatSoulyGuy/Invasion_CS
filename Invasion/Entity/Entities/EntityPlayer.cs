@@ -38,9 +38,15 @@ namespace Invasion.Entity.Entities
 
         private void UpdateControls()
         {
+            var cameraWorldPosition = RenderCamera.Transform.WorldPosition;
+            var cameraForward = RenderCamera.Transform.Forward;
+
+            Console.WriteLine($"Camera World Position: {cameraWorldPosition}");
+            Console.WriteLine($"Camera Forward: {cameraForward}");
+
             if (InputManager.MouseLeftPressed)
             {
-                var (hit, information) = Raycast.Cast(RenderCamera.Transform.WorldPosition, Vector3f.Normalize(RenderCamera.Transform.Forward), 10.0f);
+                var (hit, information) = Raycast.Cast(RenderCamera.Transform.WorldPositionTransposed, RenderCamera.Transform.ForwardTransposed, 10.0f);
 
                 Vector3f position = information.HitPoint;
 
@@ -52,7 +58,7 @@ namespace Invasion.Entity.Entities
 
             if (InputManager.MouseRightPressed)
             {
-                var (hit, information) = Raycast.Cast(RenderCamera.Transform.WorldPosition, Vector3f.Normalize(RenderCamera.Transform.Forward), 10.0f);
+                var (hit, information) = Raycast.Cast(RenderCamera.Transform.WorldPositionTransposed, RenderCamera.Transform.ForwardTransposed, 10.0f);
 
                 Vector3f position = information.HitPoint;
 

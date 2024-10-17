@@ -280,6 +280,34 @@ namespace Invasion.Math
             return new Vector3f(-a.X, -a.Y, -a.Z);
         }
 
+        public float this[int index]
+        {
+            readonly get => index switch
+            {
+                0 => X,
+                1 => Y,
+                2 => Z,
+                _ => throw new IndexOutOfRangeException()
+            };
+            set
+            {
+                switch (index)
+                {
+                    case 0:
+                        X = value;
+                        break;
+                    case 1:
+                        Y = value;
+                        break;
+                    case 2:
+                        Z = value;
+                        break;
+                    default:
+                        throw new IndexOutOfRangeException();
+                }
+            }
+        }
+
         public static implicit operator Vector3i(Vector3f v)
         {
             return new Vector3i((int)v.X, (int)v.Y, (int)v.Z);
@@ -302,7 +330,7 @@ namespace Invasion.Math
 
         public static bool operator ==(Vector3f a, Vector3f b)
         {
-            return a.X == b.X && a.Y == b.Y;
+            return a.X == b.X && a.Y == b.Y && a.Z == b.Z;
         }
 
         public static bool operator !=(Vector3f a, Vector3f b)
@@ -378,7 +406,7 @@ namespace Invasion.Math
 
         public override int GetHashCode()
         {
-            return HashCode.Combine(X, Y);
+            return HashCode.Combine(X, Y, Z);
         }
 
         public override string ToString()
@@ -570,6 +598,99 @@ namespace Invasion.Math
         public override string ToString()
         {
             return $"{X}, {Y}, {Z}";
+        }
+    }
+
+    struct Vector3<T>
+    {
+        public T X;
+        public T Y;
+        public T Z;
+
+        public Vector3(T x, T y, T z)
+        {
+            X = x;
+            Y = y;
+            Z = z;
+        }
+
+        public Vector3(T s)
+        {
+            X = s;
+            Y = s;
+            Z = s;
+        }
+
+        public Vector3(Vector3<T> v)
+        {
+            X = v.X;
+            Y = v.Y;
+            Z = v.Z;
+        }
+
+        public static Vector3<T> operator +(Vector3<T> a, Vector3<T> b)
+        {
+            return new Vector3<T>((dynamic)a.X! + b.X, (dynamic)a.Y! + b.Y, (dynamic)a.Z! + b.Z);
+        }
+
+        public static Vector3<T> operator -(Vector3<T> a, Vector3<T> b)
+        {
+            return new Vector3<T>((dynamic)a.X! - b.X, (dynamic)a.Y! - b.Y, (dynamic)a.Z! - b.Z);
+        }
+
+        public static Vector3<T> operator *(Vector3<T> a, Vector3<T> b)
+        {
+            return new Vector3<T>((dynamic)a.X! * b.X, (dynamic)a.Y! * b.Y, (dynamic)a.Z! * b.Z);
+        }
+
+        public static Vector3<T> operator /(Vector3<T> a, Vector3<T> b)
+        {
+            return new Vector3<T>((dynamic)a.X! / b.X, (dynamic)a.Y! / b.Y, (dynamic)a.Z! / b.Z);
+        }
+
+        public static Vector3<T> operator +(Vector3<T> a, T b)
+        {
+            return new Vector3<T>((dynamic)a.X! + b, (dynamic)a.Y! + b, (dynamic)a.Z! + b);
+        }
+
+        public static Vector3<T> operator -(Vector3<T> a, T b)
+        {
+            return new Vector3<T>((dynamic)a.X! - b, (dynamic)a.Y! - b, (dynamic)a.Z! - b);
+        }
+
+        public static Vector3<T> operator *(Vector3<T> a, T b)
+        {
+            return new Vector3<T>((dynamic)a.X! * b, (dynamic)a.Y! * b, (dynamic)a.Z! * b);
+        }
+
+        public static Vector3<T> operator /(Vector3<T> a, T b)
+        {
+            return new Vector3<T>((dynamic)a.X! / b, (dynamic)a.Y! / b, (dynamic)a.Z! / b);
+        }
+
+        public static Vector3<T> operator +(T a, Vector3<T> b)
+        {
+            return new Vector3<T>(a + (dynamic)b.X!, a + (dynamic)b.Y!, a + (dynamic)b.Z!);
+        }
+
+        public static Vector3<T> operator -(T a, Vector3<T> b)
+        {
+            return new Vector3<T>(a - (dynamic)b.X!, a - (dynamic)b.Y!, a - (dynamic)b.Z!);
+        }
+
+        public static Vector3<T> operator *(T a, Vector3<T> b)
+        {
+            return new Vector3<T>(a * (dynamic)b.X!, a * (dynamic)b.Y!, a * (dynamic)b.Z!);
+        }
+
+        public static Vector3<T> operator /(T a, Vector3<T> b)
+        {
+            return new Vector3<T>(a / (dynamic)b.X!, a / (dynamic)b.Y!, a / (dynamic)b.Z!);
+        }
+
+        public static Vector3<T> operator -(Vector3<T> a)
+        {
+            return new Vector3<T>(-(dynamic)a.X!, -(dynamic)a.Y!, -(dynamic)a.Z!);
         }
     }
 }

@@ -95,15 +95,16 @@ namespace Invasion.Math
             if (!RaySlabIntersect(rayOrigin.X, rayDirection.X, box.Min.X, box.Max.X, ref tminTemp, ref tmaxTemp, ref normalTemp, new Vector3d(1, 0, 0)))
                 return false;
 
-            if (!RaySlabIntersect(rayOrigin.Y, rayDirection.Y, box.Min.Y, box.Max.Y, ref tminTemp, ref tmaxTemp, ref normalTemp, new Vector3d(0, 1, 0)))
+            if (!RaySlabIntersect(rayOrigin.Z, rayDirection.Z, box.Min.Z, box.Max.Z, ref tminTemp, ref tmaxTemp, ref normalTemp, new Vector3d(0, 0, 1)))
                 return false;
 
-            if (!RaySlabIntersect(rayOrigin.Z, rayDirection.Z, box.Min.Z, box.Max.Z, ref tminTemp, ref tmaxTemp, ref normalTemp, new Vector3d(0, 0, 1)))
+            if (!RaySlabIntersect(rayOrigin.Y, rayDirection.Y, box.Min.Y, box.Max.Y, ref tminTemp, ref tmaxTemp, ref normalTemp, new Vector3d(0, 1, 0)))
                 return false;
 
             tmin = tminTemp;
             tmax = tmaxTemp;
             normal = normalTemp;
+
             return true;
         }
 
@@ -138,12 +139,14 @@ namespace Invasion.Math
                     tmin = t0;
                     normal = n;
                 }
+
                 if (t1 < tmax)
                     tmax = t1;
 
                 if (tmax <= tmin)
                     return false;
             }
+
             return true;
         }
     }

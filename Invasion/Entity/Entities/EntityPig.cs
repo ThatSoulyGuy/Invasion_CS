@@ -1,4 +1,5 @@
-﻿using Invasion.Math;
+﻿using Invasion.Core;
+using Invasion.Math;
 using System;
 using Vortice.Mathematics;
 
@@ -14,9 +15,16 @@ namespace Invasion.Entity.Entities
         {
             base.Update();
 
-            GameObject.Transform.Rotate(new Vector3f(0.0f, 0.01f, 0.0f));
+            //GameObject.Transform.Rotate(new Vector3f(0.0f, 0.01f, 0.0f));
+
+            Vector3f lookAt = LookAt(GameObject.Transform.WorldPosition, PlayerPosition);
+
+            GameObject.Transform.LocalRotation = new(0.0f, lookAt.Y, 0.0f);
+
+            GameObject.Transform.Translate(GameObject.Transform.Forward * WalkingSpeed * InputManager.DeltaTime);
 
             GameObject.GetChild("Model").Transform.LocalPosition = new(0.0f, -0.487f, 0.0f);
+            GameObject.GetChild("Model").Transform.LocalRotation = new(0.0f, 180.0f, 0.0f);
             GameObject.GetChild("Model").Transform.LocalScale = new(0.062f);
         }
 

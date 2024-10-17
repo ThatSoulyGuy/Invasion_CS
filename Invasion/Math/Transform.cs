@@ -21,6 +21,15 @@ namespace Invasion.Math
             }
         }
 
+        public Vector3f WorldPositionTransposed
+        {
+            get
+            {
+                Matrix4x4 matrix = GetModelMatrix(true);
+                return new(matrix.M41, matrix.M42, matrix.M43);
+            }
+        }
+
         public Vector3f WorldRotation
         {
             get
@@ -52,6 +61,10 @@ namespace Invasion.Math
         public Vector3f Right => Vector3f.Normalize(Vector3f.TransformNormal(Vector3f.UnitX, GetModelMatrix()));
         public Vector3f Up => Vector3f.Normalize(Vector3f.TransformNormal(Vector3f.UnitY, GetModelMatrix()));
 
+        public Vector3f ForwardTransposed => Vector3f.Normalize(Vector3f.TransformNormal(Vector3f.UnitZ, GetModelMatrix(true)));
+        public Vector3f RightTransposed => Vector3f.Normalize(Vector3f.TransformNormal(Vector3f.UnitX, GetModelMatrix(true)));
+        public Vector3f UpTransposed => Vector3f.Normalize(Vector3f.TransformNormal(Vector3f.UnitY, GetModelMatrix(true)));
+
         public Transform? Parent { get; internal set; } = null;
 
         private Transform() { }
@@ -82,25 +95,33 @@ namespace Invasion.Math
             LocalScale += scale;
         }
 
-        public Matrix4x4 GetModelMatrix()
+        public Matrix4x4 GetModelMatrix(bool transposeLocalT = false)
         {
-            Matrix4x4 translationToPivot = Matrix4x4.CreateTranslation(-PivotPoint);
-            Matrix4x4 translationFromPivot = Matrix4x4.CreateTranslation(PivotPoint);
-
+            Matrix4x4 scale = LocalScale != Vector3f.One ? Matrix4x4.CreateScale(LocalScale) : Matrix4x4.Identity;
+            Matrix4x4 rotation = LocalRotation != Vector3f.Zero
+                ? Matrix4x4.CreateFromYawPitchRoll(
+                    MathHelper.ToRadians(LocalRotation.Y),
+                    MathHelper.ToRadians(LocalRotation.X),
+                    MathHelper.ToRadians(LocalRotation.Z))
+                : Matrix4x4.Identity;
             Matrix4x4 translation = Matrix4x4.CreateTranslation(LocalPosition);
-            Matrix4x4 rotation = Matrix4x4.CreateFromYawPitchRoll(
-                MathHelper.ToRadians(LocalRotation.Y),
-                MathHelper.ToRadians(LocalRotation.X),
-                MathHelper.ToRadians(LocalRotation.Z)
-            );
-            Matrix4x4 scale = Matrix4x4.CreateScale(LocalScale);
 
-            Matrix4x4 transformAroundPivot = translationToPivot * scale * rotation * translationFromPivot;
+            Matrix4x4 localTransform;
 
-            Matrix4x4 localTransform = scale * rotation * translation;
+            if (transposeLocalT)
+                localTransform = translation * rotation * scale;
+            else
+                localTransform = scale * rotation * translation;
+
+            if (PivotPoint != Vector3f.Zero)
+            {
+                Matrix4x4 pivotTranslation = Matrix4x4.CreateTranslation(PivotPoint);
+                Matrix4x4 pivotInverseTranslation = Matrix4x4.CreateTranslation(-PivotPoint);
+                localTransform = pivotInverseTranslation * localTransform * pivotTranslation;
+            }
 
             if (Parent != null)
-                return localTransform * Parent.GetModelMatrix();
+                return localTransform * Parent.GetModelMatrix(transposeLocalT);
             else
                 return localTransform;
         }

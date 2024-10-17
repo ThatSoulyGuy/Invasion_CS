@@ -18,8 +18,10 @@ namespace Invasion.Util
         private static int DivFloor(int a, int b)
         {
             int result = a / b;
+
             if (a % b < 0)
                 result--;
+
             return result;
         }
 
