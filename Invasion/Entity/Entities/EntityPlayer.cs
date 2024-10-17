@@ -74,12 +74,6 @@ namespace Invasion.Entity.Entities
 
             RenderCamera.Transform.LocalRotation = new(
                 MathHelper.Clamp(RenderCamera.Transform.LocalRotation.X, -89.0f, 89.0f),
-                RenderCamera.Transform.LocalRotation.Y,
-                RenderCamera.Transform.LocalRotation.Z
-            );
-
-            RenderCamera.Transform.LocalRotation = new(
-                RenderCamera.Transform.LocalRotation.X,
                 RenderCamera.Transform.LocalRotation.Y % 360.0f,
                 RenderCamera.Transform.LocalRotation.Z
             );
