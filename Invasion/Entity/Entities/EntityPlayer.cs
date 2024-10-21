@@ -5,7 +5,6 @@ using Invasion.Math;
 using Invasion.Render;
 using Invasion.World;
 using System;
-using Vortice.Mathematics;
 
 namespace Invasion.Entity.Entities
 {

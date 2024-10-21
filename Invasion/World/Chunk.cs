@@ -80,11 +80,6 @@ namespace Invasion.World
                     {
                         short block = Blocks[x, y, z];
 
-                        if (block == BlockList.AIR)
-                            continue;
-
-                        Vector3i position = new(x, y, z);
-
                         for (int i = 0; i < FaceNormals.Length; i++)
                         {
                             Vector3f normal = FaceNormals[i];
@@ -111,8 +106,6 @@ namespace Invasion.World
                             }
                         }
                     }
-                }
-            }
 
             lock (Lock)
             {
@@ -131,18 +124,11 @@ namespace Invasion.World
             if (position.X < 0 || position.X >= CHUNK_SIZE || position.Y < 0 || position.Y >= CHUNK_SIZE || position.Z < 0 || position.Z >= CHUNK_SIZE)
                 return;
 
-            if (Blocks[position.X, position.Y, position.Z] == block)
-                return;
-
-            Blocks[position.X, position.Y, position.Z] = block;
-
             Generate();
         }
 
         private bool IsFaceExposed(Vector3i position, Vector3f normal)
         {
-            IWorld world = InvasionMain.Overworld.GetComponent<IWorld>();
-
             Vector3i adjacentPosition = position + new Vector3i(
                 (int)MathF.Round(normal.X),
                 (int)MathF.Round(normal.Y),
@@ -162,12 +148,6 @@ namespace Invasion.World
                     short blockId = adjacentChunk.Blocks[adjacentBlockCoord.X, adjacentBlockCoord.Y, adjacentBlockCoord.Z];
                     return blockId == BlockList.AIR;
                 }
-                else
-                    return true;
-            }
-            else
-                return true;
-        }
 
         private void AddFace(Vector3f position, Vector3f normal, Vector3f color, Vector2f[] uv, int faceIndex)
         {

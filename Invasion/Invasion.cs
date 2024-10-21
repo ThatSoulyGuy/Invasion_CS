@@ -19,7 +19,6 @@ namespace Invasion
         public static GameObject Overworld { get; private set; } = null!;
 
         public static GameObject Player { get; private set; } = null!;
-        public static GameObject Pig { get; private set; } = null!;
 
         public static void Initialize()
         {
@@ -64,8 +63,6 @@ namespace Invasion
         public static void Update(object? s, EventArgs a)
         {
             Overworld.GetComponent<IWorld>().LoaderPositions = [Player.Transform.WorldPosition];
-
-            Pig.GetComponent<EntityPig>().PlayerPosition = Player.Transform.WorldPosition;
 
             InputManager.Update();
             GameObjectManager.Update();
