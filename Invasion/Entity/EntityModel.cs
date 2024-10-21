@@ -33,7 +33,7 @@ namespace Invasion.Entity.Model
             partObject.AddComponent(ShaderManager.Get("default"));
             partObject.AddComponent(TextureAtlasManager.Get("entities").Atlas);
             partObject.AddComponent(TextureAtlasManager.Get("entities"));
-            partObject.AddComponent(Mesh.Create(part.Name + "_Mesh_" + new Random().Next(), [], []));
+            partObject.AddComponent(UIMesh.Create(part.Name + "_Mesh_" + new Random().Next(), [], []));
             ModelPart addedPart = partObject.AddComponent(part);
              
             Parts.Add(part.Name, partObject);

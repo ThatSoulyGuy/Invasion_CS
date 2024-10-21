@@ -15,6 +15,7 @@ namespace Invasion.Render
         public static IDXGISwapChain4 SwapChain { get; private set; } = null!;
         public static ID3D11RenderTargetView1 RenderTargetView { get; private set; } = null!;
         public static ID3D11DepthStencilView DepthStencilView { get; private set; } = null!;
+        public static ID3D11DepthStencilState NoDepthStencilState { get; private set; } = null!;
 
         public static IDXGIFactory6 DxgiFactory { get; private set; } = null!;
         public static IDXGIAdapter4 Adapter { get; private set; } = null!;
@@ -41,7 +42,7 @@ namespace Invasion.Render
                 Height = Window.ClientSize.Height,
                 Format = Format.R8G8B8A8_UNorm,
                 BufferUsage = Usage.RenderTargetOutput,
-                SwapEffect = SwapEffect.FlipDiscard,
+                SwapEffect = SwapEffect.FlipSequential,
                 SampleDescription = new SampleDescription(1, 0),
                 Scaling = Scaling.None,
                 Stereo = false,
@@ -61,6 +62,16 @@ namespace Invasion.Render
 
             CreateRenderTarget();
             CreateDepthStencilBuffer();
+
+            DepthStencilDescription depthStencilDesc = new()
+            {
+                DepthEnable = false,
+                DepthWriteMask = DepthWriteMask.Zero,
+                DepthFunc = ComparisonFunction.Always,
+                StencilEnable = false,
+            };
+
+            NoDepthStencilState = Device.CreateDepthStencilState(depthStencilDesc);
 
             Context.OMSetRenderTargets(RenderTargetView);
             Context.RSSetViewports([new Viewport(0, 0, Window.ClientSize.Width, Window.ClientSize.Height, 0.0f, 1.0f)]);

@@ -29,6 +29,9 @@ namespace Invasion.ECS
 
         public T GetComponent<T>() where T : Component
         {
+            if (!Components.ContainsKey(typeof(T)))
+                return null!;
+
             return (T)Components[typeof(T)];
         }
 
@@ -57,6 +60,8 @@ namespace Invasion.ECS
         {
             Children[name].Parent = null;
             Children[name].GetComponent<Transform>().Parent = null;
+
+            GameObjectManager.Register(Children[name]);
 
             Children.Remove(name);
         }

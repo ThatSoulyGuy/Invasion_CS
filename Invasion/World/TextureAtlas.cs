@@ -36,6 +36,29 @@ namespace Invasion.World
             throw new KeyNotFoundException($"Texture '{textureName}' not found in atlas.");
         }
 
+        public Vector2f[] GetFaceUVs(string textureName, Vector2f[] uvs)
+        {
+            Vector2f[] textureCoords = GetTextureCoordinates(textureName);
+
+            Vector2f topLeft = textureCoords[0];
+            Vector2f bottomRight = textureCoords[1];
+
+            float width = bottomRight.X - topLeft.X;
+            float height = bottomRight.Y - topLeft.Y;
+
+            Vector2f[] faceUVs = new Vector2f[uvs.Length];
+
+            for (int i = 0; i < uvs.Length; i++)
+            {
+                faceUVs[i] = new Vector2f(
+                    topLeft.X + uvs[i].X * width,
+                    topLeft.Y + uvs[i].Y * height
+                );
+            }
+
+            return faceUVs;
+        }
+
         private void Generate()
         {
             string[] ddsFiles = Directory.GetFiles(InputDirectory.FullPath, "*.dds");

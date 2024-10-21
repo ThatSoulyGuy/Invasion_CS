@@ -358,6 +358,11 @@ namespace Invasion.Math
             return new Vector3f(Y * v.Z - Z * v.Y, Z * v.X - X * v.Z, X * v.Y - Y * v.X);
         }
 
+        public float Distance(Vector3f v)
+        {
+            return (v - this).Length();
+        }
+
         public static Vector3f Normalize(Vector3f v)
         {
             return v / v.Length();

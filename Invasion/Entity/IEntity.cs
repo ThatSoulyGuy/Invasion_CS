@@ -1,4 +1,5 @@
 ﻿using Invasion.ECS;
+using Invasion.Math;
 using System.Collections.Generic;
 
 namespace Invasion.Entity
@@ -27,10 +28,14 @@ namespace Invasion.Entity
     public abstract class IEntity(float maxHealth, float walkingSpeed, float runningSpeed) : Component
     {
         public abstract string RegistryName { get; }
+
+        public abstract BoundingBox ColliderSpecification { get; }
+
         public float Health { get; set; } = maxHealth;
         public float MaxHealth { get; set; } = maxHealth;
         public float WalkingSpeed { get; set; } = walkingSpeed;
         public float RunningSpeed { get; set; } = runningSpeed;
+
         public bool IsDead => Health <= 0;
 
         public override void Update()

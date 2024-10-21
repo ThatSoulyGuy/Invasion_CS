@@ -12,7 +12,12 @@ namespace Invasion.Entity.Entities
     {
         public override string RegistryName => "entity_player";
         public float MouseSensitivity { get; set; } = 80.0f;
+
+        public override BoundingBox ColliderSpecification { get; } = BoundingBox.Create(new(0.6f, 1.89f, 0.6f));
+
         public GameObject RenderCamera => GameObject.GetChild("Camera");
+
+        private float blockTime = 0.0f;
 
         public override void Initialize()
         {
@@ -33,6 +38,8 @@ namespace Invasion.Entity.Entities
             UpdateControls();
             UpdateMouselook();
             UpdateMovement();
+
+            blockTime += InputManager.DeltaTime;
         }
 
         private void UpdateControls()
@@ -40,10 +47,7 @@ namespace Invasion.Entity.Entities
             var cameraWorldPosition = RenderCamera.Transform.WorldPosition;
             var cameraForward = RenderCamera.Transform.Forward;
 
-            Console.WriteLine($"Camera World Position: {cameraWorldPosition}");
-            Console.WriteLine($"Camera Forward: {cameraForward}");
-
-            if (InputManager.MouseLeftPressed)
+            if (InputManager.MouseLeftPressed && blockTime >= 0.1f)
             {
                 var (hit, information) = Raycast.Cast(RenderCamera.Transform.WorldPositionTransposed, RenderCamera.Transform.ForwardTransposed, 10.0f);
 
@@ -53,9 +57,11 @@ namespace Invasion.Entity.Entities
 
                 if (hit)
                     InvasionMain.Overworld.GetComponent<IWorld>().SetBlock(position, BlockList.AIR);
+
+                blockTime = 0.0f;
             }
 
-            if (InputManager.MouseRightPressed)
+            if (InputManager.MouseRightPressed && blockTime >= 0.1f)
             {
                 var (hit, information) = Raycast.Cast(RenderCamera.Transform.WorldPositionTransposed, RenderCamera.Transform.ForwardTransposed, 10.0f);
 
@@ -65,6 +71,8 @@ namespace Invasion.Entity.Entities
 
                 if (hit)
                     InvasionMain.Overworld.GetComponent<IWorld>().SetBlock(position, BlockList.BEDROCK, true);
+
+                blockTime = 0.0f;
             }
         }
 
@@ -78,7 +86,7 @@ namespace Invasion.Entity.Entities
             RenderCamera.Transform.Rotate(new(mouseMovement.Y, mouseMovement.X, 0.0f));
 
             RenderCamera.Transform.LocalRotation = new(
-                MathHelper.Clamp(RenderCamera.Transform.LocalRotation.X, -89.0f, 89.0f),
+                Vortice.Mathematics.MathHelper.Clamp(RenderCamera.Transform.LocalRotation.X, -89.0f, 89.0f),
                 RenderCamera.Transform.LocalRotation.Y % 360.0f,
                 RenderCamera.Transform.LocalRotation.Z
             );

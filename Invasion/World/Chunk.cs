@@ -13,7 +13,7 @@ namespace Invasion.World
     {
         public const byte CHUNK_SIZE = 16;
 
-        public short[,,] Blocks { get; private set; } = new short[CHUNK_SIZE, CHUNK_SIZE, CHUNK_SIZE];
+        public Dictionary<Vector3i, short> Blocks { get; private set; } = [];
 
         private List<Vertex> Vertices { get; set; } = [];
         private List<uint> Indices { get; set; } = [];
@@ -23,14 +23,14 @@ namespace Invasion.World
         private object Lock { get; } = new();
 
         private static Vector3f[] FaceNormals { get; } =
-        [
-            new( 0,  0,  1),
-            new( 0,  0, -1),
-            new( 1,  0,  0),
-            new(-1,  0,  0),
-            new( 0,  1,  0),
-            new( 0, -1,  0),
-        ];
+        {
+            new Vector3f( 0,  0,  1),
+            new Vector3f( 0,  0, -1),
+            new Vector3f( 1,  0,  0),
+            new Vector3f(-1,  0,  0),
+            new Vector3f( 0,  1,  0),
+            new Vector3f( 0, -1,  0),
+        };
 
         private Chunk() { }
 
@@ -44,13 +44,8 @@ namespace Invasion.World
                     {
                         for (int z = 0; z < CHUNK_SIZE; z++)
                         {
-                            if (y > 11)
-                                Blocks[x, y, z] = BlockList.DIRT;
-                            else
-                                Blocks[x, y, z] = BlockList.STONE;
-
-                            Blocks[x, 15, z] = BlockList.GRASS;
-                            Blocks[x, 0, z] = BlockList.BEDROCK;
+                            short block = (y == 15) ? BlockList.GRASS : (y == 0) ? BlockList.BEDROCK : (y > 11) ? BlockList.DIRT : BlockList.STONE;
+                            Blocks[new Vector3i(x, y, z)] = block;
                         }
                     }
                 }
@@ -59,12 +54,12 @@ namespace Invasion.World
 
         public void Generate()
         {
-            lock(Lock)
+            lock (Lock)
             {
                 Vertices.Clear();
                 Indices.Clear();
             }
-            
+
             foreach (var collider in Colliders.Values)
                 collider.CleanUp();
 
@@ -72,44 +67,36 @@ namespace Invasion.World
 
             TextureAtlas atlas = GameObject.GetComponent<TextureAtlas>();
 
-            for (int x = 0; x < CHUNK_SIZE; x++)
+            foreach (var kvp in Blocks)
             {
-                for (int y = 0; y < CHUNK_SIZE; y++)
+                Vector3i position = kvp.Key;
+                short block = kvp.Value;
+
+                for (int i = 0; i < FaceNormals.Length; i++)
                 {
-                    for (int z = 0; z < CHUNK_SIZE; z++)
+                    Vector3f normal = FaceNormals[i];
+
+                    if (IsFaceExposed(position, normal))
                     {
-                        short block = Blocks[x, y, z];
-
-                        for (int i = 0; i < FaceNormals.Length; i++)
+                        if (!Colliders.ContainsKey(position))
                         {
-                            Vector3f normal = FaceNormals[i];
-                           
-                            if (IsFaceExposed(position, normal))
-                            {
-                                if (!Colliders.ContainsKey(position))
-                                {
-                                    Vector3f worldPosition = CoordinateHelper.BlockToWorldCoordinates(position, CoordinateHelper.WorldToChunkCoordinates(GameObject.Transform.WorldPosition));
-                                    worldPosition += new Vector3f(0.5f, 0.5f, 0.5f);
+                            Vector3f worldPosition = CoordinateHelper.BlockToWorldCoordinates(position, CoordinateHelper.WorldToChunkCoordinates(GameObject.Transform.WorldPosition));
+                            worldPosition += new Vector3f(0.5f, 0.5f, 0.5f);
 
-                                    Colliders.TryAdd(position, BoundingBox.Create(worldPosition, Vector3f.One));
-                                }
+                            Colliders.TryAdd(position, BoundingBox.Create(worldPosition, Vector3f.One));
+                        }
 
-                                lock (Lock)
-                                {
-                                    if (normal == new Vector3f(0, 1, 0))
-                                        AddFace(position, normal, BlockList.GetBlockData(block).TopColor, atlas.GetTextureCoordinates(BlockList.GetBlockData(block).Textures["top"]), i);
-                                    else if (normal == new Vector3f(0, -1, 0))
-                                        AddFace(position, normal, Vector3f.One, atlas.GetTextureCoordinates(BlockList.GetBlockData(block).Textures["bottom"]), i);
-                                    else
-                                        AddFace(position, normal, Vector3f.One, atlas.GetTextureCoordinates(BlockList.GetBlockData(block).Textures["side"]), i);
-                                }
-                            }
+                        lock (Lock)
+                        {
+                            AddFace(position, normal, BlockList.GetBlockData(block), atlas, i);
                         }
                     }
+                }
+            }
 
             lock (Lock)
             {
-                Mesh mesh = GameObject.GetComponent<Mesh>();
+                UIMesh mesh = GameObject.GetComponent<UIMesh>();
 
                 mesh.Vertices = Vertices;
                 mesh.Indices = Indices;
@@ -121,39 +108,68 @@ namespace Invasion.World
 
         public void SetBlock(Vector3i position, short block)
         {
-            if (position.X < 0 || position.X >= CHUNK_SIZE || position.Y < 0 || position.Y >= CHUNK_SIZE || position.Z < 0 || position.Z >= CHUNK_SIZE)
-                return;
+            if (IsValidPosition(position))
+            {
+                if (block == BlockList.AIR)
+                    Blocks.Remove(position);
+                else
+                    Blocks[position] = block;
 
-            Generate();
+                Generate();
+            }
+        }
+
+        private bool IsValidPosition(Vector3i position)
+        {
+            return position.X >= 0 && position.X < CHUNK_SIZE &&
+                   position.Y >= 0 && position.Y < CHUNK_SIZE &&
+                   position.Z >= 0 && position.Z < CHUNK_SIZE;
         }
 
         private bool IsFaceExposed(Vector3i position, Vector3f normal)
         {
+            IWorld world = InvasionMain.Overworld.GetComponent<IWorld>();
+
             Vector3i adjacentPosition = position + new Vector3i(
                 (int)MathF.Round(normal.X),
                 (int)MathF.Round(normal.Y),
                 (int)MathF.Round(normal.Z));
 
-            Vector3i worldPosition = (CoordinateHelper.WorldToChunkCoordinates(GameObject.Transform.WorldPosition) * Chunk.CHUNK_SIZE) + adjacentPosition;
-
-            Vector3i adjacentChunkCoord = CoordinateHelper.WorldToChunkCoordinates(worldPosition);
-            Vector3i adjacentBlockCoord = CoordinateHelper.WorldToBlockCoordinates(worldPosition);
-
-            if (world.GetLoadedChunks().TryGetValue(adjacentChunkCoord, out Chunk? adjacentChunk))
+            if (IsWithinChunkBounds(adjacentPosition))
+                return !Blocks.ContainsKey(adjacentPosition) || Blocks[adjacentPosition] == BlockList.AIR;
+            else
             {
-                if (adjacentBlockCoord.X >= 0 && adjacentBlockCoord.X < Chunk.CHUNK_SIZE &&
-                    adjacentBlockCoord.Y >= 0 && adjacentBlockCoord.Y < Chunk.CHUNK_SIZE &&
-                    adjacentBlockCoord.Z >= 0 && adjacentBlockCoord.Z < Chunk.CHUNK_SIZE)
-                {
-                    short blockId = adjacentChunk.Blocks[adjacentBlockCoord.X, adjacentBlockCoord.Y, adjacentBlockCoord.Z];
-                    return blockId == BlockList.AIR;
-                }
+                Vector3i worldPosition = CoordinateHelper.BlockToWorldCoordinates(position, CoordinateHelper.WorldToChunkCoordinates(GameObject.Transform.WorldPosition));
+                Vector3i adjacentWorldPosition = worldPosition + new Vector3i(
+                    (int)MathF.Round(normal.X),
+                    (int)MathF.Round(normal.Y),
+                    (int)MathF.Round(normal.Z));
 
-        private void AddFace(Vector3f position, Vector3f normal, Vector3f color, Vector2f[] uv, int faceIndex)
+                Vector3i adjacentChunkCoord = CoordinateHelper.WorldToChunkCoordinates(adjacentWorldPosition);
+                Vector3i adjacentBlockCoord = CoordinateHelper.WorldToBlockCoordinates(adjacentWorldPosition);
+
+                if (world.GetLoadedChunks().TryGetValue(adjacentChunkCoord, out Chunk? adjacentChunk))
+                    return !adjacentChunk.Blocks.ContainsKey(adjacentBlockCoord) || adjacentChunk.Blocks[adjacentBlockCoord] == BlockList.AIR;
+                else
+                    return true;
+            }
+        }
+
+        private bool IsWithinChunkBounds(Vector3i position)
+        {
+            return position.X >= 0 && position.X < CHUNK_SIZE &&
+                   position.Y >= 0 && position.Y < CHUNK_SIZE &&
+                   position.Z >= 0 && position.Z < CHUNK_SIZE;
+        }
+
+        private void AddFace(Vector3i position, Vector3f normal, BlockData blockData, TextureAtlas atlas, int faceIndex)
         {
             uint startIndex = (uint)Vertices.Count;
 
             Vector3f[] faceVertices = GetFaceVertices(position, faceIndex);
+
+            Vector3f color = GetFaceColor(normal, blockData);
+            Vector2f[] uv = GetFaceUV(blockData, normal, atlas);
 
             Vertices.Add(new Vertex(faceVertices[0], color, normal, uv[0]));
             Vertices.Add(new Vertex(faceVertices[1], color, normal, uv[1]));
@@ -168,58 +184,38 @@ namespace Invasion.World
             Indices.Add(startIndex + 3);
         }
 
-        private Vector3f[] GetFaceVertices(Vector3f blockPosition, int faceIndex)
+        private Vector3f GetFaceColor(Vector3f normal, BlockData blockData)
         {
+            if (normal == new Vector3f(0, 1, 0))
+                return blockData.TopColor;
+            else if (normal == new Vector3f(0, -1, 0))
+                return Vector3f.One;
+            else
+                return Vector3f.One;
+        }
+
+        private Vector2f[] GetFaceUV(BlockData blockData, Vector3f normal, TextureAtlas atlas)
+        {
+            if (normal == new Vector3f(0, 1, 0))
+                return atlas.GetTextureCoordinates(blockData.Textures["top"]);
+            else if (normal == new Vector3f(0, -1, 0))
+                return atlas.GetTextureCoordinates(blockData.Textures["bottom"]);
+            else
+                return atlas.GetTextureCoordinates(blockData.Textures["side"]);
+        }
+
+        private Vector3f[] GetFaceVertices(Vector3i position, int faceIndex)
+        {
+            Vector3f blockPosition = position;
+
             return faceIndex switch
             {
-                0 => 
-                [
-                    blockPosition + new Vector3f(0, 0, 1),
-                    blockPosition + new Vector3f(1, 0, 1),
-                    blockPosition + new Vector3f(1, 1, 1),
-                    blockPosition + new Vector3f(0, 1, 1),
-                ],
-
-                1 => 
-                [
-                    blockPosition + new Vector3f(1, 0, 0),
-                    blockPosition + new Vector3f(0, 0, 0),
-                    blockPosition + new Vector3f(0, 1, 0),
-                    blockPosition + new Vector3f(1, 1, 0),
-                ],
-                
-                2 => 
-                [
-                    blockPosition + new Vector3f(1, 0, 1),
-                    blockPosition + new Vector3f(1, 0, 0),
-                    blockPosition + new Vector3f(1, 1, 0),
-                    blockPosition + new Vector3f(1, 1, 1),
-                ],
-                
-                3 => 
-                [
-                    blockPosition + new Vector3f(0, 0, 0),
-                    blockPosition + new Vector3f(0, 0, 1),
-                    blockPosition + new Vector3f(0, 1, 1),
-                    blockPosition + new Vector3f(0, 1, 0),
-                ],
-                
-                4 => 
-                [
-                    blockPosition + new Vector3f(0, 1, 1),
-                    blockPosition + new Vector3f(1, 1, 1),
-                    blockPosition + new Vector3f(1, 1, 0),
-                    blockPosition + new Vector3f(0, 1, 0),
-                ],
-                
-                5 => 
-                [
-                    blockPosition + new Vector3f(0, 0, 0),
-                    blockPosition + new Vector3f(1, 0, 0),
-                    blockPosition + new Vector3f(1, 0, 1),
-                    blockPosition + new Vector3f(0, 0, 1),
-                ],
-
+                0 => new[] { blockPosition + new Vector3f(0, 0, 1), blockPosition + new Vector3f(1, 0, 1), blockPosition + new Vector3f(1, 1, 1), blockPosition + new Vector3f(0, 1, 1) },
+                1 => new[] { blockPosition + new Vector3f(1, 0, 0), blockPosition + new Vector3f(0, 0, 0), blockPosition + new Vector3f(0, 1, 0), blockPosition + new Vector3f(1, 1, 0) },
+                2 => new[] { blockPosition + new Vector3f(1, 0, 1), blockPosition + new Vector3f(1, 0, 0), blockPosition + new Vector3f(1, 1, 0), blockPosition + new Vector3f(1, 1, 1) },
+                3 => new[] { blockPosition + new Vector3f(0, 0, 0), blockPosition + new Vector3f(0, 0, 1), blockPosition + new Vector3f(0, 1, 1), blockPosition + new Vector3f(0, 1, 0) },
+                4 => new[] { blockPosition + new Vector3f(0, 1, 1), blockPosition + new Vector3f(1, 1, 1), blockPosition + new Vector3f(1, 1, 0), blockPosition + new Vector3f(0, 1, 0) },
+                5 => new[] { blockPosition + new Vector3f(0, 0, 0), blockPosition + new Vector3f(1, 0, 0), blockPosition + new Vector3f(1, 0, 1), blockPosition + new Vector3f(0, 0, 1) },
                 _ => throw new ArgumentOutOfRangeException(),
             };
         }

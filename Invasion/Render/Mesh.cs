@@ -17,7 +17,7 @@ namespace Invasion.Render
         public Matrix4x4 Model;
     }
 
-    public class Mesh : Component
+    public class UIMesh : Component
     {
         public string Name { get; set; } = string.Empty;
 
@@ -32,7 +32,7 @@ namespace Invasion.Render
 
         private object Lock { get; set; } = new();
 
-        private Mesh() { }
+        private UIMesh() { }
 
         public void Generate()
         {
@@ -136,7 +136,7 @@ namespace Invasion.Render
             IndexBuffer?.Dispose();
         }
 
-        public static Mesh Create(string name, List<Vertex> vertices, List<uint> indices)
+        public static UIMesh Create(string name, List<Vertex> vertices, List<uint> indices)
         {
             return new()
             {

@@ -13,6 +13,8 @@ namespace Invasion.Math
         public float Mass { get; set; } = 1.0f;
         public float Drag { get; set; } = 0.01f;
 
+        public float Magnitude => Velocity.Length();
+
         public Vector3f Velocity = Vector3f.Zero;
 
         public bool IsGrounded { get; private set; } = false;
@@ -56,6 +58,9 @@ namespace Invasion.Math
 
                     foreach (var otherCollider in colliders)
                     {
+                        if (otherCollider.Position.Distance(collider.Position) > 2.0f)
+                            continue;
+
                         if (collider.Intersects(otherCollider))
                         {
                             Vector3f penetrationVector = ComputePenetrationDepth(collider, otherCollider);

@@ -5,7 +5,10 @@ using Invasion.Entity.Models;
 using Invasion.Math;
 using Invasion.Page;
 using Invasion.Render;
+using Invasion.UI;
+using Invasion.UI.Elements;
 using Invasion.World;
+using Invasion.World.SpawnManagers;
 using System;
 using System.Runtime.InteropServices;
 using System.Windows.Forms;
@@ -20,6 +23,8 @@ namespace Invasion
 
         public static GameObject Player { get; private set; } = null!;
 
+        public static UIImage Image { get; private set; } = null!;
+
         public static void Initialize()
         {
             Renderer.Initialize(Window!);
@@ -27,6 +32,7 @@ namespace Invasion
             InputManager.Initialize(Window!);
 
             ShaderManager.Register(Shader.Create("default", new("Shader/Default", "Invasion")));
+            ShaderManager.Register(Shader.Create("ui", new("Shader/UI", "Invasion")));
             TextureManager.Register(Texture.Create("debug", new("Texture/Debug.dds", "Invasion"), new()
             {
                 Filter = Vortice.Direct3D11.Filter.MinMagMipPoint,
@@ -44,26 +50,20 @@ namespace Invasion
             Overworld = GameObject.Create("Overworld");
             Overworld.AddComponent(IWorld.Create("overworld"));
 
-            Player = GameObject.Create("Player");
-            Player.Transform.LocalPosition = new(0.0f, 60.0f, 0.0f);
+            Overworld.GetComponent<IWorld>().AddSpawnManager(new SpawnManagerGoober());
 
-            Player.AddComponent(BoundingBox.Create(new(0.6f, 1.89f, 0.6f)));
-            Player.AddComponent(Rigidbody.Create());
-            Player.AddComponent(new EntityPlayer());
+            Player = Overworld.GetComponent<IWorld>().SpawnEntity<EntityPlayer>(new(0.0f, 60.0f, 0.0f));
 
-            Pig = GameObject.Create("Pig");
-            Pig.Transform.LocalPosition = new(0.0f, 50.0f, 0.0f);
-
-            Pig.AddComponent(BoundingBox.Create(new(0.95f, 0.95f, 0.95f)));
-            Pig.AddComponent(Rigidbody.Create());
-            Pig.AddComponent(new ModelPig());
-            Pig.AddComponent(new EntityPig());
+            //Overworld.GetComponent<IWorld>().SpawnEntity<EntityGoober, ModelGoober>(new(0.0f, 60.0f, 10.0f));
+            Image = new("image", TextureManager.Get("debug"), new(10.0f, 10.0f), new(10.0f, 10.0f));
         }
 
         public static void Update(object? s, EventArgs a)
         {
             Overworld.GetComponent<IWorld>().LoaderPositions = [Player.Transform.WorldPosition];
 
+            Time.Update();
+            UIManager.Update();
             InputManager.Update();
             GameObjectManager.Update();
         }
@@ -78,12 +78,14 @@ namespace Invasion
             Renderer.PreRender();
 
             GameObjectManager.Render(Player.GetComponent<EntityPlayer>().RenderCamera.GetComponent<Camera>());
+            UIManager.Render();
 
             Renderer.PostRender(); 
         }
 
         public static void CleanUp(object? s, EventArgs a)
         {
+            UIManager.CleanUp();
             GameObjectManager.CleanUp();
             TextureManager.CleanUp();
             ShaderManager.CleanUp();
@@ -101,7 +103,7 @@ namespace Invasion
 
         public static void Main()
         {
-#if RELEASE
+#if false
             if (!File.Exists(Application.CommonAppDataPath + "/" + "Invasion.nomodify"))
             {
                 Console.WriteLine("Invasion***");
