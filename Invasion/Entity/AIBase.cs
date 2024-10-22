@@ -3,6 +3,7 @@ using Invasion.Math;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 
 namespace Invasion.Entity
 {
@@ -57,7 +58,7 @@ namespace Invasion.Entity
 
             Vector3f currentPosition = startPoint;
 
-            while (currentPosition.Distance(endPoint) > NodeThreshold && path.Count < MaxNodeDistance)
+            while (Vector3f.Distance(currentPosition, endPoint) > NodeThreshold && path.Count < MaxNodeDistance)
             {
                 Vector3f nextStep = Vector3f.Normalize(endPoint - currentPosition) * NodeThreshold;
 
@@ -72,7 +73,7 @@ namespace Invasion.Entity
                     break;
             }
 
-            if (currentPosition.Distance(endPoint) <= NodeThreshold)
+            if (Vector3f.Distance(currentPosition, endPoint) <= NodeThreshold)
                 path.Add(endPoint);
             
             return path;
@@ -86,7 +87,7 @@ namespace Invasion.Entity
             Vector3f currentNode = PathNodes.Peek();
             Vector3f currentPosition = GameObject.Transform.WorldPosition;
 
-            if (currentPosition.Distance(currentNode) <= NodeThreshold)
+            if (Vector3f.Distance(currentPosition, currentNode) <= NodeThreshold)
                 PathNodes.Dequeue();
             else
             {

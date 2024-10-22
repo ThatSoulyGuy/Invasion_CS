@@ -16,6 +16,7 @@ namespace Invasion.Render
         public static ID3D11RenderTargetView1 RenderTargetView { get; private set; } = null!;
         public static ID3D11DepthStencilView DepthStencilView { get; private set; } = null!;
         public static ID3D11DepthStencilState NoDepthStencilState { get; private set; } = null!;
+        public static ID3D11BlendState AlphaBlendState { get; private set; } = null!;
 
         public static IDXGIFactory6 DxgiFactory { get; private set; } = null!;
         public static IDXGIAdapter4 Adapter { get; private set; } = null!;
@@ -38,8 +39,8 @@ namespace Invasion.Render
             SwapChainDescription1 swapChainDescription = new()
             {
                 BufferCount = 2,
-                Width = Window.ClientSize.Width,
-                Height = Window.ClientSize.Height,
+                Width = (uint)Window.ClientSize.Width,
+                Height = (uint)Window.ClientSize.Height,
                 Format = Format.R8G8B8A8_UNorm,
                 BufferUsage = Usage.RenderTargetOutput,
                 SwapEffect = SwapEffect.FlipSequential,
@@ -63,7 +64,7 @@ namespace Invasion.Render
             CreateRenderTarget();
             CreateDepthStencilBuffer();
 
-            DepthStencilDescription depthStencilDesc = new()
+            DepthStencilDescription depthStencilDescription = new()
             {
                 DepthEnable = false,
                 DepthWriteMask = DepthWriteMask.Zero,
@@ -71,7 +72,36 @@ namespace Invasion.Render
                 StencilEnable = false,
             };
 
-            NoDepthStencilState = Device.CreateDepthStencilState(depthStencilDesc);
+            NoDepthStencilState = Device.CreateDepthStencilState(depthStencilDescription);
+
+            BlendDescription blendDesc = new()
+            {
+                AlphaToCoverageEnable = false,
+                IndependentBlendEnable = false,
+            };
+
+            var renderTargetBlendDescription = new RenderTargetBlendDescription
+            {
+                BlendEnable = true,
+                SourceBlend = Blend.One,
+                DestinationBlend = Blend.InverseSourceAlpha,
+                BlendOperation = BlendOperation.Add,
+                SourceBlendAlpha = Blend.One,
+                DestinationBlendAlpha = Blend.Zero,
+                BlendOperationAlpha = BlendOperation.Add,
+                RenderTargetWriteMask = ColorWriteEnable.All
+            };
+
+            blendDesc.RenderTarget.e0 = renderTargetBlendDescription;
+            blendDesc.RenderTarget.e1 = renderTargetBlendDescription;
+            blendDesc.RenderTarget.e2 = renderTargetBlendDescription;
+            blendDesc.RenderTarget.e3 = renderTargetBlendDescription;
+            blendDesc.RenderTarget.e4 = renderTargetBlendDescription;
+            blendDesc.RenderTarget.e5 = renderTargetBlendDescription;
+            blendDesc.RenderTarget.e6 = renderTargetBlendDescription;
+            blendDesc.RenderTarget.e7 = renderTargetBlendDescription;
+
+            AlphaBlendState = Device.CreateBlendState(blendDesc);
 
             Context.OMSetRenderTargets(RenderTargetView);
             Context.RSSetViewports([new Viewport(0, 0, Window.ClientSize.Width, Window.ClientSize.Height, 0.0f, 1.0f)]);
@@ -82,7 +112,7 @@ namespace Invasion.Render
             RenderTargetView?.Dispose();
             DepthStencilView?.Dispose();
 
-            SwapChain.ResizeBuffers(0, Window.ClientSize.Width, Window.ClientSize.Height, Format.Unknown, SwapChainFlags.None);
+            SwapChain.ResizeBuffers(0, (uint)Window.ClientSize.Width, (uint)Window.ClientSize.Height, Format.Unknown, SwapChainFlags.None);
 
             CreateRenderTarget();
             CreateDepthStencilBuffer();
@@ -106,8 +136,8 @@ namespace Invasion.Render
         {
             Texture2DDescription depthStencilDescription = new()
             {
-                Width = Window.ClientSize.Width,
-                Height = Window.ClientSize.Height,
+                Width = (uint)Window.ClientSize.Width,
+                Height = (uint)Window.ClientSize.Height,
                 MipLevels = 1,
                 ArraySize = 1,
                 Format = Format.D24_UNorm_S8_UInt,
@@ -137,7 +167,7 @@ namespace Invasion.Render
         private static IDXGIAdapter4 GetBestAdapter(IDXGIFactory6 factory)
         {
             IDXGIAdapter4 bestAdapter = null!;
-            for (int i = 0; factory.EnumAdapterByGpuPreference(i, GpuPreference.HighPerformance, out IDXGIAdapter4? adapter).Success; i++)
+            for (uint i = 0; factory.EnumAdapterByGpuPreference(i, GpuPreference.HighPerformance, out IDXGIAdapter4? adapter).Success; i++)
             {
                 try
                 {

@@ -17,7 +17,7 @@ namespace Invasion.Render
         public Matrix4x4 Model;
     }
 
-    public class UIMesh : Component
+    public class Mesh : Component
     {
         public string Name { get; set; } = string.Empty;
 
@@ -32,7 +32,7 @@ namespace Invasion.Render
 
         private object Lock { get; set; } = new();
 
-        private UIMesh() { }
+        private Mesh() { }
 
         public void Generate()
         {
@@ -46,12 +46,15 @@ namespace Invasion.Render
 
                 ID3D11Device5 device = Renderer.Device;
 
+                if (device is null)
+                    return;
+
                 BufferDescription vertexBufferDescription = new()
                 {
                     BindFlags = BindFlags.VertexBuffer,
                     CPUAccessFlags = CpuAccessFlags.None,
                     MiscFlags = ResourceOptionFlags.None,
-                    ByteWidth = Marshal.SizeOf<Vertex>() * Vertices.Count,
+                    ByteWidth = (uint)Marshal.SizeOf<Vertex>() * (uint)Vertices.Count,
                     StructureByteStride = 0,
                     Usage = ResourceUsage.Default
                 };
@@ -80,7 +83,7 @@ namespace Invasion.Render
                     BindFlags = BindFlags.IndexBuffer,
                     CPUAccessFlags = CpuAccessFlags.None,
                     MiscFlags = ResourceOptionFlags.None,
-                    ByteWidth = sizeof(uint) * Indices.Count,
+                    ByteWidth = sizeof(uint) * (uint)Indices.Count,
                     StructureByteStride = 0,
                     Usage = ResourceUsage.Default
                 };
@@ -111,8 +114,8 @@ namespace Invasion.Render
 
             context.IASetPrimitiveTopology(PrimitiveTopology.TriangleList);
 
-            int stride = Marshal.SizeOf<Vertex>();
-            int offset = 0;
+            uint stride = (uint)Marshal.SizeOf<Vertex>();
+            uint offset = 0;
             context.IASetVertexBuffers(0, [VertexBuffer], [stride], [offset]);
 
             context.IASetIndexBuffer(IndexBuffer, Format.R32_UInt, 0);
@@ -127,7 +130,7 @@ namespace Invasion.Render
             Shader.Bind();
             Texture.Bind(0);
 
-            context.DrawIndexed(Indices.Count, 0, 0);
+            context.DrawIndexed((uint)Indices.Count, 0, 0);
         }
 
         public override void CleanUp()
@@ -136,7 +139,7 @@ namespace Invasion.Render
             IndexBuffer?.Dispose();
         }
 
-        public static UIMesh Create(string name, List<Vertex> vertices, List<uint> indices)
+        public static Mesh Create(string name, List<Vertex> vertices, List<uint> indices)
         {
             return new()
             {

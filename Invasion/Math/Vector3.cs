@@ -358,9 +358,62 @@ namespace Invasion.Math
             return new Vector3f(Y * v.Z - Z * v.Y, Z * v.X - X * v.Z, X * v.Y - Y * v.X);
         }
 
-        public float Distance(Vector3f v)
+        public void Multiply(float scalar)
         {
-            return (v - this).Length();
+            X *= scalar;
+            Y *= scalar;
+            Z *= scalar;
+        }
+
+        public void Add(Vector3f other)
+        {
+            X += other.X;
+            Y += other.Y;
+            Z += other.Z;
+        }
+
+        public void Subtract(Vector3f other)
+        {
+            X -= other.X;
+            Y -= other.Y;
+            Z -= other.Z;
+        }
+
+        public void Normalize()
+        {
+            float length = Length();
+
+            if (length > 0)
+            {
+                float invLength = 1.0f / length;
+                Multiply(invLength);
+            }
+        }
+
+        public void AddScaled(Vector3f other, float scale)
+        {
+            X += other.X * scale;
+            Y += other.Y * scale;
+            Z += other.Z * scale;
+        }
+
+        public float LengthSquared()
+        {
+            return X * X + Y * Y + Z * Z;
+        }
+
+        public float DistanceSquared(Vector3f other)
+        {
+            float dx = X - other.X;
+            float dy = Y - other.Y;
+            float dz = Z - other.Z;
+
+            return dx * dx + dy * dy + dz * dz;
+        }
+
+        public static float Distance(Vector3f a, Vector3f b)
+        {
+            return (b - a).Length();
         }
 
         public static Vector3f Normalize(Vector3f v)

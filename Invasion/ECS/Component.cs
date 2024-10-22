@@ -12,5 +12,7 @@ namespace Invasion.ECS
         public virtual void Render(Camera camera) { }
 
         public virtual void CleanUp() { }
+
+        public virtual void OnCollide(GameObject other) { }
     }
 }

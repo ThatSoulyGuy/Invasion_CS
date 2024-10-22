@@ -1,7 +1,11 @@
 ﻿using Invasion.Math;
 using Invasion.Render;
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace Invasion.ECS
 {
@@ -11,44 +15,100 @@ namespace Invasion.ECS
 
         public Transform Transform => GetComponent<Transform>();
 
+        public bool Active { get; set; } = true;
+
         private GameObject? Parent { get; set; }
 
-        private Dictionary<Type, Component> Components { get; } = [];
-        private Dictionary<string, GameObject> Children { get; } = [];
+        private ConcurrentDictionary<Type, Component> Components { get; } = [];
+        private ConcurrentDictionary<string, GameObject> Children { get; } = [];
 
-        private GameObject() { }
+        private static int MaxThreads { get; } = Environment.ProcessorCount;
+        private static BlockingCollection<Action> TaskQueue { get; } = [];
+        private static List<Thread> ThreadPool { get; } = [];
+        private static bool ThreadPoolInitialized = false;
+        private static object ThreadPoolLock { get; } = new();
+
+        public GameObject()
+        {
+            InitializeThreadPool();
+        }
+
+        private static void InitializeThreadPool()
+        {
+            if (ThreadPoolInitialized)
+                return;
+
+            lock (ThreadPoolLock)
+            {
+                if (ThreadPoolInitialized)
+                    return;
+
+                for (int i = 0; i < MaxThreads; i++)
+                {
+                    Thread worker = new(() =>
+                    {
+                        foreach (var action in TaskQueue.GetConsumingEnumerable())
+                        {
+                            //try
+                            //{
+                                action();
+                            //}
+                            //catch (Exception ex)
+                            //{
+                            //    Console.WriteLine($"Exception in thread pool: {ex.Message}");
+                            //}
+                        }
+                    })
+                    {
+                        IsBackground = true
+                    };
+                    worker.Start();
+                    ThreadPool.Add(worker);
+                }
+
+                ThreadPoolInitialized = true;
+            }
+        }
 
         public T AddComponent<T>(T component) where T : Component
         {
             component.GameObject = this;
             component.Initialize();
-            Components.Add(typeof(T), component);
+            Components.TryAdd(typeof(T), component);
 
             return component;
         }
 
         public T GetComponent<T>() where T : Component
         {
-            if (!Components.ContainsKey(typeof(T)))
-                return null!;
+            Components.TryGetValue(typeof(T), out var component);
+            return (T)component!;
+        }
 
-            return (T)Components[typeof(T)];
+        public bool HasComponent<T>() where T : Component
+        {
+            return Components.ContainsKey(typeof(T));
         }
 
         public void RemoveComponent<T>() where T : Component
         {
-            Components[typeof(T)].CleanUp();
-            Components.Remove(typeof(T));
+            if (Components.TryGetValue(typeof(T), out var component))
+            {
+                component.CleanUp();
+                Components.TryRemove(typeof(T), out _);
+            }
         }
 
-        public void AddChild(GameObject child)
+        public GameObject AddChild(GameObject child)
         {
             GameObjectManager.Unregister(child.Name);
 
             child.Parent = this;
             child.GetComponent<Transform>().Parent = GetComponent<Transform>();
 
-            Children.Add(child.Name, child);
+            Children.TryAdd(child.Name, child);
+
+            return Children[child.Name];
         }
 
         public GameObject GetChild(string name)
@@ -58,12 +118,15 @@ namespace Invasion.ECS
 
         public void RemoveChild(string name)
         {
-            Children[name].Parent = null;
-            Children[name].GetComponent<Transform>().Parent = null;
+            if (Children.TryGetValue(name, out var child))
+            {
+                child.Parent = null;
+                child.GetComponent<Transform>().Parent = null;
 
-            GameObjectManager.Register(Children[name]);
+                GameObjectManager.Register(child);
 
-            Children.Remove(name);
+                Children.TryRemove(name, out _);
+            }
         }
 
         public GameObject? GetParent()
@@ -71,17 +134,32 @@ namespace Invasion.ECS
             return Parent;
         }
 
+        public void OnCollide(GameObject other)
+        {
+            if (!Active)
+                return;
+
+            foreach (var component in Components.Values)
+                component.OnCollide(other);
+        }
+
         public void Update()
         {
-            foreach (Component component in Components.Values)
-                component.Update();
+            if (!Active)
+                return;
 
-            foreach (GameObject child in Children.Values)
-                child.Update();
+            foreach (var component in Components.Values)
+                TaskQueue.Add(component.Update);
+
+            foreach (var child in Children.Values)
+                TaskQueue.Add(child.Update);
         }
 
         public void Render(Camera camera)
         {
+            if (!Active)
+                return;
+
             foreach (Component component in Components.Values)
                 component.Render(camera);
 
@@ -100,9 +178,9 @@ namespace Invasion.ECS
 
         public static GameObject Create(string name)
         {
-            GameObject result = new()
+            GameObject result = new GameObject
             {
-                Name = name 
+                Name = name
             };
 
             result.AddComponent(Transform.Create());
@@ -110,6 +188,14 @@ namespace Invasion.ECS
             GameObjectManager.Register(result);
 
             return result;
+        }
+
+        public static void ShutdownThreadPool()
+        {
+            TaskQueue.CompleteAdding();
+
+            foreach (var thread in ThreadPool)
+                thread.Join();
         }
     }
 }

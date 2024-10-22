@@ -96,7 +96,7 @@ namespace Invasion.World
 
             lock (Lock)
             {
-                UIMesh mesh = GameObject.GetComponent<UIMesh>();
+                Mesh mesh = GameObject.GetComponent<Mesh>();
 
                 mesh.Vertices = Vertices;
                 mesh.Indices = Indices;

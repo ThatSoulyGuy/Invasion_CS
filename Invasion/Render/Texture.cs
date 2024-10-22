@@ -25,7 +25,7 @@ namespace Invasion.Render
 
         private Texture() { }
 
-        public void Bind(int slot)
+        public void Bind(uint slot)
         {
             if (ShaderResourceView != null)
                 Renderer.Context.PSSetShaderResource(slot, ShaderResourceView);
@@ -51,10 +51,10 @@ namespace Invasion.Render
 
             Texture2DDescription textureDescription = new()
             {
-                Width = metadata.Width,
-                Height = metadata.Height,
-                MipLevels = metadata.MipLevels,
-                ArraySize = metadata.ArraySize,
+                Width = (uint)metadata.Width,
+                Height = (uint)metadata.Height,
+                MipLevels = (uint)metadata.MipLevels,
+                ArraySize = (uint)metadata.ArraySize,
                 Format = (Format)metadata.Format,
                 SampleDescription = new SampleDescription(1, 0),
                 Usage = ResourceUsage.Default,
@@ -79,8 +79,8 @@ namespace Invasion.Render
                 subresourceData[i] = new()
                 {
                     DataPointer = imageData.Pixels,
-                    RowPitch = (int)imageData.RowPitch,
-                    SlicePitch = (int)imageData.SlicePitch
+                    RowPitch = (uint)imageData.RowPitch,
+                    SlicePitch = (uint)imageData.SlicePitch
                 };
             }
            
@@ -127,6 +127,17 @@ namespace Invasion.Render
             };
 
             result.Generate();
+
+            return result;
+        }
+
+        public static Texture Create(ID3D11Texture2D texture, ID3D11ShaderResourceView shaderResourceView)
+        {
+            Texture result = new()
+            {
+                TextureReference = texture,
+                ShaderResourceView = shaderResourceView
+            };
 
             return result;
         }

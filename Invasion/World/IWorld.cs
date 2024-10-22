@@ -30,6 +30,8 @@ namespace Invasion.World
 
         private bool chunksNeedGeneration = false;
 
+        private object Lock { get; } = new();
+
         private IWorld() { }
         
         public override void Update()
@@ -163,9 +165,32 @@ namespace Invasion.World
             return entityObject;
         }
 
+        public GameObject SpawnEntity<T, A>(T classInstance, Vector3f position, bool hasRigidbody = true) where T : IEntity where A : Component, new()
+        {
+            GameObject entityObject = GameObject.Create($"Entity_{typeof(T).Name}_{Entities.Count}");
+            entityObject.Transform.LocalPosition = position;
+
+            if (hasRigidbody)
+                entityObject.AddComponent(Rigidbody.Create());
+
+            entityObject.AddComponent(new A());
+            entityObject.AddComponent(classInstance.ColliderSpecification);
+            entityObject.AddComponent(classInstance);
+
+            Entities.Add(entityObject.GetComponent<T>());
+
+            return entityObject;
+        }
+
+        public void KillEntity(IEntity entity)
+        {
+            GameObjectManager.Unregister(entity.GameObject.Name);
+            Entities.Remove(entity);
+        }
+
         public Chunk GenerateChunk(Vector3i position, bool automaticallyGenerate = true, bool generateNothing = false)
         {
-            if (GameObjectManager.Get($"Chunk_Object_{position.X}_{position.Y}_{position.Z}_") != null)
+            if (LoadedChunks.ContainsKey(CoordinateHelper.WorldToChunkCoordinates(position)))
                 return LoadedChunks[CoordinateHelper.WorldToChunkCoordinates(position)];
 
             GameObject chunkObject = GameObject.Create($"Chunk_Object_{position.X}_{position.Y}_{position.Z}_");
@@ -176,7 +201,7 @@ namespace Invasion.World
             chunkObject.AddComponent(TextureAtlasManager.Get("blocks").Atlas);
             chunkObject.AddComponent(TextureAtlasManager.Get("blocks"));
 
-            chunkObject.AddComponent(UIMesh.Create($"Chunk_Mesh_{position.X}_{position.Y}_{position.Z}_", [], []));
+            chunkObject.AddComponent(Mesh.Create($"Chunk_Mesh_{position.X}_{position.Y}_{position.Z}_", [], []));
 
             Chunk result = chunkObject.AddComponent(Chunk.Create(generateNothing));
 

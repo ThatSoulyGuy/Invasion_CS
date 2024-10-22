@@ -28,7 +28,19 @@ namespace Invasion
 
             ShaderManager.Register(Shader.Create("default", new("Shader/Default", "Invasion")));
             ShaderManager.Register(Shader.Create("ui", new("Shader/UI", "Invasion")));
+
             TextureManager.Register(Texture.Create("debug", new("Texture/Debug.dds", "Invasion"), new()
+            {
+                Filter = Vortice.Direct3D11.Filter.MinMagMipPoint,
+                AddressU = Vortice.Direct3D11.TextureAddressMode.Wrap,
+                AddressV = Vortice.Direct3D11.TextureAddressMode.Wrap,
+                AddressW = Vortice.Direct3D11.TextureAddressMode.Wrap,
+                ComparisonFunc = Vortice.Direct3D11.ComparisonFunction.Never,
+                MinLOD = 0,
+                MaxLOD = float.MaxValue
+            }));
+
+            TextureManager.Register(Texture.Create("laser_gun", new("Texture/Item/LaserGun.dds", "Invasion"), new()
             {
                 Filter = Vortice.Direct3D11.Filter.MinMagMipPoint,
                 AddressU = Vortice.Direct3D11.TextureAddressMode.Wrap,
@@ -56,6 +68,7 @@ namespace Invasion
 
             Time.Update();
             UIManager.Update();
+            GameObjectManager.Update();
             InputManager.Update();
         }
 

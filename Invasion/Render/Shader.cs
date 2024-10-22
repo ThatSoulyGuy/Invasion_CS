@@ -46,9 +46,9 @@ namespace Invasion.Render
         public ID3D11HullShader? HullShader { get; private set; } = null;
         public ID3D11DomainShader? DomainShader { get; private set; } = null;
 
-        private Dictionary<(ShaderStage, int), ID3D11Buffer> ConstantBuffers { get; } = [];
-        private Dictionary<(ShaderStage, int), ID3D11SamplerState> SamplerStates { get; } = [];
-        private Dictionary<(ShaderStage, int), ID3D11ShaderResourceView> Textures { get; } = [];
+        private Dictionary<(ShaderStage, uint), ID3D11Buffer> ConstantBuffers { get; } = [];
+        private Dictionary<(ShaderStage, uint), ID3D11SamplerState> SamplerStates { get; } = [];
+        private Dictionary<(ShaderStage, uint), ID3D11ShaderResourceView> Textures { get; } = [];
 
         private Shader() { }
 
@@ -79,7 +79,7 @@ namespace Invasion.Render
             BindTextures();
         }
 
-        public void SetConstantBuffer<T>(ShaderStage stage, int slot, T data) where T : struct
+        public void SetConstantBuffer<T>(ShaderStage stage, uint slot, T data) where T : struct
         {
             unsafe
             {
@@ -96,7 +96,7 @@ namespace Invasion.Render
                         BindFlags = BindFlags.ConstantBuffer,
                         CPUAccessFlags = CpuAccessFlags.Write,
                         MiscFlags = ResourceOptionFlags.None,
-                        ByteWidth = (int)MathF.Max(16, (Unsafe.SizeOf<T>() + 15) / 16 * 16),
+                        ByteWidth = (uint)MathF.Max(16, (Unsafe.SizeOf<T>() + 15) / 16 * 16),
                         StructureByteStride = 0,
                         Usage = ResourceUsage.Dynamic
                     };
@@ -114,17 +114,17 @@ namespace Invasion.Render
             }
         }
 
-        public void SetConstantBuffer(ShaderStage stage, int slot, ID3D11Buffer buffer)
+        public void SetConstantBuffer(ShaderStage stage, uint slot, ID3D11Buffer buffer)
         {
             ConstantBuffers[(stage, slot)] = buffer;
         }
 
-        public void SetSamplerState(ShaderStage stage, int slot, ID3D11SamplerState sampler)
+        public void SetSamplerState(ShaderStage stage, uint slot, ID3D11SamplerState sampler)
         {
             SamplerStates[(stage, slot)] = sampler;
         }
 
-        public void SetTexture(ShaderStage stage, int slot, ID3D11ShaderResourceView texture)
+        public void SetTexture(ShaderStage stage, uint slot, ID3D11ShaderResourceView texture)
         {
             Textures[(stage, slot)] = texture;
         }

@@ -16,14 +16,17 @@
 
   <ItemGroup>
     <PackageReference Include="DirectXTexNet" Version="1.0.7" />
-    <PackageReference Include="Vortice.D3DCompiler" Version="3.5.0" />
-    <PackageReference Include="Vortice.Direct3D11" Version="3.5.0" />
-    <PackageReference Include="Vortice.DirectX" Version="3.5.0" />
-    <PackageReference Include="Vortice.DXGI" Version="3.5.0" />
+    <PackageReference Include="SixLabors.Fonts" Version="2.0.4" />
+    <PackageReference Include="SixLabors.ImageSharp.Drawing" Version="2.1.4" />
+    <PackageReference Include="Vortice.D3DCompiler" Version="3.6.2" />
+    <PackageReference Include="Vortice.Direct3D11" Version="3.6.2" />
+    <PackageReference Include="Vortice.DirectX" Version="3.6.2" />
+    <PackageReference Include="Vortice.DXGI" Version="3.6.2" />
     <PackageReference Include="Vortice.Mathematics" Version="1.9.2" />
   </ItemGroup>
 
   <ItemGroup>
+    <Folder Include="Assets\Invasion\Model\Item\" />
     <Folder Include="Assets\Invasion\Texture\Atlas\" />
   </ItemGroup>
 

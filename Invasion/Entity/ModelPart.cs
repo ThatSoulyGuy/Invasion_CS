@@ -30,7 +30,7 @@ namespace Invasion.Entity.Model
 
         public List<Cube> Cubes { get; init; } = [];
 
-        public UIMesh Mesh => GameObject.GetComponent<UIMesh>();
+        public Mesh Mesh => GameObject.GetComponent<Mesh>();
 
         private ModelPart() { }
 
@@ -109,7 +109,7 @@ namespace Invasion.Entity.Model
             AddFace(Mesh, corners[0], corners[3], corners[2], corners[1], normals[5], vertexColor, bottomUVs);
         }
 
-        private void AddFace(UIMesh mesh, Vector3f v0, Vector3f v1, Vector3f v2, Vector3f v3, Vector3f normal, Vector3f color, Vector2f[] uvs)
+        private void AddFace(Mesh mesh, Vector3f v0, Vector3f v1, Vector3f v2, Vector3f v3, Vector3f normal, Vector3f color, Vector2f[] uvs)
         {
             int vertexIndexStart = mesh.Vertices.Count;
 

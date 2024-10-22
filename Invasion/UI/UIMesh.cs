@@ -52,7 +52,7 @@ namespace Invasion.UI
                     BindFlags = BindFlags.VertexBuffer,
                     CPUAccessFlags = CpuAccessFlags.None,
                     MiscFlags = ResourceOptionFlags.None,
-                    ByteWidth = Marshal.SizeOf<Vertex>() * Vertices.Count,
+                    ByteWidth = (uint)Marshal.SizeOf<Vertex>() * (uint)Vertices.Count,
                     StructureByteStride = 0,
                     Usage = ResourceUsage.Default
                 };
@@ -81,7 +81,7 @@ namespace Invasion.UI
                     BindFlags = BindFlags.IndexBuffer,
                     CPUAccessFlags = CpuAccessFlags.None,
                     MiscFlags = ResourceOptionFlags.None,
-                    ByteWidth = sizeof(uint) * Indices.Count,
+                    ByteWidth = sizeof(uint) * (uint)Indices.Count,
                     StructureByteStride = 0,
                     Usage = ResourceUsage.Default
                 };
@@ -111,11 +111,12 @@ namespace Invasion.UI
             ID3D11DeviceContext4 context = Renderer.Context;
 
             context.OMSetDepthStencilState(Renderer.NoDepthStencilState, 0);
+            unsafe { Renderer.Context.OMSetBlendState(Renderer.AlphaBlendState, null, 0xFFFFFFFF); }
 
             context.IASetPrimitiveTopology(PrimitiveTopology.TriangleList);
 
-            int stride = Marshal.SizeOf<Vertex>();
-            int offset = 0;
+            uint stride = (uint)Marshal.SizeOf<Vertex>();
+            uint offset = 0;
             context.IASetVertexBuffers(0, [VertexBuffer], [stride], [offset]);
 
             context.IASetIndexBuffer(IndexBuffer, Format.R32_UInt, 0);
@@ -129,9 +130,11 @@ namespace Invasion.UI
             Shader.Bind();
             Texture.Bind(0);
 
-            context.DrawIndexed(Indices.Count, 0, 0);
+            context.DrawIndexed((uint)Indices.Count, 0, 0);
 
             context.OMSetDepthStencilState(null, 0);
+
+            unsafe { context.OMSetBlendState(null, null, 0xFFFFFFFF); }
         }
 
         public void CleanUp()
