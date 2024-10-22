@@ -1,12 +1,9 @@
 ﻿using Invasion.Core;
 using Invasion.ECS;
 using Invasion.Entity.Entities;
-using Invasion.Entity.Models;
-using Invasion.Math;
 using Invasion.Page;
 using Invasion.Render;
 using Invasion.UI;
-using Invasion.UI.Elements;
 using Invasion.World;
 using Invasion.World.SpawnManagers;
 using System;
@@ -22,8 +19,6 @@ namespace Invasion
         public static GameObject Overworld { get; private set; } = null!;
 
         public static GameObject Player { get; private set; } = null!;
-
-        public static UIImage Image { get; private set; } = null!;
 
         public static void Initialize()
         {
@@ -53,9 +48,6 @@ namespace Invasion
             Overworld.GetComponent<IWorld>().AddSpawnManager(new SpawnManagerGoober());
 
             Player = Overworld.GetComponent<IWorld>().SpawnEntity<EntityPlayer>(new(0.0f, 60.0f, 0.0f));
-
-            //Overworld.GetComponent<IWorld>().SpawnEntity<EntityGoober, ModelGoober>(new(0.0f, 60.0f, 10.0f));
-            Image = new("image", TextureManager.Get("debug"), new(10.0f, 10.0f), new(10.0f, 10.0f));
         }
 
         public static void Update(object? s, EventArgs a)
@@ -65,7 +57,6 @@ namespace Invasion
             Time.Update();
             UIManager.Update();
             InputManager.Update();
-            GameObjectManager.Update();
         }
 
         public static void Resize(object? s, EventArgs a)

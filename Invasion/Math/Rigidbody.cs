@@ -26,8 +26,6 @@ namespace Invasion.Math
 
         public override void Update()
         {
-            Task.Run(() =>
-            {
                 BoundingBox collider = GameObject.GetComponent<BoundingBox>();
 
                 if (collider == null)
@@ -44,7 +42,6 @@ namespace Invasion.Math
                 for (int i = 0; i < steps; i++)
                 {
                     Velocity.Y += Gravity * stepTime;
-                    Velocity *= (1 - Drag);
 
                     ClampVelocity(MaxVelocity);
 
@@ -86,7 +83,6 @@ namespace Invasion.Math
                         }
                     }
                 }
-            });
         }
 
         public void AddForce(Vector3f force)
@@ -121,7 +117,6 @@ namespace Invasion.Math
             Vector3f aCenter = a.Min + aHalfSize;
             Vector3f bCenter = b.Min + bHalfSize;
 
-            Vector3f delta = bCenter - aCenter;
             Vector3f overlap = new Vector3f(
                 aHalfSize.X + bHalfSize.X - MathF.Abs(delta.X),
                 aHalfSize.Y + bHalfSize.Y - MathF.Abs(delta.Y),

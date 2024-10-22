@@ -4,7 +4,6 @@ using Invasion.ECS;
 using Invasion.Math;
 using Invasion.Render;
 using Invasion.World;
-using System;
 
 namespace Invasion.Entity.Entities
 {
