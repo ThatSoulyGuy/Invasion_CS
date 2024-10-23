@@ -28,8 +28,6 @@ namespace Invasion.World
 
         private List<IEntity> Entities { get; } = [];
 
-        private bool chunksNeedGeneration = false;
-
         private object Lock { get; } = new();
 
         private IWorld() { }
@@ -110,28 +108,6 @@ namespace Invasion.World
             SpawnManagers.Remove(spawnManager);
         }
 
-        public void GenerateChunks()
-        {
-            foreach (var chunk in LoadedChunks.Values)
-            {
-                var chunkPos = CoordinateHelper.WorldToChunkCoordinates(chunk.GameObject.Transform.WorldPosition);
-
-                chunk.Generate();
-            }
-        }
-
-        public void LoadReadyChunks()
-        {
-            foreach (var chunkPos in ChunksToBeLoaded)
-                GenerateChunk(CoordinateHelper.ChunkToWorldCoordinates(chunkPos), false);
-        }
-
-        public void UnloadReadyChunks()
-        {
-            foreach (var chunkPos in ChunksToBeUnloaded) 
-                UnloadChunk(CoordinateHelper.ChunkToWorldCoordinates(chunkPos));
-        }
-
         public GameObject SpawnEntity<T>(Vector3f position, bool hasRigidbody = true) where T : IEntity, new()
         {
             GameObject entityObject = GameObject.Create($"Entity_{typeof(T).Name}_{Entities.Count}");
@@ -186,31 +162,6 @@ namespace Invasion.World
         {
             GameObjectManager.Unregister(entity.GameObject.Name);
             Entities.Remove(entity);
-        }
-
-        public Chunk GenerateChunk(Vector3i position, bool automaticallyGenerate = true, bool generateNothing = false)
-        {
-            if (LoadedChunks.ContainsKey(CoordinateHelper.WorldToChunkCoordinates(position)))
-                return LoadedChunks[CoordinateHelper.WorldToChunkCoordinates(position)];
-
-            GameObject chunkObject = GameObject.Create($"Chunk_Object_{position.X}_{position.Y}_{position.Z}_");
-            
-            chunkObject.Transform.LocalPosition = position;
-
-            chunkObject.AddComponent(ShaderManager.Get("default"));
-            chunkObject.AddComponent(TextureAtlasManager.Get("blocks").Atlas);
-            chunkObject.AddComponent(TextureAtlasManager.Get("blocks"));
-
-            chunkObject.AddComponent(Mesh.Create($"Chunk_Mesh_{position.X}_{position.Y}_{position.Z}_", [], []));
-
-            Chunk result = chunkObject.AddComponent(Chunk.Create(generateNothing));
-
-            if (automaticallyGenerate)
-                result.Generate();
-
-            LoadedChunks.TryAdd(CoordinateHelper.WorldToChunkCoordinates(position), result);
-
-            return result;
         }
 
         public void UnloadChunk(Vector3i position)

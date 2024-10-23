@@ -58,7 +58,6 @@ namespace Invasion.World
             {
                 Vertices.Clear();
                 Indices.Clear();
-            }
 
             foreach (var collider in Colliders.Values)
                 collider.CleanUp();
@@ -94,8 +93,6 @@ namespace Invasion.World
                 }
             }
 
-            lock (Lock)
-            {
                 Mesh mesh = GameObject.GetComponent<Mesh>();
 
                 mesh.Vertices = Vertices;
