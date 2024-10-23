@@ -22,7 +22,7 @@ namespace Invasion.Math
         /// <param name="normalizedDirection">The normalized direction vector of the ray.</param>
         /// <param name="distance">The maximum distance to check for intersections.</param>
         /// <returns>A tuple containing a boolean indicating if a hit occurred and the hit information.</returns>
-        public static (bool, RayHitInformation) Cast(Vector3d origin, Vector3d normalizedDirection, double distance)
+        public static (bool, RayHitInformation) Cast(Vector3d origin, Vector3d normalizedDirection, double distance, BoundingBox ignore = null!)
         {
             bool wasHit = false;
 
@@ -34,6 +34,9 @@ namespace Invasion.Math
             };
 
             var boundingBoxes = BoundingBoxManager.GetAll();
+
+            if (ignore != null)
+                boundingBoxes.Remove(ignore);
 
             double closestDistance = double.MaxValue; 
             RayHitInformation closestHitInfo = new();

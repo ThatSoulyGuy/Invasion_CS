@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using Invasion.Block;
 using Invasion.Core;
@@ -91,7 +92,7 @@ namespace Invasion.Entity.Entities
             {
                 if (RenderCamera.GetChild("LaserGun").Active)
                 {
-                    var (hit, information) = Raycast.Cast(RenderCamera.Transform.WorldPositionTransposed, RenderCamera.Transform.ForwardTransposed, 40.0f);
+                    var (hit, information) = Raycast.Cast(RenderCamera.Transform.WorldPosition, RenderCamera.Transform.Forward, 40.0f, GameObject.GetComponent<BoundingBox>());
 
                     Vector3f position = information.HitPoint;
 
@@ -99,12 +100,17 @@ namespace Invasion.Entity.Entities
                     
                     //InvasionMain.Overworld.GetComponent<IWorld>().SpawnEntity<EntityLaserBeam, ModelLaserBeam>(new EntityLaserBeam(RenderCamera.Transform.Forward, 2.0f), RenderCamera.Transform.WorldPosition);
 
+                    Console.WriteLine("1 " + (information.Collider.GameObject != null));    
+
+                    if (information.Collider.GameObject != null)
+                        Console.WriteLine("2 " + information.Collider.GameObject.HasComponent<EntityGoober>());
+
                     if (hit && information.Collider.GameObject != null && information.Collider.GameObject.HasComponent<EntityGoober>())
                         information.Collider.GameObject.GetComponent<EntityGoober>().Health -= 10;
                 }
                 else
                 {
-                    var (hit, information) = Raycast.Cast(RenderCamera.Transform.WorldPositionTransposed, RenderCamera.Transform.ForwardTransposed, 10.0f);
+                    var (hit, information) = Raycast.Cast(RenderCamera.Transform.WorldPosition, RenderCamera.Transform.Forward, 10.0f, GameObject.GetComponent<BoundingBox>());
 
                     Vector3f position = information.HitPoint;
 
@@ -120,7 +126,7 @@ namespace Invasion.Entity.Entities
 
             if (InputManager.MouseRightPressed && blockTime >= 0.1f)
             {
-                var (hit, information) = Raycast.Cast(RenderCamera.Transform.WorldPositionTransposed, RenderCamera.Transform.ForwardTransposed, 10.0f);
+                var (hit, information) = Raycast.Cast(RenderCamera.Transform.WorldPosition, RenderCamera.Transform.Forward, 10.0f, GameObject.GetComponent<BoundingBox>());
 
                 Vector3f position = information.HitPoint;
 

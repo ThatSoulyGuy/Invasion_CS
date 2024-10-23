@@ -9,7 +9,7 @@ namespace Invasion.ECS
 
         public static void Register(GameObject gameObject)
         {
-                GameObjects.TryAdd(gameObject.Name, gameObject);
+            GameObjects.TryAdd(gameObject.Name, gameObject);
         }
 
         public static GameObject Get(string name)
@@ -22,13 +22,13 @@ namespace Invasion.ECS
 
         public static void Unregister(string name)
         {
-                if (GameObjects.TryGetValue(name, out GameObject? value))
-                {
-                    value.CleanUp();
+            if (GameObjects.TryGetValue(name, out GameObject? value))
+            {
+                value.CleanUp();
                     
-                    GameObjects.TryRemove(name, out _);
-                }
+                GameObjects.TryRemove(name, out _);
             }
+        }
 
         public static void Update()
         {

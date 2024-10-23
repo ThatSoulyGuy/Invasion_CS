@@ -58,40 +58,40 @@ namespace Invasion.World
             {
                 Vertices.Clear();
                 Indices.Clear();
+            
+                foreach (var collider in Colliders.Values)
+                    collider.CleanUp();
 
-            foreach (var collider in Colliders.Values)
-                collider.CleanUp();
+                Colliders.Clear();
 
-            Colliders.Clear();
+                TextureAtlas atlas = GameObject.GetComponent<TextureAtlas>();
 
-            TextureAtlas atlas = GameObject.GetComponent<TextureAtlas>();
-
-            foreach (var kvp in Blocks)
-            {
-                Vector3i position = kvp.Key;
-                short block = kvp.Value;
-
-                for (int i = 0; i < FaceNormals.Length; i++)
+                foreach (var kvp in Blocks)
                 {
-                    Vector3f normal = FaceNormals[i];
+                    Vector3i position = kvp.Key;
+                    short block = kvp.Value;
 
-                    if (IsFaceExposed(position, normal))
+                    for (int i = 0; i < FaceNormals.Length; i++)
                     {
-                        if (!Colliders.ContainsKey(position))
-                        {
-                            Vector3f worldPosition = CoordinateHelper.BlockToWorldCoordinates(position, CoordinateHelper.WorldToChunkCoordinates(GameObject.Transform.WorldPosition));
-                            worldPosition += new Vector3f(0.5f, 0.5f, 0.5f);
+                        Vector3f normal = FaceNormals[i];
 
-                            Colliders.TryAdd(position, BoundingBox.Create(worldPosition, Vector3f.One));
-                        }
-
-                        lock (Lock)
+                        if (IsFaceExposed(position, normal))
                         {
-                            AddFace(position, normal, BlockList.GetBlockData(block), atlas, i);
+                            if (!Colliders.ContainsKey(position))
+                            {
+                                Vector3f worldPosition = CoordinateHelper.BlockToWorldCoordinates(position, CoordinateHelper.WorldToChunkCoordinates(GameObject.Transform.WorldPosition));
+                                worldPosition += new Vector3f(0.5f, 0.5f, 0.5f);
+
+                                Colliders.TryAdd(position, BoundingBox.Create(worldPosition, Vector3f.One));
+                            }
+
+                            lock (Lock)
+                            {
+                                AddFace(position, normal, BlockList.GetBlockData(block), atlas, i);
+                            }
                         }
                     }
                 }
-            }
 
                 Mesh mesh = GameObject.GetComponent<Mesh>();
 
@@ -100,6 +100,7 @@ namespace Invasion.World
 
                 if (Vertices.Count != 0 && Indices.Count != 0)
                     mesh.Generate();
+            
             }
         }
 

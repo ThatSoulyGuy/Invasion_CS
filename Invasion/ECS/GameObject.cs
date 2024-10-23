@@ -22,18 +22,13 @@ namespace Invasion.ECS
         private ConcurrentDictionary<Type, Component> Components { get; } = [];
         private ConcurrentDictionary<string, GameObject> Children { get; } = [];
 
-        private static int MaxThreads { get; } = Environment.ProcessorCount;
+        private static int MaxThreads { get; } = Environment.ProcessorCount / 2;
         private static BlockingCollection<Action> TaskQueue { get; } = [];
         private static List<Thread> ThreadPool { get; } = [];
         private static bool ThreadPoolInitialized = false;
         private static object ThreadPoolLock { get; } = new();
 
-        public GameObject()
-        {
-            InitializeThreadPool();
-        }
-
-        private static void InitializeThreadPool()
+        private GameObject()
         {
             if (ThreadPoolInitialized)
                 return;

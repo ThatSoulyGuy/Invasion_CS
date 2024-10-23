@@ -49,7 +49,7 @@ namespace Invasion.Render
                 Stereo = false,
             };
 
-            Result result = D3D11.D3D11CreateDevice(Adapter, DriverType.Unknown, DeviceCreationFlags.BgraSupport | DeviceCreationFlags.Debug, [FeatureLevel.Level_11_0], out ID3D11Device? deviceOut);
+            Result result = D3D11.D3D11CreateDevice(Adapter, DriverType.Unknown, DeviceCreationFlags.BgraSupport, [FeatureLevel.Level_11_0], out ID3D11Device? deviceOut);
 
             if (result.Failure)
                 throw new Exception($"Failed to create D3D11 device: {result.Code}");
@@ -173,7 +173,7 @@ namespace Invasion.Render
                 {
                     var desc = adapter!.Description3;
 
-                    if (desc.DedicatedVideoMemory > 0)
+                    if (desc.DedicatedVideoMemory > 0 || desc.SharedSystemMemory > 0)
                     {
                         bestAdapter = adapter;
                         break;
