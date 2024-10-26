@@ -100,12 +100,16 @@ namespace Invasion.Entity.Entities
                     
                     //InvasionMain.Overworld.GetComponent<IWorld>().SpawnEntity<EntityLaserBeam, ModelLaserBeam>(new EntityLaserBeam(RenderCamera.Transform.Forward, 2.0f), RenderCamera.Transform.WorldPosition);
 
-                    Console.WriteLine("1 " + (information.Collider.GameObject != null));    
+                    if (information.Collider == null)
+                        Console.WriteLine("0 " + (information.Collider == null));
+                    
+                    if (information.Collider != null)
+                        Console.WriteLine("1 " + (information.Collider.GameObject != null));    
 
-                    if (information.Collider.GameObject != null)
+                    if (information.Collider != null && information.Collider.GameObject != null)
                         Console.WriteLine("2 " + information.Collider.GameObject.HasComponent<EntityGoober>());
 
-                    if (hit && information.Collider.GameObject != null && information.Collider.GameObject.HasComponent<EntityGoober>())
+                    if (hit && information.Collider!.GameObject != null && information.Collider.GameObject.HasComponent<EntityGoober>())
                         information.Collider.GameObject.GetComponent<EntityGoober>().Health -= 10;
                 }
                 else

@@ -3,9 +3,11 @@ using Invasion.Entity;
 using Invasion.Math;
 using Invasion.Render;
 using Invasion.Util;
+using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 
 namespace Invasion.World
 {
@@ -18,6 +20,8 @@ namespace Invasion.World
         public Vector3f[] LoaderPositions { get; set; } = [];
 
         public const ulong TICK_RATE = 1000;
+        
+        public int CurrentUpdateCycle { get; set; } = 0;
 
         private ConcurrentDictionary<Vector3i, Chunk> LoadedChunks { get; } = [];
 
@@ -25,15 +29,51 @@ namespace Invasion.World
 
         private List<IEntity> Entities { get; } = [];
 
+        private bool KeepUpdating = true;
+
         private static int MaxThreads { get; } = Environment.ProcessorCount / 2;
         private static BlockingCollection<Action> TaskQueue { get; } = [];
         private static List<Thread> ThreadPool { get; } = [];
+        private object Lock { get; } = new();
+
+        private IWorld()
+        {
+            lock (Lock)
+            {
+                for (int i = 0; i < MaxThreads; i++)
+                {
+                    Thread worker = new(() =>
+                    {
+                        foreach (var action in TaskQueue.GetConsumingEnumerable())
+                        {
+                            try
+                            {
+                                action();
+                            }
+                            catch (Exception ex)
+                            {
+                                Console.WriteLine($"Exception in thread pool {GetType()}: {ex.Message}");
+                            }
+                        }
+                    })
+                    {
+                        IsBackground = true
+                    };
+
+                    worker.Start();
+                    ThreadPool.Add(worker);
+                }
+            }
+        }
 
         public override void Update()
         {
             lock (Lock)
             {
+                CurrentUpdateCycle++;
+
                 HashSet<Vector3i> requiredChunks = [];
+                List<Vector3i> chunksToBeUnloaded = [];
 
                 if (Time.Ticks % TICK_RATE == 0)
                 {
@@ -41,56 +81,68 @@ namespace Invasion.World
                         spawnManager.OnSpawnTick(this, [.. LoadedChunks.Values]);
                 }
 
-                foreach (var loaderPosition in LoaderPositions)
+                if (KeepUpdating)
                 {
-                    Vector3i loaderChunkCoord = CoordinateHelper.WorldToChunkCoordinates(loaderPosition);
-                    loaderChunkCoord.Y = 0;
-
-                    for (int x = -LOADER_DISTANCE; x <= LOADER_DISTANCE; x++)
+                    foreach (var loaderPosition in LoaderPositions)
                     {
-                        for (int z = -LOADER_DISTANCE; z <= LOADER_DISTANCE; z++)
+                        Vector3i loaderChunkCoord = CoordinateHelper.WorldToChunkCoordinates(loaderPosition);
+                        loaderChunkCoord.Y = 0;
+
+                        for (int x = -LOADER_DISTANCE; x <= LOADER_DISTANCE; x++)
                         {
-                            Vector3i chunkPos = loaderChunkCoord + new Vector3i(x, 0, z);
+                            for (int z = -LOADER_DISTANCE; z <= LOADER_DISTANCE; z++)
+                            {
+                                Vector3i chunkPos = loaderChunkCoord + new Vector3i(x, 0, z);
 
-                            requiredChunks.Add(chunkPos);
-
-                            if (!LoadedChunks.ContainsKey(chunkPos))
-                                TaskQueue.Add(() => GenerateChunk(chunkPos));
+                                if (!LoadedChunks.ContainsKey(chunkPos) && !requiredChunks.Contains(chunkPos))
+                                    GenerateChunk(chunkPos);
+                            
+                                requiredChunks.Add(chunkPos);
+                            }
                         }
                     }
+
+                    chunksToBeUnloaded = LoadedChunks.Keys.Where(chunkPos => !requiredChunks.Contains(chunkPos) && chunkPos.Y == 0).ToList();
+
+                    foreach (var chunkPos in chunksToBeUnloaded)
+                        UnloadChunk(chunkPos);
                 }
 
-                List<Vector3i> chunksToBeUnloaded = LoadedChunks.Keys.Where(chunkPos => !requiredChunks.Contains(chunkPos) && chunkPos.Y == 0).ToList();
-
-                foreach (var chunkPos in chunksToBeUnloaded)
-                    UnloadChunk(chunkPos);
+                foreach (var chunk in LoadedChunks.Values)
+                {
+                    if (chunk.NeedsRegeneration && chunk.LastUpdatedCycle < CurrentUpdateCycle)
+                        chunk.Generate(CurrentUpdateCycle);
+                }
+                
+                if (chunksToBeUnloaded.Count <= 0)
+                    KeepUpdating = false;
             }
         }
 
         public Chunk GenerateChunk(Vector3i position, bool automaticallyGenerate = true, bool generateNothing = false)
         {
-                if (LoadedChunks.TryGetValue(position, out Chunk? value))
-                    return value;
+            if (LoadedChunks.TryGetValue(position, out Chunk? value))
+                return value;
 
-                GameObject chunkObject = GameObject.Create($"Chunk_Object_{position.X}_{position.Y}_{position.Z}_");
+            GameObject chunkObject = GameObject.Create($"Chunk_Object_{position.X}_{position.Y}_{position.Z}_");
 
-                chunkObject.Transform.LocalPosition = CoordinateHelper.ChunkToWorldCoordinates(position);
+            chunkObject.Transform.LocalPosition = CoordinateHelper.ChunkToWorldCoordinates(position);
 
-                chunkObject.AddComponent(ShaderManager.Get("default"));
-                chunkObject.AddComponent(TextureAtlasManager.Get("blocks").Atlas);
-                chunkObject.AddComponent(TextureAtlasManager.Get("blocks"));
+            chunkObject.AddComponent(ShaderManager.Get("default"));
+            chunkObject.AddComponent(TextureAtlasManager.Get("blocks").Atlas);
+            chunkObject.AddComponent(TextureAtlasManager.Get("blocks"));
 
-                chunkObject.AddComponent(Mesh.Create($"Chunk_Mesh_{position.X}_{position.Y}_{position.Z}_", [], []));
+            chunkObject.AddComponent(Mesh.Create($"Chunk_Mesh_{position.X}_{position.Y}_{position.Z}_", [], []));
 
-                Chunk result = chunkObject.AddComponent(Chunk.Create(generateNothing));
+            Chunk result = chunkObject.AddComponent(Chunk.Create(generateNothing));
 
-                LoadedChunks.TryAdd(position, result);
+            LoadedChunks.TryAdd(position, result);
 
-                if (automaticallyGenerate)
-                    result.Generate();
+            if (automaticallyGenerate)
+                result.Generate(CurrentUpdateCycle);
 
-                return result;
-            }
+            return result;
+        }
 
         public void SetBlock(Vector3f worldPosition, short block, bool createChunkIfNotPresent = false)
         {

@@ -1,8 +1,11 @@
 ﻿using Invasion.ECS;
 using Invasion.Math;
+using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Numerics;
 using System.Runtime.InteropServices;
+using Vortice;
 using Vortice.Direct3D;
 using Vortice.Direct3D11;
 using Vortice.DXGI;
@@ -21,8 +24,8 @@ namespace Invasion.Render
     {
         public string Name { get; set; } = string.Empty;
 
-        public List<Vertex> Vertices { get; set; } = [];
-        public List<uint> Indices { get; set; } = [];
+        public List<Vertex> Vertices { get; set; } = new();
+        public List<uint> Indices { get; set; } = new();
 
         public Shader Shader => GameObject.GetComponent<Shader>();
         public Texture Texture => GameObject.GetComponent<Texture>();
@@ -41,69 +44,99 @@ namespace Invasion.Render
                 if (Vertices.Count == 0 || Indices.Count == 0)
                     return;
 
-                VertexBuffer?.Dispose();
-                IndexBuffer?.Dispose();
+                ID3D11DeviceContext4 context = Renderer.Context;
+                ID3D11Device4 device = Renderer.Device;
 
-                ID3D11Device5 device = Renderer.Device;
+                int vertexBufferSize = Marshal.SizeOf<Vertex>() * Vertices.Count;
 
-                if (device is null)
-                    return;
-
-                BufferDescription vertexBufferDescription = new()
+                if (VertexBuffer != null)
                 {
-                    BindFlags = BindFlags.VertexBuffer,
-                    CPUAccessFlags = CpuAccessFlags.None,
-                    MiscFlags = ResourceOptionFlags.None,
-                    ByteWidth = (uint)Marshal.SizeOf<Vertex>() * (uint)Vertices.Count,
-                    StructureByteStride = 0,
-                    Usage = ResourceUsage.Default
-                };
+                    MappedSubresource vertexDataBox = context.Map(VertexBuffer, 0, MapMode.WriteDiscard, Vortice.Direct3D11.MapFlags.None);
 
-                GCHandle vertexHandle = GCHandle.Alloc(Vertices.ToArray(), GCHandleType.Pinned);
-
-                try
-                {
-                    SubresourceData vertexBufferSubresourceData = new()
+                    unsafe
                     {
-                        DataPointer = vertexHandle.AddrOfPinnedObject(),
-                        RowPitch = 0,
-                        SlicePitch = 0
+                        fixed (Vertex* vertexPtr = Vertices.ToArray())
+                        {
+                            Buffer.MemoryCopy(vertexPtr, vertexDataBox.DataPointer.ToPointer(), vertexBufferSize, vertexBufferSize);
+                        }
+                    }
+
+                    context.Unmap(VertexBuffer, 0);
+                }
+                else
+                {
+                    BufferDescription vertexBufferDescription = new()
+                    {
+                        BindFlags = BindFlags.VertexBuffer,
+                        CPUAccessFlags = CpuAccessFlags.Write,
+                        MiscFlags = ResourceOptionFlags.None,
+                        ByteWidth = (uint)vertexBufferSize,
+                        StructureByteStride = 0,
+                        Usage = ResourceUsage.Dynamic
                     };
 
-                    VertexBuffer = device.CreateBuffer(vertexBufferDescription, vertexBufferSubresourceData);
-                }
-                finally
-                {
-                    vertexHandle.Free();
-                }
+                    Vertex[] vertexArray = Vertices.ToArray();
 
-
-                BufferDescription indexBufferDescription = new()
-                {
-                    BindFlags = BindFlags.IndexBuffer,
-                    CPUAccessFlags = CpuAccessFlags.None,
-                    MiscFlags = ResourceOptionFlags.None,
-                    ByteWidth = sizeof(uint) * (uint)Indices.Count,
-                    StructureByteStride = 0,
-                    Usage = ResourceUsage.Default
-                };
-
-                GCHandle indexHandle = GCHandle.Alloc(Indices.ToArray(), GCHandleType.Pinned);
-
-                try
-                {
-                    SubresourceData indexBufferSubresourceData = new()
+                    unsafe
                     {
-                        DataPointer = indexHandle.AddrOfPinnedObject(),
-                        RowPitch = 0,
-                        SlicePitch = 0
+                        fixed (Vertex* vertexPtr = vertexArray)
+                        {
+                            SubresourceData vertexBufferSubresourceData = new()
+                            {
+                                DataPointer = (IntPtr)vertexPtr,
+                                RowPitch = 0,
+                                SlicePitch = 0
+                            };
+
+                            VertexBuffer = device.CreateBuffer(vertexBufferDescription, vertexBufferSubresourceData);
+                        }
+                    }
+                }
+
+                int indexBufferSize = sizeof(uint) * Indices.Count;
+
+                if (IndexBuffer != null)
+                {
+                    MappedSubresource indexDataBox = context.Map(IndexBuffer, 0, MapMode.WriteDiscard, Vortice.Direct3D11.MapFlags.None);
+
+                    unsafe
+                    {
+                        fixed (uint* indexPtr = Indices.ToArray())
+                        {
+                            Buffer.MemoryCopy(indexPtr, indexDataBox.DataPointer.ToPointer(), indexBufferSize, indexBufferSize);
+                        }
+                    }
+
+                    context.Unmap(IndexBuffer, 0);
+                }
+                else
+                {
+                    BufferDescription indexBufferDescription = new()
+                    {
+                        BindFlags = BindFlags.IndexBuffer,
+                        CPUAccessFlags = CpuAccessFlags.Write,
+                        MiscFlags = ResourceOptionFlags.None,
+                        ByteWidth = (uint)indexBufferSize,
+                        StructureByteStride = 0,
+                        Usage = ResourceUsage.Dynamic
                     };
 
-                    IndexBuffer = device.CreateBuffer(indexBufferDescription, indexBufferSubresourceData);
-                }
-                finally
-                {
-                    indexHandle.Free();
+                    uint[] indexArray = Indices.ToArray();
+
+                    unsafe
+                    {
+                        fixed (uint* indexPtr = indexArray)
+                        {
+                            SubresourceData indexBufferSubresourceData = new()
+                            {
+                                DataPointer = (IntPtr)indexPtr,
+                                RowPitch = 0,
+                                SlicePitch = 0
+                            };
+
+                            IndexBuffer = device.CreateBuffer(indexBufferDescription, indexBufferSubresourceData);
+                        }
+                    }
                 }
             }
         }
@@ -116,10 +149,10 @@ namespace Invasion.Render
 
             uint stride = (uint)Marshal.SizeOf<Vertex>();
             uint offset = 0;
-            context.IASetVertexBuffers(0, [VertexBuffer], [stride], [offset]);
+            context.IASetVertexBuffers(0, new ID3D11Buffer[] { VertexBuffer }, new uint[] { stride }, new uint[] { offset });
 
             context.IASetIndexBuffer(IndexBuffer, Format.R32_UInt, 0);
-            
+
             Shader.SetConstantBuffer<DefaultMatrixBuffer>(ShaderStage.Vertex, 0, new()
             {
                 Projection = Matrix4x4.Transpose(camera.Projection),
