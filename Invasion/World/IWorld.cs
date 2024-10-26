@@ -3,12 +3,9 @@ using Invasion.Entity;
 using Invasion.Math;
 using Invasion.Render;
 using Invasion.Util;
-using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace Invasion.World
 {
@@ -28,41 +25,9 @@ namespace Invasion.World
 
         private List<IEntity> Entities { get; } = [];
 
-        private object Lock { get; } = new();
-
         private static int MaxThreads { get; } = Environment.ProcessorCount / 2;
         private static BlockingCollection<Action> TaskQueue { get; } = [];
         private static List<Thread> ThreadPool { get; } = [];
-
-        private IWorld()
-        {
-            lock (Lock)
-            {
-                for (int i = 0; i < MaxThreads; i++)
-                {
-                    Thread worker = new(() =>
-                    {
-                        foreach (var action in TaskQueue.GetConsumingEnumerable())
-                        {
-                            try
-                            {
-                                action();
-                            }
-                            catch (Exception ex)
-                            {
-                                Console.WriteLine($"Exception in thread pool ({GetType()}): {ex.Message}");
-                            }
-                        }
-                    })
-                    {
-                        IsBackground = true
-                    };
-
-                    worker.Start();
-                    ThreadPool.Add(worker);
-                }
-            }
-        }
 
         public override void Update()
         {
@@ -104,8 +69,6 @@ namespace Invasion.World
 
         public Chunk GenerateChunk(Vector3i position, bool automaticallyGenerate = true, bool generateNothing = false)
         {
-            lock (LoadedChunks)
-            {
                 if (LoadedChunks.TryGetValue(position, out Chunk? value))
                     return value;
 
@@ -128,7 +91,6 @@ namespace Invasion.World
 
                 return result;
             }
-        }
 
         public void SetBlock(Vector3f worldPosition, short block, bool createChunkIfNotPresent = false)
         {

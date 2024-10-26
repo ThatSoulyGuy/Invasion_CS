@@ -4,7 +4,6 @@ using Invasion.Math;
 using Invasion.Render;
 using Invasion.Util;
 using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 
 namespace Invasion.World
@@ -19,8 +18,6 @@ namespace Invasion.World
         private List<uint> Indices { get; set; } = [];
 
         private ConcurrentDictionary<Vector3i, BoundingBox> Colliders { get; } = [];
-
-        private object Lock { get; } = new();
 
         private static Vector3f[] FaceNormals { get; } =
         {
@@ -54,8 +51,6 @@ namespace Invasion.World
 
         public void Generate()
         {
-            lock (Lock)
-            {
                 Vertices.Clear();
                 Indices.Clear();
             
@@ -85,13 +80,10 @@ namespace Invasion.World
                                 Colliders.TryAdd(position, BoundingBox.Create(worldPosition, Vector3f.One));
                             }
 
-                            lock (Lock)
-                            {
                                 AddFace(position, normal, BlockList.GetBlockData(block), atlas, i);
                             }
                         }
                     }
-                }
 
                 Mesh mesh = GameObject.GetComponent<Mesh>();
 
@@ -100,9 +92,7 @@ namespace Invasion.World
 
                 if (Vertices.Count != 0 && Indices.Count != 0)
                     mesh.Generate();
-            
             }
-        }
 
         public void SetBlock(Vector3i position, short block)
         {
