@@ -26,20 +26,7 @@ namespace Invasion.Math
         {
             bool wasHit = false;
 
-            RayHitInformation result = new()
-            {
-                Origin = origin,
-                Direction = normalizedDirection,
-                Distance = (float)distance
-            };
-
             var boundingBoxes = BoundingBoxManager.GetAll();
-
-            if (ignore != null)
-                boundingBoxes.Remove(ignore);
-
-            double closestDistance = double.MaxValue; 
-            RayHitInformation closestHitInfo = new();
 
             foreach (var box in boundingBoxes)
             {
@@ -63,8 +50,6 @@ namespace Invasion.Math
                             Distance = (float)tmin,
                             Collider = box
                         };
-
-                        wasHit = true;
                     }
                 }
             }

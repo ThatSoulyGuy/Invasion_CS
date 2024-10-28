@@ -85,8 +85,6 @@ namespace Invasion.Math
                 Size = size
             };
 
-            BoundingBoxManager.Register(result);
-
             return result;
         }
     }

@@ -85,9 +85,6 @@ namespace Invasion.Entity.Entities
 
         private void UpdateControls()
         {
-            var cameraWorldPosition = RenderCamera.Transform.WorldPosition;
-            var cameraForward = RenderCamera.Transform.Forward;
-
             if (InputManager.MouseLeftPressed && blockTime >= 0.1f)
             {
                 if (RenderCamera.GetChild("LaserGun").Active)

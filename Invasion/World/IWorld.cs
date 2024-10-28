@@ -227,7 +227,6 @@ namespace Invasion.World
         public void KillEntity(IEntity entity)
         {
             GameObjectManager.Unregister(entity.GameObject.Name);
-            Entities.Remove(entity);
         }
 
         public void UnloadChunk(Vector3i position)
