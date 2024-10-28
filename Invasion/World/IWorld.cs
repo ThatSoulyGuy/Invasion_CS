@@ -79,8 +79,6 @@ namespace Invasion.World
                 {
                     foreach (var spawnManager in SpawnManagers)
                         spawnManager.OnSpawnTick(this, [.. LoadedChunks.Values]);
-
-                    TICK_RATE = 10000000;
                 }
 
                 if (KeepUpdating)
