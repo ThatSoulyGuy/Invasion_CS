@@ -1,8 +1,6 @@
 ﻿using Invasion.Core;
 using Invasion.ECS;
 using System;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace Invasion.Math
 {
@@ -19,8 +17,6 @@ namespace Invasion.Math
 
         public bool UseGravity { get; set; } = true;
         public bool IsGrounded { get; private set; } = false;
-
-        private Rigidbody() { }
 
         private const float Epsilon = 0.0001f;
         private const float MaxVelocity = 50.0f;
@@ -44,8 +40,6 @@ namespace Invasion.Math
             {
                 if (UseGravity)
                     Velocity.Y += Gravity * stepTime;
-
-                Velocity.Multiply(1 - Drag);
 
                 ClampVelocity(MaxVelocity);
 

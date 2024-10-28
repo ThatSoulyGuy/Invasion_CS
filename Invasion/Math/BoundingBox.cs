@@ -29,14 +29,6 @@ namespace Invasion.Math
             }
         }
 
-        public Vector3f LocalMin => -(Size / 2);
-        public Vector3f LocalMax => Size / 2;
-
-        public Vector3f Position
-        {
-            get => IsComponent ? GameObject.Transform.WorldPosition : PositionNoComponent;
-            set
-            {
                 if (IsComponent)
                     GameObject.Transform.LocalPosition = value;
                 else

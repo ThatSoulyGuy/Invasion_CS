@@ -117,7 +117,6 @@ namespace Invasion.Entity.Entities
                     else if (!hit && information.Collider != null && information.Collider.GameObject != null)
                         CreateRay(RenderCamera.Transform.WorldPosition, information.HitPoint, new(0.0f, 0.0f, 1.0f));
 
-                    //InvasionMain.Overworld.GetComponent<IWorld>().SpawnEntity<EntityLaserBeam, ModelLaserBeam>(new EntityLaserBeam(RenderCamera.Transform.Forward, 2.0f), RenderCamera.Transform.WorldPosition);
 
                     if (information.Collider != null)
                         Console.WriteLine(information.Collider.Size.Y);

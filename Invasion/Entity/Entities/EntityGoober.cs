@@ -29,8 +29,6 @@ namespace Invasion.Entity.Entities
             if (IsDead)
                 return;
 
-            base.Update();
-
             Rigidbody rigidbody = GameObject.GetComponent<Rigidbody>()!;
 
             if (Model != null)
