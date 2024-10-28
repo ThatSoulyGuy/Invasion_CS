@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 
 namespace Invasion.Math
 {
@@ -21,31 +22,34 @@ namespace Invasion.Math
         /// <param name="origin">The starting point of the ray.</param>
         /// <param name="normalizedDirection">The normalized direction vector of the ray.</param>
         /// <param name="distance">The maximum distance to check for intersections.</param>
+        /// <param name="ignore">An optional bounding box to ignore during the cast.</param>
         /// <returns>A tuple containing a boolean indicating if a hit occurred and the hit information.</returns>
         public static (bool, RayHitInformation) Cast(Vector3d origin, Vector3d normalizedDirection, double distance, BoundingBox ignore = null!)
         {
             bool wasHit = false;
+            RayHitInformation closestHitInfo = new();
+            double minDistance = distance;
 
             var boundingBoxes = BoundingBoxManager.GetAll();
 
+            List<BoundingBox> boxesWhereSizeNot1 = boundingBoxes.FindAll(box => box.Size != Vector3f.One);
+
             foreach (var box in boundingBoxes)
             {
-                if (Intersect(origin, normalizedDirection, box, out double tmin, out double tmax, out Vector3d normal))
+                if (box == ignore)
+                    continue;
+
+                if (RayIntersectsAABB(origin, normalizedDirection, box, out double tmin, out Vector3d normal))
                 {
-                    if (tmin < 0)
-                        tmin = tmax;
-
-                    if (tmin >= 0 && tmin <= distance && tmin < closestDistance)
+                    if (tmin >= 0 && tmin <= minDistance)
                     {
-                        closestDistance = tmin;
-
-                        Vector3d hitPoint = origin + normalizedDirection * tmin;
-
+                        minDistance = tmin;
+                        wasHit = true;
                         closestHitInfo = new RayHitInformation
                         {
                             Origin = origin,
                             Direction = normalizedDirection,
-                            HitPoint = hitPoint,
+                            HitPoint = origin + normalizedDirection * tmin,
                             Normal = normal,
                             Distance = (float)tmin,
                             Collider = box
@@ -54,85 +58,71 @@ namespace Invasion.Math
                 }
             }
 
-            if (wasHit)
-                return (true, closestHitInfo);
-            else
-                return (false, result);
+            return (wasHit, closestHitInfo);
         }
 
         /// <summary>
-        /// Checks if a ray intersects with a bounding box.
+        /// Determines if a ray intersects an axis-aligned bounding box (AABB).
         /// </summary>
-        /// <param name="rayOrigin">The origin of the ray.</param>
-        /// <param name="rayDirection">The direction vector of the ray.</param>
-        /// <param name="box">The bounding box to check against.</param>
-        /// <param name="tmin">The minimum distance along the ray where the intersection occurs.</param>
-        /// <param name="tmax">The maximum distance along the ray where the intersection occurs.</param>
-        /// <param name="normal">The normal vector at the point of intersection.</param>
+        /// <param name="origin">The origin of the ray.</param>
+        /// <param name="direction">The normalized direction of the ray.</param>
+        /// <param name="box">The bounding box to test against.</param>
+        /// <param name="tmin">The distance to the closest intersection point.</param>
+        /// <param name="normal">The normal at the intersection point.</param>
         /// <returns>True if the ray intersects the bounding box; otherwise, false.</returns>
-        private static bool Intersect(Vector3d rayOrigin, Vector3d rayDirection, BoundingBox box, out double tmin, out double tmax, out Vector3d normal)
+        private static bool RayIntersectsAABB(Vector3d origin, Vector3d direction, BoundingBox box, out double tmin, out Vector3d normal)
         {
-            tmin = 0;
-            tmax = double.MaxValue;
+            tmin = 0.0;
+            double tmax = double.MaxValue;
             normal = Vector3d.Zero;
 
-            double tminTemp = tmin;
-            double tmaxTemp = tmax;
-            Vector3d normalTemp = normal;
+            Vector3d boxMin = box.Min;
+            Vector3d boxMax = box.Max;
 
-            if (!RaySlabIntersect(rayOrigin.X, rayDirection.X, box.Min.X, box.Max.X, ref tminTemp, ref tmaxTemp, ref normalTemp, new Vector3d(1, 0, 0)))
-                return false;
-
-            if (!RaySlabIntersect(rayOrigin.Z, rayDirection.Z, box.Min.Z, box.Max.Z, ref tminTemp, ref tmaxTemp, ref normalTemp, new Vector3d(0, 0, 1)))
-                return false;
-
-            if (!RaySlabIntersect(rayOrigin.Y, rayDirection.Y, box.Min.Y, box.Max.Y, ref tminTemp, ref tmaxTemp, ref normalTemp, new Vector3d(0, 1, 0)))
-                return false;
-
-            tmin = tminTemp;
-            tmax = tmaxTemp;
-            normal = normalTemp;
-
-            return true;
-        }
-
-        /// <summary>
-        /// Helper method to perform ray-slab intersection for a single axis.
-        /// </summary>
-        private static bool RaySlabIntersect(double rayOrigin, double rayDirection, double slabMin, double slabMax, ref double tmin, ref double tmax, ref Vector3d normal, Vector3d axisNormal)
-        {
-            const double epsilon = 1e-14;
-
-            if (System.Math.Abs(rayDirection) < epsilon)
+            for (int i = 0; i < 3; i++)
             {
-                if (rayOrigin < slabMin || rayOrigin > slabMax)
-                    return false;
-            }
-            else
-            {
-                double invD = 1.0 / rayDirection;
-                double t0 = (slabMin - rayOrigin) * invD;
-                double t1 = (slabMax - rayOrigin) * invD;
-
-                Vector3d n = axisNormal;
-
-                if (invD < 0.0)
+                if (System.Math.Abs(direction[i]) < 1e-8)
                 {
-                    (t0, t1) = (t1, t0);
-                    n = -axisNormal;
+                    if (origin[i] < boxMin[i] || origin[i] > boxMax[i])
+                    {
+                        tmin = 0;
+                        normal = Vector3d.Zero;
+                        return false;
+                    }
                 }
-
-                if (t0 > tmin)
+                else
                 {
-                    tmin = t0;
-                    normal = n;
+                    double invD = 1.0 / direction[i];
+                    double t0 = (boxMin[i] - origin[i]) * invD;
+                    double t1 = (boxMax[i] - origin[i]) * invD;
+
+                    if (invD < 0.0)
+                    {
+                        double temp = t0;
+                        t0 = t1;
+                        t1 = temp;
+                    }
+
+                    if (t0 > tmin)
+                    {
+                        tmin = t0;
+                        
+                        normal = Vector3d.Zero;
+                        normal[i] = direction[i] < 0 ? 1 : -1;
+                    }
+
+                    if (t1 < tmax)
+                    {
+                        tmax = t1;
+                    }
+
+                    if (tmax < tmin)
+                    {
+                        tmin = 0;
+                        normal = Vector3d.Zero;
+                        return false;
+                    }
                 }
-
-                if (t1 < tmax)
-                    tmax = t1;
-
-                if (tmax <= tmin)
-                    return false;
             }
 
             return true;

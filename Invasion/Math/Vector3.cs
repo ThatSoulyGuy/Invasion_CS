@@ -576,6 +576,34 @@ namespace Invasion.Math
             return new Vector3d(-a.X, -a.Y, -a.Z);
         }
 
+        public double this[int index]
+        {
+            readonly get => index switch
+            {
+                0 => X,
+                1 => Y,
+                2 => Z,
+                _ => throw new IndexOutOfRangeException()
+            };
+            set
+            {
+                switch (index)
+                {
+                    case 0:
+                        X = value;
+                        break;
+                    case 1:
+                        Y = value;
+                        break;
+                    case 2:
+                        Z = value;
+                        break;
+                    default:
+                        throw new IndexOutOfRangeException();
+                }
+            }
+        }
+
         public static implicit operator Vector3i(Vector3d v)
         {
             return new Vector3i((int)v.X, (int)v.Y, (int)v.Z);

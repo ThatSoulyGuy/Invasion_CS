@@ -1,4 +1,7 @@
 ﻿using Invasion.ECS;
+using Invasion.Render;
+using SharpGen.Runtime;
+using System.Collections.Generic;
 
 namespace Invasion.Math
 {
@@ -26,6 +29,9 @@ namespace Invasion.Math
             }
         }
 
+        public Vector3f LocalMin => -(Size / 2);
+        public Vector3f LocalMax => Size / 2;
+
         public Vector3f Position
         {
             get => IsComponent ? GameObject.Transform.WorldPosition : PositionNoComponent;
@@ -48,6 +54,47 @@ namespace Invasion.Math
 
         private BoundingBox() { }
 
+        public override void Initialize()
+        {
+            BoundingBoxManager.Register(this);
+
+            GameObject.AddComponent(ShaderManager.Get("line"));
+
+            List<Vertex> vertices =
+            [
+                new Vertex(new Vector3f(LocalMin.X, LocalMin.Y, LocalMin.Z), new Vector3f(1.0f, 1.0f, 1.0f), Vector3f.Zero, Vector2f.Zero), // 0
+                new Vertex(new Vector3f(LocalMax.X, LocalMin.Y, LocalMin.Z), new Vector3f(1.0f, 1.0f, 1.0f), Vector3f.Zero, Vector2f.Zero), // 1
+                new Vertex(new Vector3f(LocalMax.X, LocalMin.Y, LocalMax.Z), new Vector3f(1.0f, 1.0f, 1.0f), Vector3f.Zero, Vector2f.Zero), // 2
+                new Vertex(new Vector3f(LocalMin.X, LocalMin.Y, LocalMax.Z), new Vector3f(1.0f, 1.0f, 1.0f), Vector3f.Zero, Vector2f.Zero), // 3
+                new Vertex(new Vector3f(LocalMin.X, LocalMax.Y, LocalMin.Z), new Vector3f(1.0f, 1.0f, 1.0f), Vector3f.Zero, Vector2f.Zero), // 4
+                new Vertex(new Vector3f(LocalMax.X, LocalMax.Y, LocalMin.Z), new Vector3f(1.0f, 1.0f, 1.0f), Vector3f.Zero, Vector2f.Zero), // 5
+                new Vertex(new Vector3f(LocalMax.X, LocalMax.Y, LocalMax.Z), new Vector3f(1.0f, 1.0f, 1.0f), Vector3f.Zero, Vector2f.Zero), // 6
+                new Vertex(new Vector3f(LocalMin.X, LocalMax.Y, LocalMax.Z), new Vector3f(1.0f, 1.0f, 1.0f), Vector3f.Zero, Vector2f.Zero)  // 7
+            ];
+
+            List<uint> indices =
+            [
+                0, 1,
+                1, 2,
+                2, 3,
+                3, 0,
+
+                4, 5,
+                5, 6,
+                6, 7,
+                7, 4,
+
+                0, 4,
+                1, 5,
+                2, 6, 
+                3, 7
+            ];
+
+            GameObject.AddComponent(LineMesh.Create("line_bb", vertices, indices));
+
+            GameObject.GetComponent<LineMesh>().Generate();
+        }
+
         public bool Intersects(BoundingBox other)
         {
             return Min.X <= other.Max.X + Epsilon && Max.X >= other.Min.X - Epsilon &&
@@ -66,24 +113,31 @@ namespace Invasion.Math
             return broadphaseBox;
         }
 
+        public override string ToString()
+        {
+            return $"Position: {Position}, Size: {Size}";
+        }
+
         public override void CleanUp()
         {
             IsCleanedUp = true;
             BoundingBoxManager.Unregister(this);
         }
 
-        public static BoundingBox Create(Vector3f size)
+        public static BoundingBox Create(Vector3f size, bool doNotRegister = false)
         {
-            return Create(Vector3f.Zero, size);
+            return Create(Vector3f.Zero, size, doNotRegister);
         }
 
-        public static BoundingBox Create(Vector3f position, Vector3f size)
+        public static BoundingBox Create(Vector3f position, Vector3f size, bool doNotRegister = false)
         {
             BoundingBox result = new()
             {
                 PositionNoComponent = position,
                 Size = size
             };
+
+            BoundingBoxManager.Register(result);
 
             return result;
         }

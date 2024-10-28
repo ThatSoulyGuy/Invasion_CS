@@ -9,7 +9,7 @@ namespace Invasion.Entity.Entities
     {
         public override string RegistryName => "entity_goober";
 
-        public override BoundingBox ColliderSpecification { get; } = BoundingBox.Create(new(0.5f, 0.5f, 0.5f));
+        public override Vector3f ColliderSpecification { get; } = new(0.6f, 0.8f, 0.6f);
 
         private ModelGoober Model => GameObject.GetComponent<ModelGoober>()!;
 
@@ -26,6 +26,9 @@ namespace Invasion.Entity.Entities
         
         public override void Update()
         {
+            if (IsDead)
+                return;
+
             base.Update();
 
             Rigidbody rigidbody = GameObject.GetComponent<Rigidbody>()!;

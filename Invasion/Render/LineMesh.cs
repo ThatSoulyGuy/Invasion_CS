@@ -7,27 +7,21 @@ using System.Runtime.InteropServices;
 using Vortice.Direct3D;
 using Vortice.Direct3D11;
 using Vortice.DXGI;
+
 using MapFlags = Vortice.Direct3D11.MapFlags;
 
 namespace Invasion.Render
 {
-    [StructLayout(LayoutKind.Sequential)]
-    public struct DefaultMatrixBuffer
-    {
-        public Matrix4x4 Projection;
-        public Matrix4x4 View;
-        public Matrix4x4 Model;
-    }
-
-    public class Mesh : Component
+    public class LineMesh : Component
     {
         public string Name { get; set; } = string.Empty;
 
-        public ConcurrentBag<Vertex> Vertices { get; set; } = new();
-        public ConcurrentBag<uint> Indices { get; set; } = new();
+        public List<Vertex> Vertices { get; set; } = new();
+        public List<uint> Indices { get; set; } = new();
+
+        public bool IgnorePosition { get; set; } = false;
 
         public Shader Shader => GameObject.GetComponent<Shader>();
-        public Texture Texture => GameObject.GetComponent<Texture>();
 
         private ID3D11Buffer? VertexBuffer { get; set; } = null!;
         private ID3D11Buffer? IndexBuffer { get; set; } = null!;
@@ -35,9 +29,9 @@ namespace Invasion.Render
         private int VertexBufferSize { get; set; } = 0;
         private int IndexBufferSize { get; set; } = 0;
 
-        private object Lock { get; set; } = new();
+        private readonly object Lock = new();
 
-        private Mesh() { }
+        private LineMesh() { }
 
         public void Generate()
         {
@@ -49,7 +43,7 @@ namespace Invasion.Render
                 ID3D11DeviceContext4 context = Renderer.Context;
                 ID3D11Device4 device = Renderer.Device;
 
-                int newVertexBufferSize = Marshal.SizeOf(typeof(Vertex)) * Vertices.Count;
+                int newVertexBufferSize = Marshal.SizeOf<Vertex>() * Vertices.Count;
                 int newIndexBufferSize = sizeof(uint) * Indices.Count;
 
                 Vertex[] vertexArray = Vertices.ToArray();
@@ -57,31 +51,15 @@ namespace Invasion.Render
 
                 if (VertexBuffer != null)
                 {
-                    if (newVertexBufferSize > VertexBufferSize)
-                    {
-                        VertexBuffer.Dispose();
-
-                        CreateVertexBuffer(device, vertexArray, newVertexBufferSize);
-                    }
-                    else
-                        UpdateBuffer(context, VertexBuffer, vertexArray, newVertexBufferSize);
+                    VertexBuffer.Dispose();
                 }
-                else
-                    CreateVertexBuffer(device, vertexArray, newVertexBufferSize);
+                CreateVertexBuffer(device, vertexArray, newVertexBufferSize);
 
                 if (IndexBuffer != null)
                 {
-                    if (newIndexBufferSize > IndexBufferSize)
-                    {
-                        IndexBuffer.Dispose();
-
-                        CreateIndexBuffer(device, indexArray, newIndexBufferSize);
-                    }
-                    else
-                        UpdateBuffer(context, IndexBuffer, indexArray, newIndexBufferSize);
+                    IndexBuffer.Dispose();
                 }
-                else
-                    CreateIndexBuffer(device, indexArray, newIndexBufferSize);
+                CreateIndexBuffer(device, indexArray, newIndexBufferSize);
 
                 VertexBufferSize = newVertexBufferSize;
                 IndexBufferSize = newIndexBufferSize;
@@ -96,7 +74,7 @@ namespace Invasion.Render
                 CPUAccessFlags = CpuAccessFlags.Write,
                 MiscFlags = ResourceOptionFlags.None,
                 ByteWidth = (uint)bufferSize,
-                StructureByteStride = 0,
+                StructureByteStride = (uint)Marshal.SizeOf<Vertex>(),
                 Usage = ResourceUsage.Dynamic
             };
 
@@ -124,7 +102,7 @@ namespace Invasion.Render
                 CPUAccessFlags = CpuAccessFlags.Write,
                 MiscFlags = ResourceOptionFlags.None,
                 ByteWidth = (uint)bufferSize,
-                StructureByteStride = 0,
+                StructureByteStride = sizeof(uint),
                 Usage = ResourceUsage.Dynamic
             };
 
@@ -158,10 +136,11 @@ namespace Invasion.Render
         {
             ID3D11DeviceContext4 context = Renderer.Context;
 
-            context.IASetPrimitiveTopology(PrimitiveTopology.TriangleList);
+            context.IASetPrimitiveTopology(PrimitiveTopology.LineList);
 
             uint stride = (uint)Marshal.SizeOf<Vertex>();
             uint offset = 0;
+
             context.IASetVertexBuffers(0, [VertexBuffer!], [stride], [offset]);
 
             context.IASetIndexBuffer(IndexBuffer, Format.R32_UInt, 0);
@@ -170,11 +149,10 @@ namespace Invasion.Render
             {
                 Projection = Matrix4x4.Transpose(camera.Projection),
                 View = Matrix4x4.Transpose(camera.View),
-                Model = Matrix4x4.Transpose(GameObject.Transform.GetModelMatrix())
+                Model = IgnorePosition ? Matrix4x4.Identity : Matrix4x4.Transpose(GameObject.Transform.GetModelMatrix())
             });
 
             Shader.Bind();
-            Texture.Bind(0);
 
             context.DrawIndexed((uint)Indices.Count, 0, 0);
         }
@@ -187,13 +165,14 @@ namespace Invasion.Render
             IndexBuffer = null;
         }
 
-        public static Mesh Create(string name, List<Vertex> vertices, List<uint> indices)
+        public static LineMesh Create(string name, List<Vertex> vertices, List<uint> indices, bool ignorePosition = false)
         {
-            return new()
+            return new LineMesh
             {
                 Name = name,
                 Vertices = new(vertices),
-                Indices = new(indices)
+                Indices = new(indices),
+                IgnorePosition = ignorePosition
             };
         }
     }

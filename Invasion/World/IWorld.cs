@@ -182,8 +182,10 @@ namespace Invasion.World
             if (hasRigidbody)
                 entityObject.AddComponent(Rigidbody.Create());
 
-            entityObject.AddComponent(new T().ColliderSpecification);
-            entityObject.AddComponent(new T());
+            T instance = new();
+
+            entityObject.AddComponent(BoundingBox.Create(instance.ColliderSpecification));
+            entityObject.AddComponent(instance);
 
             Entities.Add(entityObject.GetComponent<T>());
 
@@ -198,9 +200,11 @@ namespace Invasion.World
             if (hasRigidbody)
                 entityObject.AddComponent(Rigidbody.Create());
 
+            T instance = new();
+
             entityObject.AddComponent(new A());
-            entityObject.AddComponent(new T().ColliderSpecification);
-            entityObject.AddComponent(new T());
+            entityObject.AddComponent(BoundingBox.Create(instance.ColliderSpecification));
+            entityObject.AddComponent(instance);
 
             Entities.Add(entityObject.GetComponent<T>());
 
@@ -216,7 +220,7 @@ namespace Invasion.World
                 entityObject.AddComponent(Rigidbody.Create());
 
             entityObject.AddComponent(new A());
-            entityObject.AddComponent(classInstance.ColliderSpecification);
+            entityObject.AddComponent(BoundingBox.Create(classInstance.ColliderSpecification));
             entityObject.AddComponent(classInstance);
 
             Entities.Add(entityObject.GetComponent<T>());
@@ -226,6 +230,7 @@ namespace Invasion.World
 
         public void KillEntity(IEntity entity)
         {
+            Entities.Remove(entity);
             GameObjectManager.Unregister(entity.GameObject.Name);
         }
 

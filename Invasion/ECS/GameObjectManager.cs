@@ -20,11 +20,12 @@ namespace Invasion.ECS
                 return null!;
         }
 
-        public static void Unregister(string name)
+        public static void Unregister(string name, bool cleanUp = true)
         {
             if (GameObjects.TryGetValue(name, out GameObject? value))
             {
-                value.CleanUp();
+                if (cleanUp)
+                    value.CleanUp();
                     
                 GameObjects.TryRemove(name, out _);
             }

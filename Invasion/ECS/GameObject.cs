@@ -90,13 +90,14 @@ namespace Invasion.ECS
             if (Components.TryGetValue(typeof(T), out var component))
             {
                 component.CleanUp();
+                component = null!;
                 Components.TryRemove(typeof(T), out _);
             }
         }
 
         public GameObject AddChild(GameObject child)
         {
-            GameObjectManager.Unregister(child.Name);
+            GameObjectManager.Unregister(child.Name, false);
 
             child.Parent = this;
             child.GetComponent<Transform>().Parent = GetComponent<Transform>();
@@ -167,13 +168,17 @@ namespace Invasion.ECS
             foreach (Component component in Components.Values)
                 component.CleanUp();
 
+            Components.Clear();
+
             foreach (GameObject child in Children.Values)
                 child.CleanUp();
+
+            Children.Clear();
         }
 
         public static GameObject Create(string name)
         {
-            GameObject result = new GameObject
+            GameObject result = new() 
             {
                 Name = name
             };

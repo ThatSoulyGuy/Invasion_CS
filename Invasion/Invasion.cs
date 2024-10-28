@@ -28,6 +28,7 @@ namespace Invasion
 
             ShaderManager.Register(Shader.Create("default", new("Shader/Default", "Invasion")));
             ShaderManager.Register(Shader.Create("ui", new("Shader/UI", "Invasion")));
+            ShaderManager.Register(Shader.Create("line", new("Shader/Line", "Invasion")));
 
             TextureManager.Register(Texture.Create("debug", new("Texture/Debug.dds", "Invasion"), new()
             {

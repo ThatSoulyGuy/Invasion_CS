@@ -6,7 +6,7 @@ namespace Invasion.Entity.Entities
     {
         public override string RegistryName => "entity_pig";
 
-        public override BoundingBox ColliderSpecification { get; } = BoundingBox.Create(new(0.5f, 0.5f, 0.5f));
+        public override Vector3f ColliderSpecification { get; } = new(0.5f, 0.5f, 0.5f);
 
         public Vector3f PlayerPosition { get; set; } = Vector3f.Zero;
 

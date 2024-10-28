@@ -9,6 +9,7 @@ using Invasion.Math;
 using Invasion.Model;
 using Invasion.Render;
 using Invasion.UI.Elements;
+using Invasion.Util;
 using Invasion.World;
 
 namespace Invasion.Entity.Entities
@@ -18,7 +19,7 @@ namespace Invasion.Entity.Entities
         public override string RegistryName => "entity_player";
         public float MouseSensitivity { get; set; } = 80.0f;
 
-        public override BoundingBox ColliderSpecification { get; } = BoundingBox.Create(new(0.6f, 1.89f, 0.6f));
+        public override Vector3f ColliderSpecification { get; } = new(0.6f, 1.89f, 0.6f);
 
         public UIText HealthText { get; private set; } = null!;
         public UIText InstructionsText { get; private set; } = null!;
@@ -42,7 +43,7 @@ namespace Invasion.Entity.Entities
             InstructionsText = new("instructions", new("Font/Segoeuithis.ttf", "Invasion"), new(720.0f, 120.0f), new(450.0f, 160.0f))
             {
                 Text = "To switch from using your\n weapon to your hand, press 'C'!\nPress 'X' to close this dialog",
-            };
+            }; 
 
             RenderCamera.AddComponent(Camera.Create(45.0f, 0.01f, 1000.0f));
             RenderCamera.Transform.LocalPosition = new(0.0f, 0.9f, 0.0f);
@@ -64,7 +65,7 @@ namespace Invasion.Entity.Entities
 
         public override void Update()
         {
-            base.Update();
+            base.Update(); 
 
             string healthText = $"Health: {Health}";
 
@@ -80,7 +81,25 @@ namespace Invasion.Entity.Entities
 
         public override void OnDeath()
         {
-            GameObjectManager.Unregister(GameObject.Name);
+            //GameObjectManager.Unregister(GameObject.Name);
+        }
+
+        private void CreateRay(Vector3f start, Vector3f end, Vector3f color)
+        {
+            GameObject ray = GameObject.Create("Ray" + new Random().Next());
+
+            ray.AddComponent(ShaderManager.Get("line"));
+            ray.AddComponent(new DeleteAfter(10.0f));
+            ray.AddComponent(LineMesh.Create("ray",
+            [
+                new Vertex(start, color, Vector3f.Zero, Vector2f.Zero),
+                new Vertex(end, color, Vector3f.Zero, Vector2f.Zero)
+            ], 
+            [
+                0, 1
+            ]));
+
+            ray.GetComponent<LineMesh>().Generate();
         }
 
         private void UpdateControls()
@@ -91,12 +110,19 @@ namespace Invasion.Entity.Entities
                 {
                     var (hit, information) = Raycast.Cast(RenderCamera.Transform.WorldPosition, RenderCamera.Transform.Forward, 40.0f, GameObject.GetComponent<BoundingBox>());
 
-                    Vector3f position = information.HitPoint;
+                    if (hit)
+                        CreateRay(RenderCamera.Transform.WorldPosition, information.HitPoint, new(0.0f, 1.0f, 0.0f));
+                    else if (!hit && information.Collider != null && information.Collider.GameObject == null)
+                        CreateRay(RenderCamera.Transform.WorldPosition, RenderCamera.Transform.WorldPosition + RenderCamera.Transform.Forward * 40.0f, new(1.0f, 0.0f, 0.0f));
+                    else if (!hit && information.Collider != null && information.Collider.GameObject != null)
+                        CreateRay(RenderCamera.Transform.WorldPosition, information.HitPoint, new(0.0f, 0.0f, 1.0f));
 
-                    position += information.Normal * 0.5f;
-                    
                     //InvasionMain.Overworld.GetComponent<IWorld>().SpawnEntity<EntityLaserBeam, ModelLaserBeam>(new EntityLaserBeam(RenderCamera.Transform.Forward, 2.0f), RenderCamera.Transform.WorldPosition);
 
+                    if (information.Collider != null)
+                        Console.WriteLine(information.Collider.Size.Y);
+
+                    /*
                     if (information.Collider == null)
                         Console.WriteLine("0 " + (information.Collider == null));
                     
@@ -105,6 +131,7 @@ namespace Invasion.Entity.Entities
 
                     if (information.Collider != null && information.Collider.GameObject != null)
                         Console.WriteLine("2 " + information.Collider.GameObject.HasComponent<EntityGoober>());
+                    */
 
                     if (hit && information.Collider!.GameObject != null && information.Collider.GameObject.HasComponent<EntityGoober>())
                         information.Collider.GameObject.GetComponent<EntityGoober>().Health -= 10;
@@ -115,7 +142,7 @@ namespace Invasion.Entity.Entities
 
                     Vector3f position = information.HitPoint;
 
-                    position += information.Normal * 0.5f;
+                    position -= information.Normal * 0.5f;
 
                     if (hit)
                         InvasionMain.Overworld.GetComponent<IWorld>().SetBlock(position, BlockList.AIR);
@@ -131,7 +158,7 @@ namespace Invasion.Entity.Entities
 
                 Vector3f position = information.HitPoint;
 
-                position -= information.Normal * 0.5f;
+                position += information.Normal * 0.5f;
 
                 if (hit)
                     InvasionMain.Overworld.GetComponent<IWorld>().SetBlock(position, BlockList.BEDROCK, true);

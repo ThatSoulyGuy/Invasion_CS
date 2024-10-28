@@ -8,7 +8,7 @@ namespace Invasion.Entity.Entities
     {
         public override string RegistryName => "entity_laser_beam";
 
-        public override BoundingBox ColliderSpecification => BoundingBox.Create(new(0.1f, 0.1f, 0.1f));
+        public override Vector3f ColliderSpecification => new(0.1f, 0.1f, 0.1f);
 
         private Vector3f Direction { get; set; }
         private float Speed { get; set; }

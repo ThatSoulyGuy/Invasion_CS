@@ -29,7 +29,7 @@ namespace Invasion.Entity
     {
         public abstract string RegistryName { get; }
 
-        public abstract BoundingBox ColliderSpecification { get; }
+        public abstract Vector3f ColliderSpecification { get; }
 
         public float Health { get; set; } = maxHealth;
         public float MaxHealth { get; set; } = maxHealth;
