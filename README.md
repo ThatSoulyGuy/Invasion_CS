@@ -1,7 +1,7 @@
 
 # Invasion
 
-This software application is a video game developed in C# 12.0 (.NET 8.0) utilizing the [Vortice.Direct3D11](https://www.nuget.org/packages/Vortice.Direct3D11/) framework for Direct3D11 graphics rendering. The game incorporates visual and audio assets sourced from the Minecraft® and Half-Life® franchises and derives substantial creative inspiration from Minecraft®, specifically in its voxel-based, block-structured environment.
+This software application is a video game developed in C# 12.0 (.NET 8.0) utilizing the [Vortice.Direct3D11](https://www.nuget.org/packages/Vortice.Direct3D11/) framework for Direct3D11 graphics rendering. The game incorporates visual and audio assets sourced from the Minecraft® and Half-Life® franchises and derives substantial creative inspiration from Minecraft®, specifically in its voxel-based, block-structured environment. However, aside for depedencies listed in this paragraph, every aspect of this video game is entirely original, including all source code.
 
 All third-party assets utilized in this project are employed under the provisions of Section 107 of the [United States Copyright Act of 1976](https://www.copyright.gov/title17/92chap1.html#107), which permits the fair use of copyrighted material for purposes such as criticism, commentary, and educational use.
 
