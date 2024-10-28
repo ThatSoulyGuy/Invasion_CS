@@ -26,6 +26,8 @@ namespace Invasion.Entity.Entities
         
         public override void Update()
         {
+            base.Update();
+
             if (IsDead)
                 return;
 
@@ -34,7 +36,8 @@ namespace Invasion.Entity.Entities
             if (Model != null)
                 Model.GetPart("head").GameObject.Transform.LocalRotation = LookAt(Model.GetPart("head").GameObject.Transform.WorldPosition, InvasionMain.Player.Transform.WorldPosition);
 
-            GameObject.Transform.LocalRotation = new(0.0f, Model!.GetPart("head").GameObject.Transform.LocalRotation.Y, 0.0f);
+            if (Model != null)
+                GameObject.Transform.LocalRotation = new(0.0f, Model.GetPart("head").GameObject.Transform.LocalRotation.Y, 0.0f);
 
             if (Vector3f.Distance(GameObject.Transform.WorldPosition, InvasionMain.Player.Transform.WorldPosition) < 2)
                 InvasionMain.Player.GetComponent<EntityPlayer>().Health -= 0.1f;

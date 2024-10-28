@@ -57,6 +57,9 @@ namespace Invasion.Render
             Device = deviceOut!.QueryInterface<ID3D11Device5>();
             Context = Device.ImmediateContext3.QueryInterface<ID3D11DeviceContext4>();
 
+            var multiThread = Context.QueryInterface<ID3D11Multithread>();
+            multiThread.SetMultithreadProtected(true);
+
             IDXGISwapChain1 swapChainOut = DxgiFactory.CreateSwapChainForHwnd(Device.QueryInterface<IDXGIDevice>(), Window.Handle, swapChainDescription);
 
             SwapChain = swapChainOut!.QueryInterface<IDXGISwapChain4>();

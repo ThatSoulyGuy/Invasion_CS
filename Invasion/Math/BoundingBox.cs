@@ -7,32 +7,41 @@ namespace Invasion.Math
 {
     public class BoundingBox : Component
     {
-        public Vector3f Min
+        public Vector3f Min => Position - (Size / 2);
+        public Vector3f Max => Position + (Size / 2);
+
+        public Vector3f LocalMin => -(Size / 2);
+        public Vector3f LocalMax => Size / 2;
+
+        public object Lock { get; } = new();
+
+        public Vector3f Position
         {
             get
             {
-                if (IsComponent)
-                    return GameObject.Transform.WorldPosition - (Size / 2);
-                else
-                    return PositionNoComponent - (Size / 2);
-            }
-        }
+                lock (Lock)
+                {
+                    if (GameObject != null && GameObject.Transform == null)
+                        return PositionNoComponent;
 
-        public Vector3f Max
-        {
-            get
+                    return IsComponent ? GameObject!.Transform.WorldPosition : PositionNoComponent;
+                }
+            }
+            set
             {
-                if (IsComponent)
-                    return GameObject.Transform.WorldPosition + (Size / 2);
-                else
-                    return PositionNoComponent + (Size / 2);
-            }
-        }
+                lock (Lock)
+                {
+                    if (GameObject != null && GameObject.Transform == null)
+                    {
+                        PositionNoComponent = value;
+                        return;
+                    }
 
-                if (IsComponent)
-                    GameObject.Transform.LocalPosition = value;
-                else
-                    PositionNoComponent = value;
+                    if (IsComponent)
+                        GameObject!.Transform.LocalPosition = value;
+                    else
+                        PositionNoComponent = value;
+                }
             }
         }
 
@@ -43,15 +52,20 @@ namespace Invasion.Math
 
         private const float Epsilon = 1e-6f;
         private bool IsCleanedUp { get; set; } = false;
+        private bool Registered { get; set; } = false;
 
         private BoundingBox() { }
 
         public override void Initialize()
         {
-            BoundingBoxManager.Register(this);
+            if (!Registered)
+                BoundingBoxManager.Register(this);
+
+            Registered = true;
 
             GameObject.AddComponent(ShaderManager.Get("line"));
 
+#if DEBUG
             List<Vertex> vertices =
             [
                 new Vertex(new Vector3f(LocalMin.X, LocalMin.Y, LocalMin.Z), new Vector3f(1.0f, 1.0f, 1.0f), Vector3f.Zero, Vector2f.Zero), // 0
@@ -85,6 +99,7 @@ namespace Invasion.Math
             GameObject.AddComponent(LineMesh.Create("line_bb", vertices, indices));
 
             GameObject.GetComponent<LineMesh>().Generate();
+#endif
         }
 
         public bool Intersects(BoundingBox other)
@@ -110,6 +125,12 @@ namespace Invasion.Math
             return $"Position: {Position}, Size: {Size}";
         }
 
+        public override void Update()
+        {
+            if (!BoundingBoxManager.Contains(this) && GameObject?.Transform != null)
+                BoundingBoxManager.Register(this);
+        }
+
         public override void CleanUp()
         {
             IsCleanedUp = true;
@@ -129,7 +150,7 @@ namespace Invasion.Math
                 Size = size
             };
 
-            BoundingBoxManager.Register(result);
+            result.Registered = BoundingBoxManager.Register(result);
 
             return result;
         }

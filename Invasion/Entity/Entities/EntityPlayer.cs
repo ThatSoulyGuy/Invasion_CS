@@ -110,27 +110,16 @@ namespace Invasion.Entity.Entities
                 {
                     var (hit, information) = Raycast.Cast(RenderCamera.Transform.WorldPosition, RenderCamera.Transform.Forward, 40.0f, GameObject.GetComponent<BoundingBox>());
 
-                    if (hit)
+#if DEBUG
+
+                    if (hit && information.Collider.GameObject == null)
                         CreateRay(RenderCamera.Transform.WorldPosition, information.HitPoint, new(0.0f, 1.0f, 0.0f));
-                    else if (!hit && information.Collider != null && information.Collider.GameObject == null)
-                        CreateRay(RenderCamera.Transform.WorldPosition, RenderCamera.Transform.WorldPosition + RenderCamera.Transform.Forward * 40.0f, new(1.0f, 0.0f, 0.0f));
-                    else if (!hit && information.Collider != null && information.Collider.GameObject != null)
+                    else if (hit && information.Collider.GameObject != null)
                         CreateRay(RenderCamera.Transform.WorldPosition, information.HitPoint, new(0.0f, 0.0f, 1.0f));
-
-
-                    if (information.Collider != null)
-                        Console.WriteLine(information.Collider.Size.Y);
-
-                    /*
-                    if (information.Collider == null)
-                        Console.WriteLine("0 " + (information.Collider == null));
-                    
-                    if (information.Collider != null)
-                        Console.WriteLine("1 " + (information.Collider.GameObject != null));    
-
-                    if (information.Collider != null && information.Collider.GameObject != null)
-                        Console.WriteLine("2 " + information.Collider.GameObject.HasComponent<EntityGoober>());
-                    */
+                    else
+                        CreateRay(RenderCamera.Transform.WorldPosition, RenderCamera.Transform.WorldPosition + RenderCamera.Transform.Forward * 40.0f, new(1.0f, 0.0f, 0.0f));
+#endif
+                    //InvasionMain.Overworld.GetComponent<IWorld>().SpawnEntity<EntityLaserBeam, ModelLaserBeam>(new EntityLaserBeam(RenderCamera.Transform.Forward, 2.0f), RenderCamera.Transform.WorldPosition);
 
                     if (hit && information.Collider!.GameObject != null && information.Collider.GameObject.HasComponent<EntityGoober>())
                         information.Collider.GameObject.GetComponent<EntityGoober>().Health -= 10;

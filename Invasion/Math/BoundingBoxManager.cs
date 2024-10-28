@@ -1,5 +1,6 @@
 ﻿using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace Invasion.Math
 {
@@ -7,12 +8,24 @@ namespace Invasion.Math
     {
         private static ConcurrentDictionary<Vector3f, BoundingBox> Colliders { get; } = [];
 
-        public static void Register(BoundingBox collider)
+        public static bool Register(BoundingBox collider)
         {
             if (Colliders.ContainsKey(collider.Position))
-                return;
+                return false;
 
             Colliders.TryAdd(collider.Position, collider);
+
+            return true;
+        }
+
+        public static bool Contains(Vector3f position)
+        {
+            return Colliders.ContainsKey(position);
+        }
+
+        public static bool Contains(BoundingBox collider)
+        {
+            return Colliders.Contains(new(collider.Position, collider));
         }
 
         public static BoundingBox Get(Vector3f position)

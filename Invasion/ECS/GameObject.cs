@@ -28,6 +28,8 @@ namespace Invasion.ECS
         private static bool ThreadPoolInitialized = false;
         private static object ThreadPoolLock { get; } = new();
 
+        private object Lock { get; } = new();
+
         private GameObject()
         {
             if (ThreadPoolInitialized)
@@ -44,14 +46,14 @@ namespace Invasion.ECS
                     {
                         foreach (var action in TaskQueue.GetConsumingEnumerable())
                         {
-                            //try
-                            //{
+                            try
+                            {
                                 action();
-                            //}
-                            //catch (Exception ex)
-                            //{
-                            //    Console.WriteLine($"Exception in thread pool: {ex.Message}");
-                            //}
+                            }
+                            catch (Exception ex)
+                            {
+                                Console.WriteLine($"Exception in thread pool: {ex.Message}");
+                            }
                         }
                     })
                     {
@@ -132,23 +134,27 @@ namespace Invasion.ECS
 
         public void OnCollide(GameObject other)
         {
-            if (!Active)
-                return;
+            lock (Lock)
+            {
+                if (!Active)
+                    return;
 
-            foreach (var component in Components.Values)
-                component.OnCollide(other);
+                foreach (var component in Components.Values)
+                    component.OnCollide(other);
+            }
         }
 
         public void Update()
         {
+            
             if (!Active)
                 return;
 
             foreach (var component in Components.Values)
-                TaskQueue.Add(component.Update);
+                lock (Lock) { TaskQueue.Add(component.Update); }
 
             foreach (var child in Children.Values)
-                TaskQueue.Add(child.Update);
+                lock (Lock) { TaskQueue.Add(child.Update); }
         }
 
         public void Render(Camera camera)

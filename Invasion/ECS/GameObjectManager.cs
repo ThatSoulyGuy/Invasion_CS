@@ -25,7 +25,11 @@ namespace Invasion.ECS
             if (GameObjects.TryGetValue(name, out GameObject? value))
             {
                 if (cleanUp)
+                {
                     value.CleanUp();
+                    value.Active = false;
+                    value = null;
+                }
                     
                 GameObjects.TryRemove(name, out _);
             }

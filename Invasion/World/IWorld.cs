@@ -19,7 +19,7 @@ namespace Invasion.World
 
         public Vector3f[] LoaderPositions { get; set; } = [];
 
-        public const ulong TICK_RATE = 1000;
+        public ulong TICK_RATE = 1000;
         
         public int CurrentUpdateCycle { get; set; } = 0;
 
@@ -79,6 +79,8 @@ namespace Invasion.World
                 {
                     foreach (var spawnManager in SpawnManagers)
                         spawnManager.OnSpawnTick(this, [.. LoadedChunks.Values]);
+
+                    TICK_RATE = 10000000;
                 }
 
                 if (KeepUpdating)
