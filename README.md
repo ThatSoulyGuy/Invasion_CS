@@ -5,7 +5,7 @@ This software application is a video game developed in C# 12.0 (.NET 8.0) utiliz
 
 All third-party assets utilized in this project are employed under the provisions of Section 107 of the [United States Copyright Act of 1976](https://www.copyright.gov/title17/92chap1.html#107), which permits the fair use of copyrighted material for purposes such as criticism, commentary, and educational use.
 
-In order to achieve compliance with Section 107 of the [United States Copyright Act of 1976](https://www.copyright.gov/title17/92chap1.html#107), this software application aligns itself with [Breck School Institution](https:/www.breckschool.org), and submits itself to the jurisdiction of [Breck School Institution](https:/www.breckschool.org)
+In order to achieve compliance with Section 107 of the [United States Copyright Act of 1976](https://www.copyright.gov/title17/92chap1.html#107), this software application aligns itself with [Breck School Institution](https:/www.breckschool.org), and submits itself to the jurisdiction of [Breck School Institution](https:/www.breckschool.org). Breck School is a registered school district operating out of the state of Minnesota. The author of this video game is a student at Breck School.
 
 ## Gameplay
  - There are waves of enemies that spawn once only 10 members of the remaining wave remain.
