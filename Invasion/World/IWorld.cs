@@ -31,45 +31,8 @@ namespace Invasion.World
 
         private bool KeepUpdating = true;
 
-        private static int MaxThreads { get; } = Environment.ProcessorCount / 2;
-        private static BlockingCollection<Action> TaskQueue { get; } = [];
-        private static List<Thread> ThreadPool { get; } = [];
-        private object Lock { get; } = new();
-
-        private IWorld()
-        {
-            lock (Lock)
-            {
-                for (int i = 0; i < MaxThreads; i++)
-                {
-                    Thread worker = new(() =>
-                    {
-                        foreach (var action in TaskQueue.GetConsumingEnumerable())
-                        {
-                            try
-                            {
-                                action();
-                            }
-                            catch (Exception ex)
-                            {
-                                Console.WriteLine($"Exception in thread pool {GetType()}: {ex.Message}");
-                            }
-                        }
-                    })
-                    {
-                        IsBackground = true
-                    };
-
-                    worker.Start();
-                    ThreadPool.Add(worker);
-                }
-            }
-        }
-
         public override void Update()
         {
-            lock (Lock)
-            {
                 CurrentUpdateCycle++;
 
                 HashSet<Vector3i> requiredChunks = [];
@@ -117,7 +80,6 @@ namespace Invasion.World
                 if (chunksToBeUnloaded.Count <= 0)
                     KeepUpdating = false;
             }
-        }
 
         public Chunk GenerateChunk(Vector3i position, bool automaticallyGenerate = true, bool generateNothing = false)
         {

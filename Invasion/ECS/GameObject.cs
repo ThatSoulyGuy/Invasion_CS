@@ -2,10 +2,6 @@
 using Invasion.Render;
 using System;
 using System.Collections.Concurrent;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace Invasion.ECS
 {
@@ -22,50 +18,7 @@ namespace Invasion.ECS
         private ConcurrentDictionary<Type, Component> Components { get; } = [];
         private ConcurrentDictionary<string, GameObject> Children { get; } = [];
 
-        private static int MaxThreads { get; } = Environment.ProcessorCount / 2;
-        private static BlockingCollection<Action> TaskQueue { get; } = [];
-        private static List<Thread> ThreadPool { get; } = [];
-        private static bool ThreadPoolInitialized = false;
-        private static object ThreadPoolLock { get; } = new();
-
         private object Lock { get; } = new();
-
-        private GameObject()
-        {
-            if (ThreadPoolInitialized)
-                return;
-
-            lock (ThreadPoolLock)
-            {
-                if (ThreadPoolInitialized)
-                    return;
-
-                for (int i = 0; i < MaxThreads; i++)
-                {
-                    Thread worker = new(() =>
-                    {
-                        foreach (var action in TaskQueue.GetConsumingEnumerable())
-                        {
-                            try
-                            {
-                                action();
-                            }
-                            catch (Exception ex)
-                            {
-                                Console.WriteLine($"Exception in thread pool: {ex.Message}");
-                            }
-                        }
-                    })
-                    {
-                        IsBackground = true
-                    };
-                    worker.Start();
-                    ThreadPool.Add(worker);
-                }
-
-                ThreadPoolInitialized = true;
-            }
-        }
 
         public T AddComponent<T>(T component) where T : Component
         {
@@ -102,7 +55,6 @@ namespace Invasion.ECS
             GameObjectManager.Unregister(child.Name, false);
 
             child.Parent = this;
-            child.GetComponent<Transform>().Parent = GetComponent<Transform>();
 
             Children.TryAdd(child.Name, child);
 
@@ -146,7 +98,6 @@ namespace Invasion.ECS
 
         public void Update()
         {
-            
             if (!Active)
                 return;
 
@@ -194,14 +145,6 @@ namespace Invasion.ECS
             GameObjectManager.Register(result);
 
             return result;
-        }
-
-        public static void ShutdownThreadPool()
-        {
-            TaskQueue.CompleteAdding();
-
-            foreach (var thread in ThreadPool)
-                thread.Join();
         }
     }
 }

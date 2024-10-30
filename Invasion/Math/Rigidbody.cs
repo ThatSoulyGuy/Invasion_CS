@@ -53,8 +53,6 @@ namespace Invasion.Math
 
         public override void Update()
         {
-            lock (UpdateLock)
-            {
                 if (!GameObject.Active)
                     return;
 
@@ -87,7 +85,6 @@ namespace Invasion.Math
                     CheckCollisions(collider);
                 }
             }
-        }
 
         public void AddForce(Vector3f force)
         {
