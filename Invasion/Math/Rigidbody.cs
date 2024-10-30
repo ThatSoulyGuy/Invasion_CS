@@ -1,5 +1,6 @@
 ﻿using Invasion.Core;
 using Invasion.ECS;
+using Microsoft.VisualBasic.Devices;
 using System;
 
 namespace Invasion.Math
@@ -53,38 +54,37 @@ namespace Invasion.Math
 
         public override void Update()
         {
-                if (!GameObject.Active)
-                    return;
+            if (!GameObject.Active)
+                return;
 
-                BoundingBox collider = GameObject.GetComponent<BoundingBox>();
+            BoundingBox collider = GameObject.GetComponent<BoundingBox>();
 
-                if (collider == null)
-                {
-                    Console.WriteLine("No BoundingBox component found on the GameObject.");
-                    return;
-                }
-
-                float deltaTime = InputManager.DeltaTime;
-                float maxTimeStep = 0.02f;
-                int steps = (int)MathF.Ceiling(deltaTime / maxTimeStep);
-                float stepTime = deltaTime / steps;
-
-                for (int i = 0; i < steps; i++)
-                {
-                    ApplyGravity(stepTime);
-                    ApplyDrag();
-
-                    ClampVelocity(MaxVelocity);
-
-                    Vector3f displacement = _velocity;
-                    displacement.Multiply(stepTime);
-
-                    GameObject.Transform.Translate(displacement);
-
-                    IsGrounded = false;
-                    CheckCollisions(collider);
-                }
+            if (collider == null)
+            {
+                Console.WriteLine("No BoundingBox component found on the GameObject.");
+                return;
             }
+
+            float deltaTime = InputManager.DeltaTime;
+            float maxTimeStep = 0.02f;
+            int steps = (int)MathF.Ceiling(deltaTime / maxTimeStep);
+            float stepTime = deltaTime / steps;
+
+            for (int i = 0; i < steps; i++)
+            {
+                ApplyGravity(stepTime);
+                ApplyDrag();
+
+                ClampVelocity(MaxVelocity);
+
+                Vector3f displacement = _velocity * stepTime;
+
+                GameObject.Transform.Translate(displacement);
+
+                IsGrounded = false;
+                CheckCollisions(collider);
+            }
+        }
 
         public void AddForce(Vector3f force)
         {
@@ -146,7 +146,7 @@ namespace Invasion.Math
                     Vector3f penetrationVector = ComputePenetrationDepth(collider, otherCollider);
                     GameObject.OnCollide(otherCollider.GameObject);
 
-                    GameObject.Transform?.Translate(penetrationVector);
+                    GameObject.Transform?.TranslateSafe(penetrationVector);
 
                     ResolveCollisions(penetrationVector);
                 }

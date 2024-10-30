@@ -33,53 +33,53 @@ namespace Invasion.World
 
         public override void Update()
         {
-                CurrentUpdateCycle++;
+            CurrentUpdateCycle++;
 
-                HashSet<Vector3i> requiredChunks = [];
-                List<Vector3i> chunksToBeUnloaded = [];
+            HashSet<Vector3i> requiredChunks = [];
+            List<Vector3i> chunksToBeUnloaded = [];
 
-                if (Time.Ticks % TICK_RATE == 0)
+            if (Time.Ticks % TICK_RATE == 0)
+            {
+                foreach (var spawnManager in SpawnManagers)
+                    spawnManager.OnSpawnTick(this, [.. LoadedChunks.Values]);
+            }
+
+            if (KeepUpdating)
+            {
+                foreach (var loaderPosition in LoaderPositions)
                 {
-                    foreach (var spawnManager in SpawnManagers)
-                        spawnManager.OnSpawnTick(this, [.. LoadedChunks.Values]);
-                }
+                    Vector3i loaderChunkCoord = CoordinateHelper.WorldToChunkCoordinates(loaderPosition);
+                    loaderChunkCoord.Y = 0;
 
-                if (KeepUpdating)
-                {
-                    foreach (var loaderPosition in LoaderPositions)
+                    for (int x = -LOADER_DISTANCE; x <= LOADER_DISTANCE; x++)
                     {
-                        Vector3i loaderChunkCoord = CoordinateHelper.WorldToChunkCoordinates(loaderPosition);
-                        loaderChunkCoord.Y = 0;
-
-                        for (int x = -LOADER_DISTANCE; x <= LOADER_DISTANCE; x++)
+                        for (int z = -LOADER_DISTANCE; z <= LOADER_DISTANCE; z++)
                         {
-                            for (int z = -LOADER_DISTANCE; z <= LOADER_DISTANCE; z++)
-                            {
-                                Vector3i chunkPos = loaderChunkCoord + new Vector3i(x, 0, z);
+                            Vector3i chunkPos = loaderChunkCoord + new Vector3i(x, 0, z);
 
-                                if (!LoadedChunks.ContainsKey(chunkPos) && !requiredChunks.Contains(chunkPos))
-                                    GenerateChunk(chunkPos);
+                            if (!LoadedChunks.ContainsKey(chunkPos) && !requiredChunks.Contains(chunkPos))
+                                GenerateChunk(chunkPos);
                             
-                                requiredChunks.Add(chunkPos);
-                            }
+                            requiredChunks.Add(chunkPos);
                         }
                     }
-
-                    chunksToBeUnloaded = LoadedChunks.Keys.Where(chunkPos => !requiredChunks.Contains(chunkPos) && chunkPos.Y == 0).ToList();
-
-                    foreach (var chunkPos in chunksToBeUnloaded)
-                        UnloadChunk(chunkPos);
                 }
 
-                foreach (var chunk in LoadedChunks.Values)
-                {
-                    if (chunk.NeedsRegeneration && chunk.LastUpdatedCycle < CurrentUpdateCycle)
-                        chunk.Generate(CurrentUpdateCycle);
-                }
-                
-                if (chunksToBeUnloaded.Count <= 0)
-                    KeepUpdating = false;
+                chunksToBeUnloaded = LoadedChunks.Keys.Where(chunkPos => !requiredChunks.Contains(chunkPos) && chunkPos.Y == 0).ToList();
+
+                foreach (var chunkPos in chunksToBeUnloaded)
+                    UnloadChunk(chunkPos);
             }
+
+            foreach (var chunk in LoadedChunks.Values)
+            {
+                if (chunk.NeedsRegeneration && chunk.LastUpdatedCycle < CurrentUpdateCycle)
+                    chunk.Generate(CurrentUpdateCycle);
+            }
+                
+            if (chunksToBeUnloaded.Count <= 0)
+                KeepUpdating = false;
+        }
 
         public Chunk GenerateChunk(Vector3i position, bool automaticallyGenerate = true, bool generateNothing = false)
         {

@@ -3,6 +3,7 @@ using Invasion.ECS;
 using Invasion.Entity.Entities;
 using Invasion.Page;
 using Invasion.Render;
+using Invasion.Thread;
 using Invasion.UI;
 using Invasion.World;
 using Invasion.World.SpawnManagers;
@@ -90,6 +91,7 @@ namespace Invasion
 
         public static void CleanUp(object? s, EventArgs a)
         {
+            GameObject.CleanUpThreadPool();
             UIManager.CleanUp();
             GameObjectManager.CleanUp();
             TextureManager.CleanUp();

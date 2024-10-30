@@ -1,5 +1,6 @@
 ﻿using Invasion.Math;
 using Invasion.Render;
+using Invasion.Thread;
 using System;
 using System.Collections.Concurrent;
 
@@ -18,13 +19,22 @@ namespace Invasion.ECS
         private ConcurrentDictionary<Type, Component> Components { get; } = [];
         private ConcurrentDictionary<string, GameObject> Children { get; } = [];
 
+        private object ComponentLock { get; } = new();
+        private object ChildrenLock { get; } = new();
+
+        private static TaskScheduler TaskScheduler { get; } = TaskScheduler.Create();
+
         private object Lock { get; } = new();
 
         public T AddComponent<T>(T component) where T : Component
         {
-            component.GameObject = this;
-            component.Initialize();
-            Components.TryAdd(typeof(T), component);
+            lock (ComponentLock)
+            {
+                component.GameObject = this;
+                component.Initialize();
+
+                Components.TryAdd(typeof(T), component);
+            }
 
             return component;
         }
@@ -52,13 +62,17 @@ namespace Invasion.ECS
 
         public GameObject AddChild(GameObject child)
         {
-            GameObjectManager.Unregister(child.Name, false);
+            lock (ChildrenLock)
+            {
+                GameObjectManager.Unregister(child.Name, false);
 
-            child.Parent = this;
+                child.Parent = this;
+                child.Transform.Parent = Transform;
 
-            Children.TryAdd(child.Name, child);
+                Children.TryAdd(child.Name, child);
 
-            return Children[child.Name];
+                return child;
+            }
         }
 
         public GameObject GetChild(string name)
@@ -68,14 +82,17 @@ namespace Invasion.ECS
 
         public void RemoveChild(string name)
         {
-            if (Children.TryGetValue(name, out var child))
+            lock (ChildrenLock)
             {
-                child.Parent = null;
-                child.GetComponent<Transform>().Parent = null;
+                if (Children.TryGetValue(name, out var child))
+                {
+                    child.Parent = null;
+                    child.Transform.Parent = null;
 
-                GameObjectManager.Register(child);
+                    GameObjectManager.Register(child);
 
-                Children.TryRemove(name, out _);
+                    Children.TryRemove(name, out _);
+                }
             }
         }
 
@@ -101,11 +118,21 @@ namespace Invasion.ECS
             if (!Active)
                 return;
 
-            foreach (var component in Components.Values)
-                lock (Lock) { TaskQueue.Add(component.Update); }
+            TaskScheduler.Schedule(() =>
+            {
+                lock (ComponentLock)
+                {
+                    foreach (var component in Components.Values)
+                        component.Update();
+                }
 
-            foreach (var child in Children.Values)
-                lock (Lock) { TaskQueue.Add(child.Update); }
+            });
+
+            lock (ChildrenLock)
+            { 
+                foreach (var child in Children.Values)
+                    TaskScheduler.Schedule(child.Update);
+            }
         }
 
         public void Render(Camera camera)
@@ -113,8 +140,8 @@ namespace Invasion.ECS
             if (!Active)
                 return;
 
-            foreach (Component component in Components.Values)
-                component.Render(camera);
+                foreach (Component component in Components.Values)
+                    component.Render(camera);
 
             foreach (GameObject child in Children.Values)
                 child.Render(camera);
@@ -131,6 +158,11 @@ namespace Invasion.ECS
                 child.CleanUp();
 
             Children.Clear();
+        }
+
+        public static void CleanUpThreadPool()
+        {
+            TaskScheduler.CleanUp();
         }
 
         public static GameObject Create(string name)

@@ -13,35 +13,27 @@ namespace Invasion.Math
         public Vector3f LocalMin => -(Size / 2);
         public Vector3f LocalMax => Size / 2;
 
-        public object Lock { get; } = new();
-
         public Vector3f Position
         {
             get
             {
-                lock (Lock)
-                {
-                    if (GameObject != null && GameObject.Transform == null)
-                        return PositionNoComponent;
+                if (GameObject != null && GameObject.Transform == null)
+                    return PositionNoComponent;
 
-                    return IsComponent ? GameObject!.Transform.WorldPosition : PositionNoComponent;
-                }
+                return IsComponent ? GameObject!.Transform.WorldPosition : PositionNoComponent;
             }
             set
             {
-                lock (Lock)
+                if (GameObject != null && GameObject.Transform == null)
                 {
-                    if (GameObject != null && GameObject.Transform == null)
-                    {
-                        PositionNoComponent = value;
-                        return;
-                    }
-
-                    if (IsComponent)
-                        GameObject!.Transform.LocalPosition = value;
-                    else
-                        PositionNoComponent = value;
+                    PositionNoComponent = value;
+                    return;
                 }
+
+                if (IsComponent)
+                    GameObject!.Transform.LocalPosition = value;
+                else
+                    PositionNoComponent = value;
             }
         }
 
