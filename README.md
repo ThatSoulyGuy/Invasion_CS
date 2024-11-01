@@ -19,8 +19,8 @@ In order to achieve compliance with Section 107 of the [United States Copyright 
  - Only certain people know the 'lore' of this video game. They may choose to share, or to not.
 ## Screenshots
 
-![App Screenshot](https://via.placeholder.com/468x300?text=App+Screenshot+Here)
+![App Screenshot](https://drive.google.com/file/d/1OcEcUyhTk4QSEwNcuxH75nNHTtaOS8kS/view?usp=drive_link)
 
-![App Screenshot](https://via.placeholder.com/468x300?text=App+Screenshot+Here)
+![App Screenshot](https://drive.google.com/file/d/1hMFs7tIPVCm-pBaDsAsGwR9S5yBSCiZY/view?usp=drive_link)
 
-![App Screenshot](https://via.placeholder.com/468x300?text=App+Screenshot+Here)
+![App Screenshot](https://drive.google.com/file/d/1q3DgoooMlVi1ET5yWXTw1GlD21kj_34W/view?usp=drive_link)
