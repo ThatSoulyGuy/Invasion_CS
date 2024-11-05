@@ -1,4 +1,5 @@
-﻿using Invasion.Block;
+﻿using Invasion.Audio;
+using Invasion.Block;
 using Invasion.Core;
 using Invasion.Entity.Models;
 using Invasion.Math;
@@ -49,7 +50,13 @@ namespace Invasion.Entity.Entities
             if (rigidbody.IsGrounded)
             {
                 rigidbody.AddForce(new(0.0f, 10.0f, 0.0f));
-                InvasionMain.Overworld.GetComponent<IWorld>().SetBlock(GameObject.Transform.WorldPosition, BlockList.WOOD, true);
+                InvasionMain.Overworld.GetComponent<IWorld>().SetBlock(GameObject.Transform.WorldPosition, BlockList.DIRT, true);
+
+                AudioSource source = AudioSource.Create("goober_jump", false, new("Audio/Entity_Bounce.wav", "Invasion"));
+
+                source.Volume = 0.85f;
+
+                source.Play();
             } 
         }
 

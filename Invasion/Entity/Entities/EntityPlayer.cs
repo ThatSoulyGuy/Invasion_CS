@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using Invasion.Audio;
 using Invasion.Block;
 using Invasion.Core;
 using Invasion.ECS;
@@ -44,19 +45,19 @@ namespace Invasion.Entity.Entities
 
             HealthText = new("healthText", new("Font/Minecraft-Seven_v2.ttf", "Invasion"), new(10.0f, 0.0f), new(150.0f, 50.0f), Alignment.Bottom | Alignment.Left)
             {
-                FontSize = 45.0f,
+                FontSize = 42.0f,
                 Text = "Health: -1",
             };
 
             InstructionsText = new("instructions", new("Font/Minecraft-Seven_v2.ttf", "Invasion"), new(80.0f, 0.0f), new(300.0f, 160.0f), Alignment.Bottom | Alignment.Right)
             {
-                FontSize = 45.0f,
+                FontSize = 40.0f,
                 Text = "To switch from using your\n weapon to your hand, press 'C'!\nPress 'X' to close this dialog",
             };
 
             WaveCountText = new("waveCount", new("Font/Minecraft-Seven_v2.ttf", "Invasion"), new(10.0f, 0.0f), new(150.0f, 50.0f), Alignment.Top | Alignment.CenterX)
             {
-                FontSize = 45.0f,
+                FontSize = 42.0f,
                 Text = "Wave: -1",
             };
 
@@ -106,7 +107,7 @@ namespace Invasion.Entity.Entities
 
         public override void OnDeath()
         {
-            //GameObjectManager.Unregister(GameObject.Name);
+            GameObjectManager.Unregister(GameObject.Name);
         }
 
         private void CreateRay(Vector3f start, Vector3f end, Vector3f color)
@@ -150,6 +151,10 @@ namespace Invasion.Entity.Entities
 
                     if (hit && information.Collider!.GameObject != null && information.Collider.GameObject.HasComponent<EntityGoober>())
                         information.Collider.GameObject.GetComponent<EntityGoober>().Health -= 10;
+
+                    AudioSource audio = AudioSource.Create("laser", false, new("Audio/LaserGun_Fire.wav", "Invasion"));
+
+                    audio.Play();
 
                     fireTime = 0.0f;
                 }
