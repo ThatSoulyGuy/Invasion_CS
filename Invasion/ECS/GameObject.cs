@@ -125,7 +125,6 @@ namespace Invasion.ECS
                     foreach (var component in Components.Values)
                         component.Update();
                 }
-
             });
 
             lock (ChildrenLock)

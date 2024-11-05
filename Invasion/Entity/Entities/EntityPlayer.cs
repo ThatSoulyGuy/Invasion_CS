@@ -110,16 +110,12 @@ namespace Invasion.Entity.Entities
                 {
                     var (hit, information) = Raycast.Cast(RenderCamera.Transform.WorldPosition, RenderCamera.Transform.Forward, 40.0f, GameObject.GetComponent<BoundingBox>());
 
-#if DEBUG
-
                     if (hit && information.Collider.GameObject == null)
                         CreateRay(RenderCamera.Transform.WorldPosition, information.HitPoint, new(0.0f, 1.0f, 0.0f));
                     else if (hit && information.Collider.GameObject != null)
                         CreateRay(RenderCamera.Transform.WorldPosition, information.HitPoint, new(0.0f, 0.0f, 1.0f));
                     else
                         CreateRay(RenderCamera.Transform.WorldPosition, RenderCamera.Transform.WorldPosition + RenderCamera.Transform.Forward * 40.0f, new(1.0f, 0.0f, 0.0f));
-#endif
-                    //InvasionMain.Overworld.GetComponent<IWorld>().SpawnEntity<EntityLaserBeam, ModelLaserBeam>(new EntityLaserBeam(RenderCamera.Transform.Forward, 2.0f), RenderCamera.Transform.WorldPosition);
 
                     if (hit && information.Collider!.GameObject != null && information.Collider.GameObject.HasComponent<EntityGoober>())
                         information.Collider.GameObject.GetComponent<EntityGoober>().Health -= 10;
