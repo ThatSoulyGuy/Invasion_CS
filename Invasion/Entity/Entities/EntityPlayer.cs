@@ -8,9 +8,12 @@ using Invasion.Entity.Models;
 using Invasion.Math;
 using Invasion.Model;
 using Invasion.Render;
+using Invasion.UI;
 using Invasion.UI.Elements;
+using Invasion.UI.GUIs;
 using Invasion.Util;
 using Invasion.World;
+using Invasion.World.SpawnManagers;
 
 namespace Invasion.Entity.Entities
 {
@@ -23,9 +26,13 @@ namespace Invasion.Entity.Entities
 
         public UIText HealthText { get; private set; } = null!;
         public UIText InstructionsText { get; private set; } = null!;
+        public UIText WaveCountText { get; private set; } = null!;
+
         public GameObject RenderCamera => GameObject.GetChild("Camera");
 
+        private int SlotIndex { get; set; } = 0;
         private float blockTime = 0.0f;
+        private float fireTime = 0.0f;
 
         public override void Initialize()
         {
@@ -35,15 +42,25 @@ namespace Invasion.Entity.Entities
 
             GameObject.AddChild(GameObject.Create("Camera"));
 
-            HealthText = new("healthText", new("Font/Segoeuithis.ttf", "Invasion"), new(80.0f, 0.0f), new(150.0f, 50.0f))
+            HealthText = new("healthText", new("Font/Minecraft-Seven_v2.ttf", "Invasion"), new(10.0f, 0.0f), new(150.0f, 50.0f), Alignment.Bottom | Alignment.Left)
             {
+                FontSize = 45.0f,
                 Text = "Health: -1",
             };
 
-            InstructionsText = new("instructions", new("Font/Segoeuithis.ttf", "Invasion"), new(720.0f, 120.0f), new(450.0f, 160.0f))
+            InstructionsText = new("instructions", new("Font/Minecraft-Seven_v2.ttf", "Invasion"), new(80.0f, 0.0f), new(300.0f, 160.0f), Alignment.Bottom | Alignment.Right)
             {
+                FontSize = 45.0f,
                 Text = "To switch from using your\n weapon to your hand, press 'C'!\nPress 'X' to close this dialog",
-            }; 
+            };
+
+            WaveCountText = new("waveCount", new("Font/Minecraft-Seven_v2.ttf", "Invasion"), new(10.0f, 0.0f), new(150.0f, 50.0f), Alignment.Top | Alignment.CenterX)
+            {
+                FontSize = 45.0f,
+                Text = "Wave: -1",
+            };
+
+            //GUIList.GUIs["hud"].IsActive = true;
 
             RenderCamera.AddComponent(Camera.Create(45.0f, 0.01f, 1000.0f));
             RenderCamera.Transform.LocalPosition = new(0.0f, 0.9f, 0.0f);
@@ -72,11 +89,19 @@ namespace Invasion.Entity.Entities
             if (HealthText.Text != healthText)
                 HealthText.Text = healthText;
 
+            string waveCountText = $"Wave: {SpawnManagerGoober.WaveCount}";
+
+            if (WaveCountText.Text != waveCountText)
+                WaveCountText.Text = waveCountText;
+
             UpdateControls();
             UpdateMouselook();
             UpdateMovement();
 
+            //GUIList.GUIs["hud"].GetElement("hotbarSelector")!.AlignmentOffset = new(300 + (SlotIndex * 128), 0);
+
             blockTime += InputManager.DeltaTime;
+            fireTime += InputManager.DeltaTime;
         }
 
         public override void OnDeath()
@@ -104,9 +129,9 @@ namespace Invasion.Entity.Entities
 
         private void UpdateControls()
         {
-            if (InputManager.MouseLeftPressed && blockTime >= 0.1f)
+            if (InputManager.MouseLeftPressed)
             {
-                if (RenderCamera.GetChild("LaserGun").Active)
+                if (RenderCamera.GetChild("LaserGun").Active && fireTime >= 0.19f)
                 {
                     var (hit, information) = Raycast.Cast(RenderCamera.Transform.WorldPosition, RenderCamera.Transform.Forward, 40.0f, GameObject.GetComponent<BoundingBox>());
 
@@ -117,10 +142,18 @@ namespace Invasion.Entity.Entities
                     else
                         CreateRay(RenderCamera.Transform.WorldPosition, RenderCamera.Transform.WorldPosition + RenderCamera.Transform.Forward * 40.0f, new(1.0f, 0.0f, 0.0f));
 
+                    Vector3f position = RenderCamera.Transform.WorldPosition;
+
+                    position += RenderCamera.Transform.Forward * 0.5f;
+
+                    //InvasionMain.Overworld.GetComponent<IWorld>().SpawnEntity<EntityLaserBeam, ModelLaserBeam>(new EntityLaserBeam(RenderCamera.Transform.Forward, 2.0f), position);
+
                     if (hit && information.Collider!.GameObject != null && information.Collider.GameObject.HasComponent<EntityGoober>())
                         information.Collider.GameObject.GetComponent<EntityGoober>().Health -= 10;
+
+                    fireTime = 0.0f;
                 }
-                else
+                else if(!RenderCamera.GetChild("LaserGun").Active && blockTime >= 0.1f)
                 {
                     var (hit, information) = Raycast.Cast(RenderCamera.Transform.WorldPosition, RenderCamera.Transform.Forward, 10.0f, GameObject.GetComponent<BoundingBox>());
 
@@ -145,7 +178,7 @@ namespace Invasion.Entity.Entities
                 position += information.Normal * 0.5f;
 
                 if (hit)
-                    InvasionMain.Overworld.GetComponent<IWorld>().SetBlock(position, BlockList.BEDROCK, true);
+                    InvasionMain.Overworld.GetComponent<IWorld>().SetBlock(position, BlockList.WOOD, true);
 
                 blockTime = 0.0f;
             }
@@ -162,6 +195,24 @@ namespace Invasion.Entity.Entities
 
             if (InputManager.GetKey(KeyCode.X, KeyState.Pressed))
                 InstructionsText.Text = string.Empty;
+
+            if (InputManager.MouseWheelDelta > 0)
+            {
+                SlotIndex++;
+
+                if (SlotIndex > 7)
+                    SlotIndex = 0;
+            }
+            else if (InputManager.MouseWheelDelta < 0)
+            {
+                SlotIndex--;
+
+                if (SlotIndex < 0)
+                    SlotIndex = 7;
+            }
+
+            if (InputManager.GetKey(KeyCode.Z, KeyState.Pressed))
+                GUIList.GUIs["hud"].GetElement("hotbarSelector")!.Position += new Vector2f(1, 0);
         }
 
         private void UpdateMouselook()

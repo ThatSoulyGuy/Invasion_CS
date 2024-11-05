@@ -18,6 +18,7 @@ namespace Invasion.ECS
 
         private ConcurrentDictionary<Type, Component> Components { get; } = [];
         private ConcurrentDictionary<string, GameObject> Children { get; } = [];
+        private ConcurrentQueue<GameObject> PendingChildren { get; } = new();
 
         private object ComponentLock { get; } = new();
         private object ChildrenLock { get; } = new();
@@ -62,22 +63,25 @@ namespace Invasion.ECS
 
         public GameObject AddChild(GameObject child)
         {
-            lock (ChildrenLock)
-            {
-                GameObjectManager.Unregister(child.Name, false);
-
-                child.Parent = this;
-                child.Transform.Parent = Transform;
-
-                Children.TryAdd(child.Name, child);
-
-                return child;
-            }
+            PendingChildren.Enqueue(child);
+            return child;
         }
 
         public GameObject GetChild(string name)
         {
-            return Children[name];
+            if (Children.TryGetValue(name, out var child))
+                return child;
+            
+            lock (PendingChildren)
+            {
+                foreach (var pendingChild in PendingChildren)
+                {
+                    if (pendingChild.Name == name)
+                        return pendingChild;
+                }
+            }
+
+            return null!;
         }
 
         public void RemoveChild(string name)
@@ -118,6 +122,8 @@ namespace Invasion.ECS
             if (!Active)
                 return;
 
+            ProcessPendingChildren();
+
             TaskScheduler.Schedule(() =>
             {
                 lock (ComponentLock)
@@ -128,7 +134,7 @@ namespace Invasion.ECS
             });
 
             lock (ChildrenLock)
-            { 
+            {
                 foreach (var child in Children.Values)
                     TaskScheduler.Schedule(child.Update);
             }
@@ -144,6 +150,20 @@ namespace Invasion.ECS
 
             foreach (GameObject child in Children.Values)
                 child.Render(camera);
+        }
+
+        private void ProcessPendingChildren()
+        {
+            while (PendingChildren.TryDequeue(out var child))
+            {
+                lock (ChildrenLock)
+                {
+                    GameObjectManager.Unregister(child.Name, false);
+                    child.Parent = this;
+                    child.Transform.Parent = Transform;
+                    Children.TryAdd(child.Name, child);
+                }
+            }
         }
 
         public void CleanUp()

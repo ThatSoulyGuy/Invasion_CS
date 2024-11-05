@@ -1,4 +1,5 @@
-﻿using Invasion.Core;
+﻿using Invasion.Block;
+using Invasion.Core;
 using Invasion.Entity.Models;
 using Invasion.Math;
 using Invasion.World;
@@ -44,6 +45,12 @@ namespace Invasion.Entity.Entities
 
             if (rigidbody.IsGrounded && Vector3f.Distance(GameObject.Transform.WorldPosition, InvasionMain.Player.Transform.WorldPosition) > 1.5)
                 rigidbody.Move(GameObject.Transform.Forward * InputManager.DeltaTime, 4.5f);
+
+            if (rigidbody.IsGrounded)
+            {
+                rigidbody.AddForce(new(0.0f, 10.0f, 0.0f));
+                InvasionMain.Overworld.GetComponent<IWorld>().SetBlock(GameObject.Transform.WorldPosition, BlockList.WOOD, true);
+            } 
         }
 
         public override void OnDeath()

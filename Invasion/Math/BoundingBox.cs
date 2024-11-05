@@ -40,7 +40,7 @@ namespace Invasion.Math
         public Vector3f PositionNoComponent { get; set; } = Vector3f.Zero;
         public Vector3f Size { get; set; } = Vector3f.One;
         
-        public bool IsComponent => GameObject != null;
+        public bool IsComponent => GameObject != null && GameObject.Transform != null;
 
         private const float Epsilon = 1e-6f;
         private bool IsCleanedUp { get; set; } = false;

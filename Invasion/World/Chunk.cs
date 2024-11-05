@@ -86,43 +86,46 @@ namespace Invasion.World
 
             TextureAtlas atlas = GameObject.GetComponent<TextureAtlas>();
 
-            foreach (var position in DirtyBlocks)
+            lock (DirtyBlocks)
             {
-                if (!Blocks.TryGetValue(position, out short block))
+                foreach (var position in DirtyBlocks)
                 {
-                    if (Colliders.TryGetValue(position, out BoundingBox? collider))
+                    if (!Blocks.TryGetValue(position, out short block))
                     {
-                        collider.CleanUp();
-                        Colliders.Remove(position);
-                    }
-
-                    continue;
-                }
-
-                BlockData blockData = BlockList.GetBlockData(block);
-
-                BlockMeshData blockMeshData = new();
-
-                for (int i = 0; i < FaceNormals.Length; i++)
-                {
-                    Vector3i normal = FaceNormals[i];
-
-                    if (IsFaceExposed(position, normal))
-                    {
-                        if (!Colliders.ContainsKey(position))
+                        if (Colliders.TryGetValue(position, out BoundingBox? collider))
                         {
-                            Vector3f worldPosition = CoordinateHelper.BlockToWorldCoordinates(position, CoordinateHelper.WorldToChunkCoordinates(GameObject.Transform.WorldPosition));
-                            worldPosition += new Vector3f(0.5f, 0.5f, 0.5f);
-
-                            Colliders[position] = BoundingBox.Create(worldPosition, Vector3f.One);
+                            collider.CleanUp();
+                            Colliders.Remove(position);
                         }
 
-                        AddFaceToBlockMeshData(blockMeshData, position, normal, blockData, atlas, i);
+                        continue;
                     }
-                }
 
-                BlockMeshDataMap[position] = blockMeshData;
-            }
+                    BlockData blockData = BlockList.GetBlockData(block);
+
+                    BlockMeshData blockMeshData = new();
+
+                    for (int i = 0; i < FaceNormals.Length; i++)
+                    {
+                        Vector3i normal = FaceNormals[i];
+
+                        if (IsFaceExposed(position, normal))
+                        {
+                            if (!Colliders.ContainsKey(position))
+                            {
+                                Vector3f worldPosition = CoordinateHelper.BlockToWorldCoordinates(position, CoordinateHelper.WorldToChunkCoordinates(GameObject.Transform.WorldPosition));
+                                worldPosition += new Vector3f(0.5f, 0.5f, 0.5f);
+
+                                Colliders[position] = BoundingBox.Create(worldPosition, Vector3f.One);
+                            }
+
+                            AddFaceToBlockMeshData(blockMeshData, position, normal, blockData, atlas, i);
+                        }
+                    }
+
+                    BlockMeshDataMap[position] = blockMeshData;
+                }
+            }    
 
             RebuildMesh();
 

@@ -81,9 +81,9 @@ namespace Invasion.Block
             WATER => new BlockData("block_water", "Water", WATER, false, Vector3f.One, []),
             WOOD => new BlockData("block_wood", "Wood", WOOD, true, Vector3f.One, new Dictionary<string, string>
             {
-                { "top", "wood_top" },
-                { "side", "wood_side" },
-                { "bottom", "wood_top" }
+                { "top", "planks_oak" },
+                { "side", "planks_oak" },
+                { "bottom", "planks_oak" }
             }),
             LEAVES => new BlockData("block_leaves", "Leaves", LEAVES, false, Vector3f.One, new Dictionary<string, string>
             {

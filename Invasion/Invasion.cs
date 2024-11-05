@@ -53,6 +53,28 @@ namespace Invasion
                 MaxLOD = float.MaxValue
             }));
 
+            TextureManager.Register(Texture.Create("hotbar_background", new("Texture/UI/LargeSlotBackground.dds", "Invasion"), new()
+            {
+                Filter = Vortice.Direct3D11.Filter.MinMagMipPoint,
+                AddressU = Vortice.Direct3D11.TextureAddressMode.Wrap,
+                AddressV = Vortice.Direct3D11.TextureAddressMode.Wrap,
+                AddressW = Vortice.Direct3D11.TextureAddressMode.Wrap,
+                ComparisonFunc = Vortice.Direct3D11.ComparisonFunction.Never,
+                MinLOD = 0,
+                MaxLOD = float.MaxValue
+            }));
+
+            TextureManager.Register(Texture.Create("hotbar_selector", new("Texture/UI/SlotSelector.dds", "Invasion"), new()
+            {
+                Filter = Vortice.Direct3D11.Filter.MinMagMipPoint,
+                AddressU = Vortice.Direct3D11.TextureAddressMode.Wrap,
+                AddressV = Vortice.Direct3D11.TextureAddressMode.Wrap,
+                AddressW = Vortice.Direct3D11.TextureAddressMode.Wrap,
+                ComparisonFunc = Vortice.Direct3D11.ComparisonFunction.Never,
+                MinLOD = 0,
+                MaxLOD = float.MaxValue
+            }));
+
             TextureAtlasManager.Register(TextureAtlas.Create("blocks", new("Texture/Block", "Invasion"), new("Texture/Atlas", "Invasion")));
             TextureAtlasManager.Register(TextureAtlas.Create("entities", new("Texture/Entity", "Invasion"), new("Texture/Atlas", "Invasion")));
 

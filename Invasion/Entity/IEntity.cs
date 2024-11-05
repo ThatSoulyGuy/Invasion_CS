@@ -1,5 +1,6 @@
 ﻿using Invasion.ECS;
 using Invasion.Math;
+using Invasion.World.SpawnManagers;
 using System.Collections.Generic;
 
 namespace Invasion.Entity
@@ -41,7 +42,12 @@ namespace Invasion.Entity
         public override void Update()
         {
             if (IsDead)
+            {
+                if (RegistryName == "entity_goober")
+                    SpawnManagerGoober.GooberEntities.Remove(GameObject);
+
                 OnDeath();
+            }
         }
 
         public virtual void OnDeath() { }

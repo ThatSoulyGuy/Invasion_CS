@@ -17,7 +17,7 @@
 
   <ItemGroup>
     <PackageReference Include="DirectXTexNet" Version="1.0.7" />
-    <PackageReference Include="SixLabors.Fonts" Version="2.0.4" />
+    <PackageReference Include="SixLabors.Fonts" Version="2.0.6" />
     <PackageReference Include="SixLabors.ImageSharp.Drawing" Version="2.1.4" />
     <PackageReference Include="System.Collections.Concurrent" Version="4.3.0" />
     <PackageReference Include="Vortice.D3DCompiler" Version="3.6.2" />
@@ -25,6 +25,7 @@
     <PackageReference Include="Vortice.DirectX" Version="3.6.2" />
     <PackageReference Include="Vortice.DXGI" Version="3.6.2" />
     <PackageReference Include="Vortice.Mathematics" Version="1.9.2" />
+    <PackageReference Include="Vortice.XAudio2" Version="3.6.2" />
   </ItemGroup>
 
   <ItemGroup>

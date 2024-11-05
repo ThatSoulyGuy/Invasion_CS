@@ -166,6 +166,9 @@ namespace Invasion.Render
 
             context.IASetIndexBuffer(IndexBuffer, Format.R32_UInt, 0);
 
+            if (GameObject.Transform == null)
+                return;
+
             Shader.SetConstantBuffer<DefaultMatrixBuffer>(ShaderStage.Vertex, 0, new()
             {
                 Projection = Matrix4x4.Transpose(camera.Projection),

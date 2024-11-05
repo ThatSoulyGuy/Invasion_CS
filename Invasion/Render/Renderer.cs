@@ -77,7 +77,7 @@ namespace Invasion.Render
 
             NoDepthStencilState = Device.CreateDepthStencilState(depthStencilDescription);
 
-            BlendDescription blendDesc = new()
+            BlendDescription blendStateDescription = new ()
             {
                 AlphaToCoverageEnable = false,
                 IndependentBlendEnable = false,
@@ -86,7 +86,7 @@ namespace Invasion.Render
             var renderTargetBlendDescription = new RenderTargetBlendDescription
             {
                 BlendEnable = true,
-                SourceBlend = Blend.One,
+                SourceBlend = Blend.SourceAlpha,
                 DestinationBlend = Blend.InverseSourceAlpha,
                 BlendOperation = BlendOperation.Add,
                 SourceBlendAlpha = Blend.One,
@@ -95,16 +95,9 @@ namespace Invasion.Render
                 RenderTargetWriteMask = ColorWriteEnable.All
             };
 
-            blendDesc.RenderTarget.e0 = renderTargetBlendDescription;
-            blendDesc.RenderTarget.e1 = renderTargetBlendDescription;
-            blendDesc.RenderTarget.e2 = renderTargetBlendDescription;
-            blendDesc.RenderTarget.e3 = renderTargetBlendDescription;
-            blendDesc.RenderTarget.e4 = renderTargetBlendDescription;
-            blendDesc.RenderTarget.e5 = renderTargetBlendDescription;
-            blendDesc.RenderTarget.e6 = renderTargetBlendDescription;
-            blendDesc.RenderTarget.e7 = renderTargetBlendDescription;
+            blendStateDescription.RenderTarget.AsSpan()[0] = renderTargetBlendDescription;
 
-            AlphaBlendState = Device.CreateBlendState(blendDesc);
+            AlphaBlendState = Device.CreateBlendState(blendStateDescription);
 
             Context.OMSetRenderTargets(RenderTargetView);
             Context.RSSetViewports([new Viewport(0, 0, Window.ClientSize.Width, Window.ClientSize.Height, 0.0f, 1.0f)]);
@@ -126,6 +119,7 @@ namespace Invasion.Render
         public static void PreRender()
         {
             Context.OMSetRenderTargets(RenderTargetView, DepthStencilView);
+            Context.OMSetBlendState(AlphaBlendState, new Color4(0, 0, 0, 0), uint.MaxValue);
             Context.ClearRenderTargetView(RenderTargetView, new(0.0f, 0.45f, 0.75f, 1.0f));
             Context.ClearDepthStencilView(DepthStencilView, DepthStencilClearFlags.Depth, 1.0f, 0);
         }

@@ -79,7 +79,8 @@ namespace Invasion.Math
 
                 Vector3f displacement = _velocity * stepTime;
 
-                GameObject.Transform.Translate(displacement);
+                if (GameObject.Transform != null)
+                    GameObject.Transform.Translate(displacement);
 
                 IsGrounded = false;
                 CheckCollisions(collider);

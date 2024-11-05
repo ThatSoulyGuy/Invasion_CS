@@ -1,6 +1,7 @@
 ﻿using Invasion.ECS;
 using Invasion.Math;
 using Invasion.World;
+using System;
 
 namespace Invasion.Entity.Entities
 {
@@ -14,7 +15,7 @@ namespace Invasion.Entity.Entities
         private float Speed { get; set; }
 
         private float LifeTime { get; set; } = 0.0f;
-        private float LifeTimeStart { get; set; } = 30.0f;
+        private float LifeTimeStart { get; set; } = 10.0f;
 
         public EntityLaserBeam(Vector3f direction, float speed) : base(0.0f, 0.0f, 0.0f) 
         {
@@ -29,6 +30,9 @@ namespace Invasion.Entity.Entities
             base.Initialize();
             
             GameObject.GetComponent<Rigidbody>().UseGravity = false;
+
+            GameObject.GetChild("Model").Transform.LocalRotation = new(0.0f, 180.0f, 0.0f);
+            GameObject.GetChild("Model").Transform.LocalScale = new(0.062f);
         }
 
         public override void Update()
@@ -40,17 +44,26 @@ namespace Invasion.Entity.Entities
             if (LifeTime <= 0.0f)
                 InvasionMain.Overworld.GetComponent<IWorld>().KillEntity(this);
 
-            //GameObject.Transform.LocalPosition += Direction * Speed;
+            if (GameObject.Transform == null)
+                return;
+
+            GameObject.Transform.LocalPosition += Direction * Speed;
         }
 
         public override void OnCollide(GameObject other)
         {
-            base.OnCollide(other);
-
-            if (other.HasComponent<EntityPlayer>())
+            if (other == null)
                 return;
 
-            InvasionMain.Overworld.GetComponent<IWorld>().KillEntity(this);
+            lock (other)
+            {
+                base.OnCollide(other);
+
+                if (other.HasComponent<EntityPlayer>())
+                    return;
+
+                InvasionMain.Overworld.GetComponent<IWorld>().KillEntity(this);
+            }
         }
     }
 }

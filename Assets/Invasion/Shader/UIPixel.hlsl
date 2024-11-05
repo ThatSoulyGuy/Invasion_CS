@@ -13,5 +13,5 @@ struct PixelData
 
 float4 Main(PixelData input) : SV_TARGET
 {
-    return diffuse.Sample(samplerState, input.uv) * input.color;
+    return diffuse.Sample(samplerState, input.uv);
 }

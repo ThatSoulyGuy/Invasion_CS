@@ -63,7 +63,7 @@ namespace Invasion.UI.Elements
         private FontFamily Family { get; set; }
         private Font Font { get; set; }
 
-        public UIText(string name, DomainedPath fontPath, Vector2f position, Vector2f size) : base(name, position, size)
+        public UIText(string name, DomainedPath fontPath, Vector2f position, Vector2f size, Alignment alignment = Alignment.None) : base(name, position, size, alignment)
         {
             if (!FontCollection.TryGet(fontPath.FullPath, out var existingFamily))
                 Family = FontCollection.Add(fontPath.FullPath);

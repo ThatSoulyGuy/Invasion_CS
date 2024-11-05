@@ -20,6 +20,8 @@ namespace Invasion.UI
     {
         public string Name { get; set; } = string.Empty;
 
+        public bool IsActive { get; set; } = true;
+
         public List<Vertex> Vertices { get; set; } = [];
         public List<uint> Indices { get; set; } = [];
 
@@ -108,6 +110,9 @@ namespace Invasion.UI
 
         public void Render(Matrix4x4 projection)
         {
+            if (!IsActive)
+                return;
+
             ID3D11DeviceContext4 context = Renderer.Context;
 
             context.OMSetDepthStencilState(Renderer.NoDepthStencilState, 0);
