@@ -38,6 +38,9 @@ namespace Invasion.World
             HashSet<Vector3i> requiredChunks = [];
             List<Vector3i> chunksToBeUnloaded = [];
 
+            foreach (var spawnManager in SpawnManagers)
+                spawnManager.OnUpdateTick(this);
+
             if (Time.Ticks % TICK_RATE == 0)
             {
                 foreach (var spawnManager in SpawnManagers)

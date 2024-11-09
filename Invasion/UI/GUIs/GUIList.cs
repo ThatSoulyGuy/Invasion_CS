@@ -20,8 +20,8 @@ namespace Invasion.UI.GUIs
             float offset = -((hotbarBackgroundWidth / 2) - (notchWidth / 2)) + (notchWidth * notchIndex) - (hotbarSelectorWidth / 2);
 
             GUIs.Add("hud", GUI.Create("hud")
-                .AddElement(new UIImage("hotbarBackground", TextureManager.Get("hotbar_background"), new(0, 15), new Math.Vector2f(249, 32) * 4, Alignment.CenterX | Alignment.Bottom))
-                .AddElement(new UIImage("hotbarSelector", TextureManager.Get("hotbar_selector"), new(0, 15), new Math.Vector2f(32, 32) * 4, Alignment.CenterX | Alignment.Bottom, new(offset, 0))));
+                .AddElement(new UIImage("hotbarBackground", TextureManager.Get<Texture>("hotbar_background"), new(0, 15), new Math.Vector2f(249, 32) * 4, Alignment.CenterX | Alignment.Bottom))
+                .AddElement(new UIImage("hotbarSelector", TextureManager.Get<Texture>("hotbar_selector"), new(0, 15), new Math.Vector2f(32, 32) * 4, Alignment.CenterX | Alignment.Bottom, new(offset, 0))));
         }
 
         public static void AddGUI(GUI gui)

@@ -23,6 +23,20 @@ namespace Invasion.Audio
 
         private AudioSource() { }
 
+        static AudioSource()
+        {
+            InitializeXAudio2();
+        }
+
+        private static void InitializeXAudio2()
+        {
+            if (XAudio == null)
+            {
+                XAudio = XAudio2.XAudio2Create();
+                MasteringVoice = XAudio.CreateMasteringVoice();
+            }
+        }
+
         public void Play()
         {
             if (IsPlaying)
@@ -30,30 +44,33 @@ namespace Invasion.Audio
 
             string fullAudioPath = Path.FullPath;
 
-                try
+            try
+            {
+                InitializeSourceVoice(fullAudioPath);
+
+                SourceVoice?.SetVolume(Volume);
+                // SourceVoice?.SetFrequencyRatio(Pitch);
+
+                SourceVoice?.SubmitSourceBuffer(AudioBuffer!);
+                SourceVoice?.Start();
+
+                IsPlaying = true;
+
+                if (!Loop)
                 {
-                    InitializeXAudio2(fullAudioPath);
-
-                    SourceVoice?.SetVolume(Volume);
-                    //SourceVoice?.SetFrequencyRatio(Pitch);
-
-                    SourceVoice?.SubmitSourceBuffer(AudioBuffer!);
-                    SourceVoice?.Start();
-
-                    IsPlaying = true;
-
-                    if (!Loop)
+                    Task.Run(() =>
                     {
                         while (IsPlaying && SourceVoice?.State.BuffersQueued > 0)
                             System.Threading.Thread.Sleep(50);
 
                         Stop();
-                    }
+                    });
                 }
-                catch (Exception ex)
-                {
-                    Console.WriteLine($"Error playing audio: {ex.Message}");
-                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error playing audio: {ex.Message}");
+            }
         }
 
         public void Stop()
@@ -64,12 +81,14 @@ namespace Invasion.Audio
             SourceVoice?.Stop();
             SourceVoice?.FlushSourceBuffers();
             IsPlaying = false;
+
+            SourceVoice?.DestroyVoice();
+            SourceVoice?.Dispose();
+            SourceVoice = null;
         }
 
-        private void InitializeXAudio2(string fullAudioPath)
+        private void InitializeSourceVoice(string fullAudioPath)
         {
-            if (XAudio == null)
-            {
             if (SourceVoice != null)
                 return;
 
@@ -83,7 +102,15 @@ namespace Invasion.Audio
                 LoopCount = Loop ? (uint)XAudio2.LoopInfinite : 0
             };
 
-            SourceVoice = XAudio.CreateSourceVoice(format);
+            SourceVoice = XAudio!.CreateSourceVoice(format);
+        }
+        
+        public static void Dispose()
+        {
+            MasteringVoice?.DestroyVoice();
+            XAudio?.Dispose();
+            MasteringVoice = null;
+            XAudio = null;
         }
 
         public static AudioSource Create(string name, bool loop, DomainedPath path)

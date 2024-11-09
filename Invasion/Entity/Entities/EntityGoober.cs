@@ -4,6 +4,7 @@ using Invasion.Core;
 using Invasion.Entity.Models;
 using Invasion.Math;
 using Invasion.World;
+using Invasion.World.SpawnManagers;
 
 namespace Invasion.Entity.Entities
 {
@@ -41,15 +42,18 @@ namespace Invasion.Entity.Entities
             if (Model != null)
                 GameObject.Transform.LocalRotation = new(0.0f, Model.GetPart("head").GameObject.Transform.LocalRotation.Y, 0.0f);
 
-            if (Vector3f.Distance(GameObject.Transform.WorldPosition, InvasionMain.Player.Transform.WorldPosition) < 2)
-                InvasionMain.Player.GetComponent<EntityPlayer>().Health -= 0.1f;
+            if (Vector3f.Distance(GameObject.Transform.WorldPosition, InvasionMain.Player.Transform.WorldPosition) < 4)
+                InvasionMain.Player.GetComponent<EntityPlayer>().Health -= 0.8f;
 
             if (rigidbody.IsGrounded && Vector3f.Distance(GameObject.Transform.WorldPosition, InvasionMain.Player.Transform.WorldPosition) > 1.5)
                 rigidbody.Move(GameObject.Transform.Forward * InputManager.DeltaTime, 4.5f);
 
             if (rigidbody.IsGrounded)
             {
-                rigidbody.AddForce(new(0.0f, 10.0f, 0.0f));
+                Vector3f forward = GameObject.Transform.Forward;
+                forward.Y = 1;
+
+                rigidbody.AddForce(new Vector3f(0.0f, 10.0f, 0.0f) * forward);
                 InvasionMain.Overworld.GetComponent<IWorld>().SetBlock(GameObject.Transform.WorldPosition, BlockList.DIRT, true);
 
                 AudioSource source = AudioSource.Create("goober_jump", false, new("Audio/Entity_Bounce.wav", "Invasion"));
@@ -63,6 +67,8 @@ namespace Invasion.Entity.Entities
         public override void OnDeath()
         {
             base.OnDeath();
+
+            SpawnManagerGoober.GooberEntities.Remove(GameObject);
 
             InvasionMain.Overworld.GetComponent<IWorld>().KillEntity(this);
         }

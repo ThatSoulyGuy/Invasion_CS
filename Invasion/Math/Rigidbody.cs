@@ -137,10 +137,28 @@ namespace Invasion.Math
         private void CheckCollisions(BoundingBox collider)
         {
             var colliders = BoundingBoxManager.GetAll();
+            bool isLargeCollider = IsLargeCollider(collider);
+
+            BoundingBox enclosingCuboid = null!;
+
+            if (isLargeCollider)
+                enclosingCuboid = CreateEnclosingCuboid(collider);
+            
             foreach (var otherCollider in colliders)
             {
-                if (otherCollider == collider || otherCollider.Position.DistanceSquared(collider.Position) > 4.0f)
+                if (otherCollider == collider)
                     continue;
+
+                if (isLargeCollider)
+                {
+                    if (!IsWithinEnclosingCuboid(enclosingCuboid, otherCollider))
+                        continue;
+                }
+                else
+                {
+                    if ((otherCollider.Position - collider.Position).LengthSquared() > 4.0f)
+                        continue;
+                }
 
                 if (collider.Intersects(otherCollider))
                 {
@@ -154,19 +172,33 @@ namespace Invasion.Math
             }
         }
 
+        private bool IsLargeCollider(BoundingBox collider)
+        {
+            Vector3f size = collider.Max - collider.Min;
+            return size.X > 2.0f || size.Y > 2.0f || size.Z > 2.0f;
+        }
+
+        private BoundingBox CreateEnclosingCuboid(BoundingBox collider)
+        {
+            float margin = 2.0f;
+
+            Vector3f expandedSize = collider.Size + new Vector3f(2 * margin, 2 * margin, 2 * margin);
+            return BoundingBox.Create(collider.Position, expandedSize, true);
+        }
+
+        private bool IsWithinEnclosingCuboid(BoundingBox enclosingCuboid, BoundingBox otherCollider)
+        {
+            return enclosingCuboid.Intersects(otherCollider);
+        }
+
         private void ResolveCollisions(Vector3f penetrationVector)
         {
             lock (UpdateLock)
             {
                 if (MathF.Abs(penetrationVector.Y) > Epsilon)
                 {
-                    if (penetrationVector.Y > 0 && _velocity.Y < 0)
-                    {
-                        _velocity.Y = 0;
-                        IsGrounded = true;
-                    }
-                    else if (penetrationVector.Y < 0 && _velocity.Y > 0)
-                        _velocity.Y = 0;
+                    _velocity.Y = 0;
+                    IsGrounded = penetrationVector.Y > 0;
                 }
 
                 if (MathF.Abs(penetrationVector.X) > Epsilon)

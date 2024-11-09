@@ -1,17 +1,18 @@
 ﻿using Invasion.Core;
 using Invasion.ECS;
+using Invasion.World;
 
 namespace Invasion.Util
 {
     public class DeleteAfter(float time) : Component
     {
-        public float Time { get; set; } = time;
+        public float TimeAlive { get; set; } = time;
 
         public override void Update()
         {
-            Time -= InputManager.DeltaTime;
+            TimeAlive -= Time.DeltaTime;
 
-            if (Time <= 0)
+            if (TimeAlive <= 0)
                 GameObjectManager.Unregister(GameObject.Name);
         }
     }

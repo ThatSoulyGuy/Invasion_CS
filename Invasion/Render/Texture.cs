@@ -28,7 +28,7 @@ namespace Invasion.Render
             if (ShaderResourceView != null)
                 Renderer.Context.PSSetShaderResource(slot, ShaderResourceView);
 
-            if (SamplerState != null)      
+            if (SamplerState != null)
                 Renderer.Context.PSSetSampler(slot, SamplerState);
         }
 
@@ -38,7 +38,7 @@ namespace Invasion.Render
                 throw new FileNotFoundException($"Texture file not found: {DomainedPath.FullPath}");
 
             ScratchImage image = TexHelper.Instance.LoadFromDDSFile(DomainedPath.FullPath, DDS_FLAGS.NONE) ?? throw new Exception($"Failed to load texture: {DomainedPath.FullPath}, Error: -32768");
-            
+
             if (image.GetMetadata().Dimension != TEX_DIMENSION.TEXTURE2D)
             {
                 image.Dispose();
@@ -81,7 +81,7 @@ namespace Invasion.Render
                     SlicePitch = (uint)imageData.SlicePitch
                 };
             }
-           
+
             TextureReference = Renderer.Device.CreateTexture2D(textureDescription, subresourceData);
 
             ShaderResourceViewDescription shaderResourceViewDescription = new()

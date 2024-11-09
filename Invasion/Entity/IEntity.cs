@@ -41,9 +41,12 @@ namespace Invasion.Entity
 
         public override void Update()
         {
+            if (GameObject.Transform != null && GameObject.Transform.WorldPosition.Y < -20)
+                Health = 0;
+
             if (IsDead)
                 OnDeath();
-            }
+        }
 
         public virtual void OnDeath() { }
 

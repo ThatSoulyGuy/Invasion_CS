@@ -119,8 +119,8 @@ namespace Invasion.Render
         public static void PreRender()
         {
             Context.OMSetRenderTargets(RenderTargetView, DepthStencilView);
-            Context.OMSetBlendState(AlphaBlendState, new Color4(0, 0, 0, 0), uint.MaxValue);
-            Context.ClearRenderTargetView(RenderTargetView, new(0.0f, 0.45f, 0.75f, 1.0f));
+            Context.OMSetBlendState(AlphaBlendState, new Color4(0.28f, 0.28f, 0.28f, 0), uint.MaxValue);
+            Context.ClearRenderTargetView(RenderTargetView, new(0.0f, 0.0f, 0.0f, 1.0f));
             Context.ClearDepthStencilView(DepthStencilView, DepthStencilClearFlags.Depth, 1.0f, 0);
         }
 

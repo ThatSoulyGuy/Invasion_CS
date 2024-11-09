@@ -47,6 +47,12 @@ namespace Invasion.ECS
                 gameObject.Render(camera);
         }
 
+        public static void Stop()
+        {
+            foreach (GameObject gameObject in GameObjects.Values)
+                gameObject.Active = false;
+        }
+
         public static void CleanUp()
         {
             foreach (GameObject gameObject in GameObjects.Values)

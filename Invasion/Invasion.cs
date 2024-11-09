@@ -19,6 +19,7 @@ namespace Invasion
 
         public static GameObject Overworld { get; private set; } = null!;
 
+        public static GameObject SkyboxObject { get; private set; } = null!;
         public static GameObject Player { get; private set; } = null!;
 
         public static void Initialize()
@@ -30,6 +31,7 @@ namespace Invasion
             ShaderManager.Register(Shader.Create("default", new("Shader/Default", "Invasion")));
             ShaderManager.Register(Shader.Create("ui", new("Shader/UI", "Invasion")));
             ShaderManager.Register(Shader.Create("line", new("Shader/Line", "Invasion")));
+            ShaderManager.Register(Shader.Create("skybox", new("Shader/Skybox", "Invasion")));
 
             TextureManager.Register(Texture.Create("debug", new("Texture/Debug.dds", "Invasion"), new()
             {
@@ -75,8 +77,40 @@ namespace Invasion
                 MaxLOD = float.MaxValue
             }));
 
+            TextureManager.Register(Texture.Create("crosshair", new("Texture/UI/Crosshair.dds", "Invasion"), new()
+            {
+                Filter = Vortice.Direct3D11.Filter.MinMagMipPoint,
+                AddressU = Vortice.Direct3D11.TextureAddressMode.Wrap,
+                AddressV = Vortice.Direct3D11.TextureAddressMode.Wrap,
+                AddressW = Vortice.Direct3D11.TextureAddressMode.Wrap,
+                ComparisonFunc = Vortice.Direct3D11.ComparisonFunction.Never,
+                MinLOD = 0,
+                MaxLOD = float.MaxValue
+            }));
+
+            TextureManager.Register(TextureCube.Create("stars", new("Texture/Skybox/cubemap.dds", "Invasion"), new()
+            {
+                Filter = Vortice.Direct3D11.Filter.MinMagMipPoint,
+                AddressU = Vortice.Direct3D11.TextureAddressMode.Wrap,
+                AddressV = Vortice.Direct3D11.TextureAddressMode.Wrap,
+                AddressW = Vortice.Direct3D11.TextureAddressMode.Wrap,
+                ComparisonFunc = Vortice.Direct3D11.ComparisonFunction.Never,
+                MinLOD = 0,
+                MaxLOD = float.MaxValue
+            }));
+
             TextureAtlasManager.Register(TextureAtlas.Create("blocks", new("Texture/Block", "Invasion"), new("Texture/Atlas", "Invasion")));
             TextureAtlasManager.Register(TextureAtlas.Create("entities", new("Texture/Entity", "Invasion"), new("Texture/Atlas", "Invasion")));
+
+            SkyboxObject = GameObject.Create("Skybox");
+
+            SkyboxObject.AddComponent(ShaderManager.Get("skybox"));
+            SkyboxObject.AddComponent(TextureManager.Get<TextureCube>("stars"));
+            SkyboxObject.AddComponent(Skybox.Create());
+
+            SkyboxObject.GetComponent<Skybox>().Generate(Renderer.Device);
+
+            SkyboxObject.Active = false;
 
             Overworld = GameObject.Create("Overworld");
             Overworld.AddComponent(IWorld.Create("overworld"));
@@ -105,6 +139,7 @@ namespace Invasion
             Renderer.PreRender();
 
             GameObjectManager.Render(Player.GetComponent<EntityPlayer>().RenderCamera.GetComponent<Camera>());
+            SkyboxObject.GetComponent<Skybox>().Render(Player.GetComponent<EntityPlayer>().RenderCamera.GetComponent<Camera>());
             UIManager.Render();
 
             Renderer.PostRender(); 
@@ -112,6 +147,7 @@ namespace Invasion
 
         public static void CleanUp(object? s, EventArgs a)
         {
+            Time.CleanUp();
             GameObject.CleanUpThreadPool();
             UIManager.CleanUp();
             GameObjectManager.CleanUp();

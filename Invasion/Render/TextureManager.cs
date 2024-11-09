@@ -5,14 +5,17 @@ namespace Invasion.Render
 {
     public static class TextureManager
     {
-        private static Dictionary<string, Texture> Textures { get; } = new();
+        private static Dictionary<string, dynamic> Textures { get; } = new();
 
-        public static void Register(Texture texture)
+        public static void Register<T>(T texture)
         {
-            Textures.Add(texture.Name, texture);
+            if (texture is not Texture && texture is not TextureCube)
+                throw new ArgumentException("Texture must be of type Texture or TextureCube");
+
+            Textures.Add(((dynamic)texture).Name, texture);
         }
 
-        public static Texture Get(string name)
+        public static T Get<T>(string name)
         {
             return Textures[name];
         }

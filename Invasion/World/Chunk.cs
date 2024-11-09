@@ -4,6 +4,7 @@ using Invasion.Math;
 using Invasion.Render;
 using Invasion.Util;
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 
 namespace Invasion.World
@@ -12,14 +13,14 @@ namespace Invasion.World
     {
         public const byte CHUNK_SIZE = 16;
 
-        public Dictionary<Vector3i, short> Blocks { get; private set; } = new();
+        public ConcurrentDictionary<Vector3i, short> Blocks { get; private set; } = new();
 
         private List<Vertex> Vertices { get; set; } = new();
         private List<uint> Indices { get; set; } = new();
 
-        private Dictionary<Vector3i, BoundingBox> Colliders { get; } = new();
+        private ConcurrentDictionary<Vector3i, BoundingBox> Colliders { get; } = new();
 
-        private HashSet<Vector3i> DirtyBlocks { get; set; } = new();
+        private ConcurrentBag<Vector3i> DirtyBlocks { get; set; } = new();
 
         private class BlockMeshData
         {
@@ -27,21 +28,20 @@ namespace Invasion.World
             public List<uint> Indices = new();
         }
 
-        private Dictionary<Vector3i, BlockMeshData> BlockMeshDataMap { get; } = new();
+        private ConcurrentDictionary<Vector3i, BlockMeshData> BlockMeshDataMap { get; } = new();
 
         private static readonly Vector3i[] FaceNormals =
         {
-        new Vector3i( 0,  0,  1), // Front
-        new Vector3i( 0,  0, -1), // Back
-        new Vector3i( 1,  0,  0), // Right
-        new Vector3i(-1,  0,  0), // Left
-        new Vector3i( 0,  1,  0), // Top
-        new Vector3i( 0, -1,  0), // Bottom
-    };
+            new Vector3i( 0,  0,  1), // Front
+            new Vector3i( 0,  0, -1), // Back
+            new Vector3i( 1,  0,  0), // Right
+            new Vector3i(-1,  0,  0), // Left
+            new Vector3i( 0,  1,  0), // Top
+            new Vector3i( 0, -1,  0), // Bottom
+        };
 
         public bool NeedsRegeneration { get; private set; } = false;
 
-        // Track the last update cycle
         public int LastUpdatedCycle { get; set; } = -1;
 
         private Chunk() { }
@@ -95,7 +95,7 @@ namespace Invasion.World
                         if (Colliders.TryGetValue(position, out BoundingBox? collider))
                         {
                             collider.CleanUp();
-                            Colliders.Remove(position);
+                            Colliders.TryRemove(position, out _);
                         }
 
                         continue;
@@ -136,14 +136,17 @@ namespace Invasion.World
 
         private void RemoveVerticesAndIndicesForDirtyBlocks()
         {
-            foreach (var position in DirtyBlocks)
+            lock (DirtyBlocks)
             {
-                BlockMeshDataMap.Remove(position);
-
-                if (Colliders.TryGetValue(position, out BoundingBox? collider))
+                foreach (var position in DirtyBlocks)
                 {
-                    collider.CleanUp();
-                    Colliders.Remove(position);
+                    BlockMeshDataMap.TryRemove(position, out _);
+
+                    if (Colliders.TryGetValue(position, out BoundingBox? collider))
+                    {
+                        collider.CleanUp();
+                        Colliders.TryRemove(position, out _);
+                    }
                 }
             }
         }
@@ -205,7 +208,7 @@ namespace Invasion.World
             if (IsValidPosition(position))
             {
                 if (block == BlockList.AIR)
-                    Blocks.Remove(position);
+                    Blocks.TryRemove(position, out _);
                 else
                     Blocks[position] = block;
 

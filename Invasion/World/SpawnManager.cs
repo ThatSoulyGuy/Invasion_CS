@@ -8,6 +8,7 @@ namespace Invasion.World
 {
     public abstract class SpawnManager
     {
+        public abstract void OnUpdateTick(IWorld world);
         public abstract void OnSpawnTick(IWorld world, List<Chunk> chunks);
     }
 }
