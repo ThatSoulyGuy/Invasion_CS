@@ -10,7 +10,7 @@ namespace Invasion.World.SpawnManagers
 {
     public class SpawnManagerGoober : SpawnManager
     {
-        public static short WaveCount { get; set; } = -1;
+        public static short WaveCount { get; set; } = 0;
         public static List<GameObject> GooberEntities { get; } = [];
         public static bool BossSpawned { get; private set; } = false;
         public static bool BossAlive { get; set; } = false;
