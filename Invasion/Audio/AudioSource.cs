@@ -30,8 +30,6 @@ namespace Invasion.Audio
 
             string fullAudioPath = Path.FullPath;
 
-            Task.Run(() =>
-            {
                 try
                 {
                     InitializeXAudio2(fullAudioPath);
@@ -56,7 +54,6 @@ namespace Invasion.Audio
                 {
                     Console.WriteLine($"Error playing audio: {ex.Message}");
                 }
-            });
         }
 
         public void Stop()
@@ -73,10 +70,6 @@ namespace Invasion.Audio
         {
             if (XAudio == null)
             {
-                XAudio = XAudio2.XAudio2Create();
-                MasteringVoice = XAudio.CreateMasteringVoice();
-            }
-
             if (SourceVoice != null)
                 return;
 
@@ -103,14 +96,6 @@ namespace Invasion.Audio
                 Pitch = 1.0f,
                 Loop = loop
             };
-        }
-
-        public static void Dispose()
-        {
-            MasteringVoice?.DestroyVoice();
-            XAudio?.Dispose();
-            MasteringVoice = null;
-            XAudio = null;
         }
     }
 }

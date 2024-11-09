@@ -42,13 +42,8 @@ namespace Invasion.Entity
         public override void Update()
         {
             if (IsDead)
-            {
-                if (RegistryName == "entity_goober")
-                    SpawnManagerGoober.GooberEntities.Remove(GameObject);
-
                 OnDeath();
             }
-        }
 
         public virtual void OnDeath() { }
 

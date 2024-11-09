@@ -90,7 +90,6 @@ namespace Invasion
         {
             Overworld.GetComponent<IWorld>().LoaderPositions = [Player.Transform.WorldPosition];
 
-            Time.Update();
             UIManager.Update();
             GameObjectManager.Update();
             InputManager.Update();

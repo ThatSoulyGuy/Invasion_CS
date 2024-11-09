@@ -1,10 +1,8 @@
 ﻿using DirectXTexNet;
 using Invasion.ECS;
 using Invasion.Util;
-using SharpGen.Runtime;
 using System;
 using System.IO;
-using System.Runtime.InteropServices;
 using Vortice.Direct3D;
 using Vortice.Direct3D11;
 using Vortice.DXGI;

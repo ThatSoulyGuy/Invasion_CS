@@ -10,7 +10,6 @@ namespace Invasion.World.SpawnManagers
     public class SpawnManagerGoober : SpawnManager
     {
         public static byte WaveCount { get; set; } = 1;
-
         public static List<GameObject> GooberEntities { get; } = [];
 
         public override void OnSpawnTick(IWorld world, List<Chunk> loadedChunks)
