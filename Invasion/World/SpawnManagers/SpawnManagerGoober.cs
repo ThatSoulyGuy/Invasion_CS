@@ -57,7 +57,7 @@ namespace Invasion.World.SpawnManagers
                 Vector3f position = new(chunk.GameObject.Transform.WorldPosition.X, 60, chunk.GameObject.Transform.WorldPosition.Z);
                 EntityGoober goober = world.SpawnEntity<EntityGoober, ModelGoober>(position).GetComponent<EntityGoober>();
 
-                goober.Health = WaveCount * 10;
+                goober.SetHealth(WaveCount * 10);
                 GooberEntities.Add(goober.GameObject);
                 count++;
             }
@@ -67,8 +67,7 @@ namespace Invasion.World.SpawnManagers
         {
             Vector3f bossPosition = new(0, 60, 0); 
 
-            EntityBoss finalBoss = world.SpawnEntity<EntityBoss, ModelBoss>(bossPosition).GetComponent<EntityBoss>();
-            finalBoss.Health = 100;
+            world.SpawnEntity<EntityBoss, ModelBoss>(bossPosition).GetComponent<EntityBoss>();
 
             BossAlive = true;
 

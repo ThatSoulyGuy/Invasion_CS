@@ -114,7 +114,7 @@ namespace Invasion.Entity.Entities
             base.Update();
 
             if (SpawnManagerGoober.BossSpawned && !SpawnManagerGoober.BossAlive)
-                Health = float.NegativeInfinity;
+                Damage(float.NegativeInfinity);
 
             string healthText = $"Health: {Health}";
 
@@ -142,8 +142,19 @@ namespace Invasion.Entity.Entities
 
             //GUIList.GUIs["hud"].GetElement("hotbarSelector")!.AlignmentOffset = new(300 + (SlotIndex * 128), 0);
 
-            blockTime += InputManager.DeltaTime;
-            fireTime += InputManager.DeltaTime;
+            blockTime += Time.DeltaTime;
+            fireTime += Time.DeltaTime;
+        }
+
+        public override void OnDamaged(float amount)
+        {
+            base.OnDamaged(amount);
+
+            AudioSource audio = AudioSource.Create("player_hurt", false, new("Audio/Player_Hurt.wav", "Invasion"));
+
+            audio.Volume = 1.5f;
+
+            audio.Play();
         }
 
         public override void OnDeath()
@@ -204,14 +215,14 @@ namespace Invasion.Entity.Entities
                         if (information.Collider.GameObject.GetComponent<EntityGoober>().Health <= 10)
                             Score += 10 + SpawnManagerGoober.WaveCount * 2;
 
-                        information.Collider.GameObject.GetComponent<EntityGoober>().Health -= 10;
+                        information.Collider.GameObject.GetComponent<EntityGoober>().Damage(10);
                     }
                     else if (hit && information.Collider!.GameObject != null && information.Collider.GameObject.HasComponent<EntityBoss>())
                     {
                         if (information.Collider.GameObject.GetComponent<EntityBoss>().Health <= 10)
                             Score += 100;
 
-                        information.Collider.GameObject.GetComponent<EntityBoss>().Health -= 10;
+                        information.Collider.GameObject.GetComponent<EntityBoss>().Damage(10);
                     }
 
                     AudioSource audio = AudioSource.Create("laser", false, new("Audio/LaserGun_Fire.wav", "Invasion"));
@@ -287,7 +298,7 @@ namespace Invasion.Entity.Entities
             Vector2f mouseMovement = InputManager.GetMouseMovementOffsets();
 
             mouseMovement *= MouseSensitivity;
-            mouseMovement *= InputManager.DeltaTime;
+            mouseMovement *= Time.DeltaTime;
 
             RenderCamera.Transform.Rotate(new(mouseMovement.Y, mouseMovement.X, 0.0f));
 
@@ -332,7 +343,7 @@ namespace Invasion.Entity.Entities
             if (!rigidbody.IsGrounded)
                 movement *= 0.15f;
 
-            rigidbody.Move(movement * InputManager.DeltaTime, InputManager.GetKeyHeld(KeyCode.LeftShift) ? RunningSpeed : WalkingSpeed);
+            rigidbody.Move(movement * Time.DeltaTime, InputManager.GetKeyHeld(KeyCode.LeftShift) ? RunningSpeed : WalkingSpeed);
         }
     }
 }

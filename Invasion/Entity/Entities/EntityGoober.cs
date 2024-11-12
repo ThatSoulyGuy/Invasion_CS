@@ -5,6 +5,7 @@ using Invasion.Entity.Models;
 using Invasion.Math;
 using Invasion.World;
 using Invasion.World.SpawnManagers;
+using System.Threading.Tasks;
 
 namespace Invasion.Entity.Entities
 {
@@ -16,6 +17,10 @@ namespace Invasion.Entity.Entities
 
         private ModelGoober Model => GameObject.GetComponent<ModelGoober>()!;
 
+        private float TimeSinceLastAttack = 0.0f;
+        private readonly float AttackInterval = 1.5f;
+        private readonly float DamageAmount = 10.0f;
+ 
         public EntityGoober() : base(30.0f, 0.1f, 0.2f) { }
 
         public override void Initialize()
@@ -26,7 +31,7 @@ namespace Invasion.Entity.Entities
             GameObject.GetChild("Model").Transform.LocalRotation = new(0.0f, 180.0f, 0.0f);
             GameObject.GetChild("Model").Transform.LocalScale = new(0.062f);
         }
-        
+
         public override void Update()
         {
             base.Update();
@@ -42,11 +47,21 @@ namespace Invasion.Entity.Entities
             if (Model != null)
                 GameObject.Transform.LocalRotation = new(0.0f, Model.GetPart("head").GameObject.Transform.LocalRotation.Y, 0.0f);
 
-            if (Vector3f.Distance(GameObject.Transform.WorldPosition, InvasionMain.Player.Transform.WorldPosition) < 4)
-                InvasionMain.Player.GetComponent<EntityPlayer>().Health -= 0.8f;
+            float distanceToPlayer = Vector3f.Distance(GameObject.Transform.WorldPosition, InvasionMain.Player.Transform.WorldPosition);
 
-            if (rigidbody.IsGrounded && Vector3f.Distance(GameObject.Transform.WorldPosition, InvasionMain.Player.Transform.WorldPosition) > 1.5)
-                rigidbody.Move(GameObject.Transform.Forward * InputManager.DeltaTime, 4.5f);
+            if (distanceToPlayer < 4)
+            {
+                TimeSinceLastAttack += Time.DeltaTime;
+
+                if (TimeSinceLastAttack >= AttackInterval)
+                {
+                    InvasionMain.Player.GetComponent<EntityPlayer>().Damage(20);
+                    TimeSinceLastAttack = 0.0f;
+                }
+            }
+
+            if (rigidbody.IsGrounded && distanceToPlayer > 1.5)
+                rigidbody.Move(GameObject.Transform.Forward * Time.DeltaTime, 4.5f);
 
             if (rigidbody.IsGrounded)
             {
@@ -61,7 +76,18 @@ namespace Invasion.Entity.Entities
                 source.Volume = 0.85f;
 
                 source.Play();
-            } 
+            }
+        }
+
+        public override async void OnDamaged(float amount)
+        {
+            base.OnDamaged(amount);
+
+            GameObject.GetChild("Model")?.GetComponent<ModelGoober>()?.ActivateDamageMeshes();
+
+            await Task.Delay(500);
+
+            GameObject.GetChild("Model")?.GetComponent<ModelGoober>()?.DeactivateDamageMeshes();
         }
 
         public override void OnDeath()
@@ -73,4 +99,5 @@ namespace Invasion.Entity.Entities
             InvasionMain.Overworld.GetComponent<IWorld>().KillEntity(this);
         }
     }
+
 }

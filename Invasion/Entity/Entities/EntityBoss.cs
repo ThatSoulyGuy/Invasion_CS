@@ -7,6 +7,7 @@ using Invasion.Util;
 using Invasion.World;
 using Invasion.World.SpawnManagers;
 using System;
+using System.Threading.Tasks;
 
 namespace Invasion.Entity.Entities
 {
@@ -82,7 +83,7 @@ namespace Invasion.Entity.Entities
             {
                 if (!IsAttacking)
                 {
-                    InvasionMain.Player.GetComponent<EntityPlayer>().Health -= 15;
+                    InvasionMain.Player.GetComponent<EntityPlayer>().Damage(20);
                     IsAttacking = true;
                 }
             }
@@ -106,6 +107,17 @@ namespace Invasion.Entity.Entities
                 Model.GetPart("left_leg").GameObject.Transform.LocalRotation = new(-waveValue, 0.0f, 0.0f);
                 Model.GetPart("right_leg").GameObject.Transform.LocalRotation = new(waveValue, 0.0f, 0.0f);
             }
+        }
+
+        public override async void OnDamaged(float amount)
+        {
+            base.OnDamaged(amount);
+
+            GameObject.GetChild("Model").GetComponent<ModelBoss>().ActivateDamageMeshes();
+
+            await Task.Delay(500);
+
+            GameObject.GetChild("Model").GetComponent<ModelBoss>().DeactivateDamageMeshes();
         }
 
         public override void OnDeath()

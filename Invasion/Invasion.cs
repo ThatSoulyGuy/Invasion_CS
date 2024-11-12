@@ -126,6 +126,7 @@ namespace Invasion
 
             UIManager.Update();
             GameObjectManager.Update();
+            Time.Update();
             InputManager.Update();
         }
 
@@ -139,7 +140,7 @@ namespace Invasion
             Renderer.PreRender();
 
             GameObjectManager.Render(Player.GetComponent<EntityPlayer>().RenderCamera.GetComponent<Camera>());
-            SkyboxObject.GetComponent<Skybox>().Render(Player.GetComponent<EntityPlayer>().RenderCamera.GetComponent<Camera>());
+            //SkyboxObject.GetComponent<Skybox>().Render(Player.GetComponent<EntityPlayer>().RenderCamera.GetComponent<Camera>());
             UIManager.Render();
 
             Renderer.PostRender(); 
@@ -147,7 +148,6 @@ namespace Invasion
 
         public static void CleanUp(object? s, EventArgs a)
         {
-            Time.CleanUp();
             GameObject.CleanUpThreadPool();
             UIManager.CleanUp();
             GameObjectManager.CleanUp();

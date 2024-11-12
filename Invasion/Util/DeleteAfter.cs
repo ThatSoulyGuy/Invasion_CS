@@ -1,6 +1,5 @@
 ﻿using Invasion.Core;
 using Invasion.ECS;
-using Invasion.World;
 
 namespace Invasion.Util
 {

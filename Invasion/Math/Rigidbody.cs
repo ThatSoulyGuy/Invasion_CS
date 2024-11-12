@@ -65,7 +65,7 @@ namespace Invasion.Math
                 return;
             }
 
-            float deltaTime = InputManager.DeltaTime;
+            float deltaTime = Time.DeltaTime;
             float maxTimeStep = 0.02f;
             int steps = (int)MathF.Ceiling(deltaTime / maxTimeStep);
             float stepTime = deltaTime / steps;

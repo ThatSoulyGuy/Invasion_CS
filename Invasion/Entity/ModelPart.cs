@@ -2,6 +2,7 @@
 using Invasion.Math;
 using Invasion.Render;
 using Invasion.World;
+using System;
 using System.Collections.Generic;
 
 namespace Invasion.Entity.Model
@@ -23,10 +24,10 @@ namespace Invasion.Entity.Model
         public readonly Vector3f Corner7 => Position + new Vector3f(0.0f, Size.Y, Size.Z);
     }
 
-    public class ModelPart : Component
+    public class ModelPart : Component, ICloneable
     {
         public string Name { get; init; } = string.Empty;
-        public string TextureName { get; init; } = string.Empty;
+        public string TextureName { get; set; } = string.Empty;
 
         public List<Cube> Cubes { get; init; } = [];
 
@@ -134,6 +135,11 @@ namespace Invasion.Entity.Model
                 Name = name,
                 TextureName = textureName
             };
+        }
+
+        public object Clone()
+        {
+            return MemberwiseClone();
         }
     }
 }

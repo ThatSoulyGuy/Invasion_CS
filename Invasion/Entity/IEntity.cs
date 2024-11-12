@@ -32,7 +32,7 @@ namespace Invasion.Entity
 
         public abstract Vector3f ColliderSpecification { get; }
 
-        public float Health { get; set; } = maxHealth;
+        public float Health { get; private set; } = maxHealth;
         public float MaxHealth { get; set; } = maxHealth;
         public float WalkingSpeed { get; set; } = walkingSpeed;
         public float RunningSpeed { get; set; } = runningSpeed;
@@ -47,6 +47,25 @@ namespace Invasion.Entity
             if (IsDead)
                 OnDeath();
         }
+
+        public void Damage(float amount)
+        {
+            Health -= amount;
+
+            OnDamaged(amount);
+        }
+
+        public void SetHealth(float amount)
+        {
+            float previousHealth = Health;
+
+            Health = amount;
+
+            if (Health < previousHealth)
+                OnDamaged(previousHealth - Health);
+        }
+
+        public virtual void OnDamaged(float amount) { }
 
         public virtual void OnDeath() { }
 
