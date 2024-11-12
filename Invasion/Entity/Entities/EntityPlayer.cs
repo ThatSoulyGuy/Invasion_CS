@@ -126,7 +126,7 @@ namespace Invasion.Entity.Entities
             if (SpawnManagerGoober.BossSpawned)
                 waveCountText = "Wave: FINAL";
             else
-                waveCountText = $"Wave: {SpawnManagerGoober.WaveCount}";
+                waveCountText = $"Wave: {SpawnManagerGoober.WaveCount - 1}";
 
             if (WaveCountText.Text != waveCountText)
                 WaveCountText.Text = waveCountText;
