@@ -187,7 +187,6 @@ namespace Invasion.Core
         public static bool MouseRightClick { get; private set; }
         public static int MouseWheelDelta { get; private set; }
         public static Vector2f MouseDelta { get; private set; } = Vector2f.Zero;
-        public static float DeltaTime { get; private set; }
 
         private static readonly float smoothingFactor = 0.1f;
         private static Vector2f smoothedMouseDelta = Vector2f.Zero;
@@ -204,7 +203,6 @@ namespace Invasion.Core
         private static readonly HashSet<KeyCode> NewlyReleasedKeys = [];
 
         private static bool cursorIsHidden = false;
-        private static readonly Stopwatch Stopwatch = new();
 
         public static void Initialize(Form form)
         {
@@ -267,8 +265,6 @@ namespace Invasion.Core
             {
                 MouseWheelDelta += arguments.Delta;
             };
-
-            Stopwatch.Start();
         }
 
         public static void SetCursorMode(bool hidden)
@@ -331,9 +327,6 @@ namespace Invasion.Core
             lastMouseRightState = MouseRightPressed;
             MouseLeftClick = false;
             MouseRightClick = false;
-
-            DeltaTime = (float)Stopwatch.Elapsed.TotalSeconds;
-            Stopwatch.Restart();
         }
     }
 }
