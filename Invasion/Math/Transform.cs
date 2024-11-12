@@ -1,5 +1,7 @@
 ﻿using Invasion.ECS;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Linq;
 using System.Numerics;
 using Vortice.Mathematics;
 
@@ -86,7 +88,10 @@ namespace Invasion.Math
             {
                 if (_parent != value)
                 {
-                    _parent?._children.Remove(this);
+                    lock (_children)
+                    {
+                        _children = new ConcurrentBag<Transform>(_children.Except(new[] { this }));
+                    }
                     _parent = value;
                     _parent?._children.Add(this);
 
@@ -95,7 +100,7 @@ namespace Invasion.Math
             }
         }
 
-        private readonly List<Transform> _children = new List<Transform>();
+        private ConcurrentBag<Transform> _children = [];
 
         private readonly object _lock = new();
         private Matrix4x4 _modelMatrix = Matrix4x4.Identity;
@@ -109,9 +114,12 @@ namespace Invasion.Math
                 return;
 
             _isDirty = true;
-
-            foreach (var child in _children)
-                child.MarkDirty();
+            
+            lock (_children)
+            {
+                foreach (var child in _children)
+                    child.MarkDirty();
+            }
         }
 
         public void Translate(Vector3f translation)

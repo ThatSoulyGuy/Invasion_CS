@@ -9,7 +9,7 @@ namespace Invasion.Entity.Models
         {
             base.Initialize();
 
-            ModelPart body = Register(ModelPart.Create("body", "pig"));
+            ModelPart body = Register(ModelPart.Create("body", "pig", this));
 
             body.GameObject.Transform.PivotPoint = new Vector3f(0.0f, 13.0f, 1.0f);
             body.GameObject.Transform.LocalRotation = new Vector3f(-90.0f, 0.0f, 0.0f);
@@ -18,7 +18,7 @@ namespace Invasion.Entity.Models
             body.AddCube(new Vector3f(-5.0f, 7.0f, -5.0f), new Vector3f(10.0f, 16.0f, 8.0f), bodyUVs);
             body.Generate();
 
-            ModelPart head = Register(ModelPart.Create("head", "pig"));
+            ModelPart head = Register(ModelPart.Create("head", "pig", this));
             Vector2f[] headUVs = GetUVs(new Vector2f(0, 0), 8, 8, 8);
             head.AddCube(new Vector3f(-4.0f, 8.0f, -14.0f), new Vector3f(8.0f, 8.0f, 8.0f), headUVs);
 
@@ -26,20 +26,20 @@ namespace Invasion.Entity.Models
             head.AddCube(new Vector3f(-2.0f, 9.0f, -15.0f), new Vector3f(4.0f, 3.0f, 1.0f), snoutUVs);
             head.Generate();
 
-            ModelPart leftFrontLeg = Register(ModelPart.Create("left_front_leg", "pig"));
+            ModelPart leftFrontLeg = Register(ModelPart.Create("left_front_leg", "pig", this));
             Vector2f[] legUVs = GetUVs(new Vector2f(0, 16), 4, 6, 4);
             leftFrontLeg.AddCube(new Vector3f(-5.0f, 0.0f, -7.0f), new Vector3f(4.0f, 6.0f, 4.0f), legUVs);
             leftFrontLeg.Generate();
 
-            ModelPart rightFrontLeg = Register(ModelPart.Create("right_front_leg", "pig"));
+            ModelPart rightFrontLeg = Register(ModelPart.Create("right_front_leg", "pig", this));
             rightFrontLeg.AddCube(new Vector3f(1.0f, 0.0f, -7.0f), new Vector3f(4.0f, 6.0f, 4.0f), legUVs);
             rightFrontLeg.Generate();
 
-            ModelPart leftBackLeg = Register(ModelPart.Create("left_back_leg", "pig"));
+            ModelPart leftBackLeg = Register(ModelPart.Create("left_back_leg", "pig", this));
             leftBackLeg.AddCube(new Vector3f(-5.0f, 0.0f, 5.0f), new Vector3f(4.0f, 6.0f, 4.0f), legUVs);
             leftBackLeg.Generate();
 
-            ModelPart rightBackLeg = Register(ModelPart.Create("right_back_leg", "pig"));
+            ModelPart rightBackLeg = Register(ModelPart.Create("right_back_leg", "pig", this));
             rightBackLeg.AddCube(new Vector3f(1.0f, 0.0f, 5.0f), new Vector3f(4.0f, 6.0f, 4.0f), legUVs);
             rightBackLeg.Generate();
         }

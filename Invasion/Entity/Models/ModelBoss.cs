@@ -9,7 +9,7 @@ namespace Invasion.Entity.Models
         {
             base.Initialize();
 
-            ModelPart head = Register(ModelPart.Create("head", "boss"));
+            ModelPart head = Register(ModelPart.Create("head", "boss", this));
 
             head.GameObject.Transform.PivotPoint = new(0, 18, 0);
 
@@ -49,35 +49,35 @@ namespace Invasion.Entity.Models
             head.AddCube(new(new(-4, 18, -5), new(9, 15, 9), uvs));
             head.Generate();
 
-            ModelPart body = Register(ModelPart.Create("body", "boss"));
+            ModelPart body = Register(ModelPart.Create("body", "boss", this));
 
             body.GameObject.Transform.PivotPoint = new(0, 4, 0);
 
             body.AddCube(new(new(-6, 4, -3), new(12, 14, 5), uvs));
             body.Generate();
 
-            ModelPart rightArm = Register(ModelPart.Create("right_arm", "boss"));
+            ModelPart rightArm = Register(ModelPart.Create("right_arm", "boss", this));
 
             rightArm.GameObject.Transform.PivotPoint = new(6, 16, -0.5f);
 
             rightArm.AddCube(new(new(6, 6, -2), new(3, 11, 3), uvs));
             rightArm.Generate();
 
-            ModelPart leftArm = Register(ModelPart.Create("left_arm", "boss"));
+            ModelPart leftArm = Register(ModelPart.Create("left_arm", "boss", this));
 
             leftArm.GameObject.Transform.PivotPoint = new(-7, 16, -0.5f);
 
             leftArm.AddCube(new(new(-9, 6, -2), new(3, 11, 3), uvs));
             leftArm.Generate();
 
-            ModelPart rightLeg = Register(ModelPart.Create("right_leg", "boss"));
+            ModelPart rightLeg = Register(ModelPart.Create("right_leg", "boss", this));
 
             rightLeg.GameObject.Transform.PivotPoint = new(3.5f, 4, -0.5f);
 
             rightLeg.AddCube(new(new(2f, 0, -2), new(3, 4, 3), uvs));
             rightLeg.Generate();
 
-            ModelPart leftLeg = Register(ModelPart.Create("left_leg", "boss"));
+            ModelPart leftLeg = Register(ModelPart.Create("left_leg", "boss", this));
 
             leftLeg.GameObject.Transform.PivotPoint = new(-3.5f, 4, -0.5f);
 

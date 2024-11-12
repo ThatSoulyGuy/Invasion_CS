@@ -42,7 +42,7 @@ namespace Invasion.Entity.Models
                 new(1, 0),
             ];
             
-            ModelPart head = Register(ModelPart.Create("head", "laser_beam"));
+            ModelPart head = Register(ModelPart.Create("head", "laser_beam", this));
 
             head.GameObject.Transform.PivotPoint = new(0, 0, 0);
 

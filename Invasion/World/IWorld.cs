@@ -42,12 +42,6 @@ namespace Invasion.World
             foreach (var spawnManager in SpawnManagers)
                 spawnManager.OnUpdateTick(this);
 
-            if (Time.Ticks % TICK_RATE == 0)
-            {
-                foreach (var spawnManager in SpawnManagers)
-                    spawnManager.OnSpawnTick(this, [.. LoadedChunks.Values]);
-            }
-
             if (KeepUpdating)
             {
                 foreach (var loaderPosition in LoaderPositions)

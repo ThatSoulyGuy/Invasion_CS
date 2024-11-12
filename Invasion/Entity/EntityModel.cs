@@ -9,7 +9,7 @@ namespace Invasion.Entity.Model
 {
     public abstract class EntityModel : Component
     {
-        public GameObject ModelObject => GameObject.GetChild("Model");
+        public GameObject ModelObject { get; private set; } = null!;
 
         private Dictionary<string, GameObject> Parts { get; } = new();
         private Dictionary<string, GameObject> DamageMeshes { get; } = new();
@@ -18,10 +18,35 @@ namespace Invasion.Entity.Model
 
         public override void Initialize()
         {
-            GameObject.AddChild(GameObject.Create("Model"));
+            ModelObject =  GameObject.AddChild(GameObject.Create("Model"));
+
             ModelObject.GetComponent<Transform>().LocalPosition = Vector3f.Zero;
             ModelObject.GetComponent<Transform>().LocalRotation = Vector3f.Zero;
             ModelObject.GetComponent<Transform>().LocalScale = Vector3f.One;
+        }
+
+        public override void Update()
+        {
+            lock (this)
+            {
+                foreach (var part in Parts)
+                {
+                    foreach (var damagePart in DamageMeshes)
+                    {
+                        if (part.Key == damagePart.Key)
+                        {
+                            if (damagePart.Value.Transform != null && part.Value.Transform != null)
+                                damagePart.Value.Transform.LocalPosition = part.Value.Transform.LocalPosition;
+
+                            if (damagePart.Value.Transform != null && part.Value.Transform != null)
+                                damagePart.Value.Transform.LocalRotation = part.Value.Transform.LocalRotation;
+
+                            if (damagePart.Value.Transform != null && part.Value.Transform != null)
+                                damagePart.Value.Transform.PivotPoint = part.Value.Transform.PivotPoint;
+                        }
+                    }
+                }
+            }
         }
 
         public ModelPart Register(ModelPart part)
@@ -31,39 +56,38 @@ namespace Invasion.Entity.Model
 
             string name = part.Name;
 
-            ModelObject.AddChild(GameObject.Create(name));
+            GameObject partObject = null!;
 
-            GameObject partObject = ModelObject.GetChild(name);
+            if (ModelObject == null)
+            {
+                System.Threading.Thread.Sleep(2);
+                
+                ModelObject!.AddChild(GameObject.Create(name));
 
-            partObject.AddComponent(ShaderManager.Get("default"));
-            partObject.AddComponent(Mesh.Create(name + "_Mesh_" + new Random().Next(), [], []));
-            partObject.AddComponent(TextureAtlasManager.Get("entities").Atlas);
-            partObject.AddComponent(TextureAtlasManager.Get("entities"));
+                partObject = ModelObject!.GetChild(name);
+
+                partObject.AddComponent(ShaderManager.Get("default"));
+                partObject.AddComponent(Mesh.Create(name + "_Mesh_" + new Random().Next(), [], []));
+                partObject.AddComponent(TextureAtlasManager.Get("entities").Atlas);
+                partObject.AddComponent(TextureAtlasManager.Get("entities"));
+            }
+            else
+            {
+                System.Threading.Thread.Sleep(2);
+
+                ModelObject!.AddChild(GameObject.Create(name));
+
+                partObject = ModelObject!.GetChild(name);
+
+                partObject.AddComponent(ShaderManager.Get("default"));
+                partObject.AddComponent(Mesh.Create(name + "_Mesh_" + new Random().Next(), [], []));
+                partObject.AddComponent(TextureAtlasManager.Get("entities").Atlas);
+                partObject.AddComponent(TextureAtlasManager.Get("entities"));
+            }
 
             ModelPart addedPart = partObject.AddComponent(part);
 
             Parts.Add(part.Name, partObject);
-
-
-            name = part.Name + "_damage_";
-
-            ModelObject.AddChild(GameObject.Create(name));
-
-            partObject = ModelObject.GetChild(name);
-
-            partObject.AddComponent(ShaderManager.Get("default"));
-            partObject.AddComponent(Mesh.Create(name + "_Mesh_Damage_" + new Random().Next(), [], []));
-            partObject.AddComponent(TextureAtlasManager.Get("entities").Atlas);
-            partObject.AddComponent(TextureAtlasManager.Get("entities"));
-            partObject.Transform.LocalScale = Vector3f.One * 1.01f;
-
-            partObject.Active = false;
-
-            partObject.AddComponent(ModelPart.Create(name, "red"));
-
-            Parts.Add(name, partObject);
-
-            DamageMeshes.Add(name, partObject);
 
             return addedPart;
         }
@@ -91,8 +115,62 @@ namespace Invasion.Entity.Model
             }
         }
 
+        public ModelPart AddDamageMesh(ModelPart part)
+        {
+            if (DamageMeshes.ContainsKey(part.Name))
+                return null!;
+
+            GameObject damageObject = null!;
+
+            if (ModelObject == null)
+            {
+                System.Threading.Thread.Sleep(2);
+
+                ModelObject!.AddChild(GameObject.Create(part.Name + "_Damage"));
+
+                damageObject = ModelObject.GetChild(part.Name + "_Damage");
+
+                damageObject.AddComponent(ShaderManager.Get("default"));
+                damageObject.AddComponent(Mesh.Create(part.Name + "_Damage_Mesh_" + new Random().Next(), [], []));
+                damageObject.AddComponent(TextureAtlasManager.Get("entities").Atlas);
+                damageObject.AddComponent(TextureAtlasManager.Get("entities"));
+                damageObject.Transform.LocalScale = Vector3f.One * 1.02f;
+
+                damageObject.Active = false;
+            }
+            else
+            {
+                System.Threading.Thread.Sleep(2);
+
+                ModelObject!.AddChild(GameObject.Create(part.Name + "_Damage"));
+
+                damageObject = ModelObject.GetChild(part.Name + "_Damage");
+
+                damageObject.AddComponent(ShaderManager.Get("default"));
+                damageObject.AddComponent(Mesh.Create(part.Name + "_Damage_Mesh_" + new Random().Next(), [], []));
+                damageObject.AddComponent(TextureAtlasManager.Get("entities").Atlas);
+                damageObject.AddComponent(TextureAtlasManager.Get("entities"));
+                damageObject.Transform.LocalScale = Vector3f.One * 1.02f;
+
+                damageObject.Active = false;
+            }
+
+            ModelPart addedPart = damageObject.AddComponent(ModelPart.Create(part.Name + "_Damage", "red", this));
+
+            addedPart.Cubes = part.Cubes;
+
+            addedPart.Generate(false);
+
+            DamageMeshes.Add(part.Name, damageObject);
+
+            return addedPart;
+        }
+
         public void ActivateDamageMeshes()
         {
+            foreach (GameObject part in Parts.Values)
+                part.Active = false;
+
             foreach (var damageMesh in DamageMeshes.Values)
                 damageMesh.Active = true;
         }
@@ -101,6 +179,9 @@ namespace Invasion.Entity.Model
         {
             foreach (var damageMesh in DamageMeshes.Values)
                 damageMesh.Active = false;
+
+            foreach (GameObject part in Parts.Values)
+                part.Active = true;
         }
     }
 }

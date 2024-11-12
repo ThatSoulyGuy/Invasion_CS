@@ -113,11 +113,11 @@ namespace Invasion.Entity.Entities
         {
             base.OnDamaged(amount);
 
-            GameObject.GetChild("Model").GetComponent<ModelBoss>().ActivateDamageMeshes();
+            Model?.ActivateDamageMeshes();
 
-            await Task.Delay(500);
+            await Task.Delay(200);
 
-            GameObject.GetChild("Model").GetComponent<ModelBoss>().DeactivateDamageMeshes();
+            Model?.DeactivateDamageMeshes();
         }
 
         public override void OnDeath()

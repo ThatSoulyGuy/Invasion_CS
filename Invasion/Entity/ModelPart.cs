@@ -29,16 +29,21 @@ namespace Invasion.Entity.Model
         public string Name { get; init; } = string.Empty;
         public string TextureName { get; set; } = string.Empty;
 
-        public List<Cube> Cubes { get; init; } = [];
+        public List<Cube> Cubes { get; set; } = [];
 
         public Mesh Mesh => GameObject.GetComponent<Mesh>();
 
+        private EntityModel Model { get; set; } = null!;
+
         private ModelPart() { }
 
-        public void Generate()
+        public void Generate(bool addDamageMesh = true)
         {
             foreach (Cube cube in Cubes)
                 AddCubeToMesh(cube);
+
+            if (addDamageMesh)
+                Model.AddDamageMesh(this);
 
             Mesh.Generate();
         }
@@ -128,12 +133,13 @@ namespace Invasion.Entity.Model
             mesh.Indices.Add((uint)vertexIndexStart + 2);
         }
 
-        public static ModelPart Create(string name, string textureName)
+        public static ModelPart Create(string name, string textureName, EntityModel model)
         {
             return new()
             {
                 Name = name,
-                TextureName = textureName
+                TextureName = textureName,
+                Model = model
             };
         }
 
